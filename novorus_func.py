@@ -53,11 +53,11 @@ class Player(Sprite):
                     if distance[1] < 0: 
                         self.y = sprite.rect.top - self.width
                         print('up')
-            
+
     def movement(self, sprites):
         '''Handles movement'''
-        distance = 0.025 / 2
-        max_speed = 0.5 / 2
+        distance = 0.025
+        max_speed = 0.5
         keys = pygame.key.get_pressed()
         
         if keys[pygame.K_LEFT]:

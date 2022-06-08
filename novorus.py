@@ -2,7 +2,7 @@ import pygame
 from novorus_func import *
 
 pygame.init()
-screen = pygame.display.set_mode() # sets the dimensions of the screen; defaults to full screen
+screen = pygame.display.set_mode((1000, 500)) # sets the dimensions of the screen; defaults to full screen
 pygame.display.set_caption('Novorus')
 
 all_sprites = pygame.sprite.Group()
