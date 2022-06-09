@@ -2,54 +2,57 @@ import pygame
 from novorus_func import *
 
 pygame.init()
-screen = pygame.display.set_mode((1000, 500)) # sets the dimensions of the screen; defaults to full screen
 pygame.display.set_caption('Novorus')
 
-all_sprites = pygame.sprite.Group()
+screen = pygame.display.set_mode((1080, 720)) # sets the dimensions of the screen; defaults to full screen
+clock = pygame.time.Clock()
+
+camera_group = pygame.sprite.Group()
 
 for i in range(0, 300, 200):
     ghost = Ghost((i, 100), 75, 75)    
-    all_sprites.add(ghost)
+    camera_group.add(ghost)
     
 for i in range(0, 500, 100):
     wall = Wall((i, 300), 100, 100)    
-    all_sprites.add(wall)
+    camera_group.add(wall)
     
 chest = Chest((300, 200), 80, 80)
-all_sprites.add(chest)
+camera_group.add(chest)
     
 player = Player((300, 0), 75, 75)
+camera_group.add(player)
 
-frame = 0
+ticks = 0
 runtime = True
-
 while runtime:
+    # event handling
     for event in pygame.event.get():
         # checks for quit event
         if event.type == pygame.QUIT:
             runtime = False
-
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_ESCAPE]:
-        runtime = False
+         
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                runtime = False
     
     screen.fill((53, 85, 108)) # fills a surface with the rgb color
     
     # updates
-    player.handle_keys(frame, all_sprites)
-    player.draw(screen)
-    pygame.draw.rect(screen, (255, 0, 0), player.rect, 1)
-    
-    for sprite in all_sprites.sprites():
-        sprite.draw(screen)
+    for sprite in camera_group:
         pygame.draw.rect(screen, (255, 0, 0), sprite.rect, 1)
+
+    player.handle_keys(ticks, camera_group)
+    camera_group.draw(screen)
+    camera_group.update()
         
     # updates screen
-    pygame.display.flip() 
+    pygame.display.update()
 
-    frame += 1
-    if frame >= 300:
-        frame = 0
+    clock.tick(60)
+    ticks += 1
+    if ticks >= 360:
+        ticks = 0
 
 # closes pygame application
 pygame.quit()

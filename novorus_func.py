@@ -1,135 +1,114 @@
-import pygame, os, math
+import pygame, os, math, random
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, coords, width, height, image):
+    def __init__(self, coords: list, width, height, image):
         super().__init__()
-        self.name = 'player'
         self.x, self.y, = coords
-        self.x_velocity, self.y_velocity = 0, 0
         self.width, self.height = width, height
+
         self.load_image(image)
+        self.rect = self.image.get_rect(midbottom = (self.x + self.width / 2, self.y + self.height))
+        
+        self.direction = pygame.math.Vector2()
         
     def load_image(self, image):
         '''Loads an image according to the input'''
         self.image = pygame.image.load(os.path.join('sprites', image))
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
-    def draw(self, surface):
-        '''Redraws the player every frame'''
-        surface.blit(self.image, (self.x, self.y))
-
 class Player(Sprite):
     def __init__(self, coords, width, height):
         super().__init__(coords, width, height, 'knight_walk1.png')
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height).inflate_ip(90, 90)
 
-    def handle_keys(self, frame, sprites):
+    def handle_keys(self, ticks, sprites):
         '''Handles events relating to the player'''
         self.movement(sprites)
-        self.animation(frame)
+        self.animation(ticks)
     
     def collision(self, sprites):
         for sprite in sprites:
             collision_distance = [(self.width + sprite.width) / 2, (self.height + sprite.height) / 2,]
-            player_center = [self.x + self.width / 2, self.y + self.height / 2]
-            sprite_center = [sprite.x + sprite.width / 2, sprite.y + sprite.height / 2]
-            distance = [player_center[i] - sprite_center[i] for i in range(2)]
+            distance = [self.rect.center[i] - sprite.rect.center[i] for i in range(2)]
             
+            # checks if the distance of the sprites are within collision distance
             if abs(distance[0]) <= collision_distance[0] and abs(distance[1]) <= collision_distance[1]:
+                # horizontal collision
                 if abs(distance[0]) > abs(distance[1]):
+                    # left collision
                     if distance[0] < 0:
                         self.x = sprite.rect.left - self.width
-                        print('left')
                         
+                    # right collision
                     if distance[0] > 0: 
                         self.x = sprite.rect.right
-                        print('right')
-                    
+                
+                # vertical collision
                 else:
+                    # bottom collision
                     if distance[1] > 0: 
                         self.y = sprite.rect.bottom
-                        print('bottom')
-                            
+                    
+                    # up collision
                     if distance[1] < 0: 
                         self.y = sprite.rect.top - self.width
-                        print('up')
 
     def movement(self, sprites):
         '''Handles movement'''
-        distance = 0.025
-        max_speed = 0.5
+        speed = 2
         keys = pygame.key.get_pressed()
         
         if keys[pygame.K_LEFT]:
-            if self.x_velocity > -max_speed:
-                self.x_velocity -= distance * 0.9 ** abs(self.x_velocity)
-                if self.x_velocity < -max_speed:
-                    self.x_velocity == -max_speed
+            self.direction.x = -speed
         
         elif keys[pygame.K_RIGHT]:
-            if self.x_velocity < max_speed:
-                self.x_velocity += distance * 0.9 ** abs(self.x_velocity)
-                if self.x_velocity > max_speed:
-                    self.x_velocity == max_speed
+            self.direction.x = speed
         
         # movement decay
         else:
-            if self.x_velocity != 0:
-                self.x_velocity *= 0.9
-                if abs(self.x_velocity) < distance:
-                    self.x_velocity = 0
+            self.direction.x = 0
 
         if keys[pygame.K_DOWN]:
-            if self.y_velocity < max_speed:
-                self.y_velocity += distance * 0.9 ** abs(self.y_velocity)
-                if self.y_velocity > max_speed:
-                    self.y_velocity == max_speed
+            self.direction.y = speed
 
         elif keys[pygame.K_UP]:
-            if self.y_velocity > -max_speed:
-                self.y_velocity -= distance * 0.9 ** abs(self.y_velocity)
-                if self.y_velocity < -max_speed:
-                    self.y_velocity == -max_speed
+            self.direction.y = -speed
         
         # movement decay
         else:
-            if self.y_velocity != 0:
-                self.y_velocity *= 0.9
-                if abs(self.y_velocity) < distance:
-                    self.y_velocity = 0
-        
-        self.x += self.x_velocity
-        self.y += self.y_velocity
+            self.direction.y = 0
+
         self.collision(sprites)
-            
+        self.x += self.direction.x
+        self.y += self.direction.y
+    
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
                     
-    def animation(self, frame):
+    def animation(self, ticks):
         '''Handles the animation of the player'''
         movement_sprites = ['knight_walk1.png', 'knight_walk2.png', 'knight_walk3.png']
-        
+        idle_sprites = ['knight_walk1.png', 'knight_idle1.png', 'knight_idle2.png']
+
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] or keys[pygame.K_UP]:
-            self.load_image(movement_sprites[math.floor(frame / 100)])
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:# or keys[pygame.K_UP]:
+            self.load_image(movement_sprites[math.floor(ticks / 120)])
+
+        else:
+            self.load_image(idle_sprites[math.floor(ticks / 120)])
+
+        if self.direction.x < 0:
             self.image = pygame.transform.flip(self.image, True, False)
-            
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_DOWN]:
-            self.load_image(movement_sprites[math.floor(frame / 100)])
 
 class Wall(Sprite):
     def __init__(self, coords, width, height):
         super().__init__(coords, width, height, 'gray_bricks.png')
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        
+               
 class Ghost(Sprite):
     def __init__(self, coords, width, height):
         super().__init__(coords, width, height, 'ghost.png')
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         
 class Chest(Sprite):
     def __init__(self, coords, width, height):
         super().__init__(coords, width, height, 'chest.png')
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
 
 
