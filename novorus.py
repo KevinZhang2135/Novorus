@@ -7,21 +7,21 @@ pygame.display.set_caption('Novorus')
 screen = pygame.display.set_mode((1080, 720)) # sets the dimensions of the screen; defaults to full screen
 clock = pygame.time.Clock()
 
-camera_group = pygame.sprite.Group()
+sprites = pygame.sprite.Group()
 
 for i in range(0, 300, 200):
     ghost = Ghost((i, 100), 75, 75)    
-    camera_group.add(ghost)
+    sprites.add(ghost)
     
 for i in range(0, 500, 100):
     wall = Wall((i, 300), 100, 100)    
-    camera_group.add(wall)
+    sprites.add(wall)
     
 chest = Chest((300, 200), 80, 80)
-camera_group.add(chest)
+sprites.add(chest)
     
 player = Player((300, 0), 75, 75)
-camera_group.add(player)
+sprites.add(player)
 
 ticks = 0
 runtime = True
@@ -39,20 +39,14 @@ while runtime:
     screen.fill((53, 85, 108)) # fills a surface with the rgb color
     
     # updates
-    for sprite in camera_group:
-        pygame.draw.rect(screen, (255, 0, 0), sprite.rect, 1)
-
-    player.handle_keys(ticks, camera_group)
-    camera_group.draw(screen)
-    camera_group.update()
+    sprites.draw(screen)
+    sprites.update(sprites)
         
     # updates screen
     pygame.display.update()
 
     clock.tick(60)
-    ticks += 1
-    if ticks >= 360:
-        ticks = 0
+    
 
 # closes pygame application
 pygame.quit()
