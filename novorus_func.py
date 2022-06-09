@@ -13,7 +13,7 @@ class Sprite(pygame.sprite.Sprite):
         
     def load_image(self, image):
         '''Loads an image according to the input'''
-        self.image = pygame.image.load(os.path.join('sprites', image))
+        self.image = pygame.image.load(os.path.join('sprites', image)).convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
 class Player(Sprite):
