@@ -1,27 +1,176 @@
-import pygame
-from novorus_func import *
+import pygame, os, math, random
+
+class Sprite(pygame.sprite.Sprite):
+    def __init__(self, coords: list, dimensions: list, group):
+        super().__init__(group)
+        self.width, self.height = dimensions
+
+    def load_image(self, image):
+        '''Loads an image according to the input'''
+        self.image = pygame.image.load(os.path.join('sprites', image)).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+
+class Player(Sprite):
+    def __init__(self, coords: list, dimensions: list, groups):
+        super().__init__(coords, dimensions, groups)
+        self.load_image('knight_walk1.png')
+        self.rect = self.image.get_rect(center=coords)
+        
+        self.direction = pygame.math.Vector2()
+        self.speed = 2
+        
+        self.ticks = 0
+
+    def collision(self, sprites):
+        '''Handles collision'''
+        for sprite in sprites:
+            collision_distance = [(self.width + sprite.width) / 2, (self.height + sprite.height) / 2,]
+            distance = [self.rect.center[i] - sprite.rect.center[i] for i in range(2)]
+            
+            # checks if the distance of the sprites are within collision distance
+            if abs(distance[0]) <= collision_distance[0] and abs(distance[1]) <= collision_distance[1]:
+                # horizontal collision
+                if abs(distance[0]) > abs(distance[1]):
+                    # left collision
+                    if distance[0] < 0:
+                        self.rect.left = sprite.rect.left - self.width
+                        
+                    # right collision
+                    if distance[0] > 0: 
+                        self.rect.left = sprite.rect.right
+                
+                # vertical collision
+                else:
+                    # bottom collision
+                    if distance[1] > 0: 
+                        self.rect.top = sprite.rect.bottom
+                    
+                    # up collision
+                    if distance[1] < 0: 
+                        self.rect.top = sprite.rect.top - self.width
+
+    def movement(self):
+        '''Handles movement'''
+        keys = pygame.key.get_pressed()
+        
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            self.direction.x = -self.speed
+        
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            self.direction.x = self.speed
+        
+        # movement decay
+        else:
+            self.direction.x = 0
+
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            self.direction.y = self.speed
+
+        elif keys[pygame.K_UP] or keys[pygame.K_w]:
+            self.direction.y = -self.speed
+        
+        # movement decay
+        else:
+            self.direction.y = 0
+
+        self.rect.center += self.direction * self.speed
+                    
+    def animation(self):
+        '''Handles animation'''
+        movement_sprites = ['knight_walk1.png', 'knight_walk2.png', 'knight_walk1.png', 'knight_walk3.png']
+        idle_sprites = ['knight_walk1.png', 'knight_idle1.png', 'knight_walk1.png', 'knight_idle2.png']
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:# or keys[pygame.K_UP]:
+            self.load_image(movement_sprites[math.floor(self.ticks / 30)])
+
+        else:
+            self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+
+        if self.direction.x < 0:
+            self.image = pygame.transform.flip(self.image, True, False)
+            
+    def attack(self, ticks):
+        pass
+    
+    def update(self, sprites):
+        '''Handles events'''
+        self.movement()
+        self.collision(sprites)
+
+        self.animation()
+
+        self.ticks += 1
+        if self.ticks >= 120:
+            self.ticks = 0
+
+class Wall(Sprite):
+    def __init__(self, coords: list, dimensions: list, groups):
+        super().__init__(coords, dimensions, groups)
+        self.load_image('gray_bricks.png')
+        self.rect = self.image.get_rect(center = coords)
+               
+class Ghost(Sprite):
+    def __init__(self, coords: list, dimensions: list, groups):
+        super().__init__(coords, dimensions, groups)
+        self.load_image('ghost_idle1.png')
+        self.rect = self.image.get_rect(center = coords)
+        
+        self.ticks = random.randint(0, 30)
+    
+    def animation(self):
+        '''Handles animation'''
+        idle_sprites = ['ghost_idle1.png', 'ghost_idle2.png', 'ghost_idle3.png', 'ghost_idle2.png']
+        self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+        
+    def update(self, sprites):
+        '''Handles events'''
+        self.animation()
+        
+        self.ticks += 1
+        if self.ticks >= 120:
+            self.ticks = 0
+            
+class CameraGroup(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+        
+        # camera offset
+        self.offset = pygame.math.Vector2()
+        self.half_width = self.display_surface.get_size()[0] // 2
+        self.half_height = self.display_surface.get_size()[1] // 2
+        
+    def center_target(self, target):
+        self.offset.x = target.rect.centerx - self.half_width
+        self.offset.y = target.rect.centery - self.half_height
+        
+    def custom_draw(self, player):
+        # draws the screen according to player movement
+        self.center_target(player)
+        
+        for sprite in self.sprites():
+            offset_pos = sprite.rect.topleft - self.offset
+            self.display_surface.blit(sprite.image, offset_pos)
+            pygame.draw.rect(self.display_surface, (255, 0, 0), sprite.rect, 1)
+            
 
 pygame.init()
 pygame.display.set_caption('Novorus')
 
-screen = pygame.display.set_mode((1080, 720)) # sets the dimensions of the screen; defaults to full screen
+screen = pygame.display.set_mode() # sets the dimensions of the screen; defaults to full screen
 clock = pygame.time.Clock()
 
-sprites = pygame.sprite.Group()
+camera_group = CameraGroup()
+enemies = pygame.sprite.Group()
 
-for i in range(0, 300, 200):
-    ghost = Ghost((i, 100), 75, 75)    
-    sprites.add(ghost)
+for i in range(3):
+    ghost = Ghost((random.randint(0, 500), random.randint(0, 500)), (75, 75), (camera_group, enemies))  
     
-for i in range(0, 500, 100):
-    wall = Wall((i, 300), 100, 100)    
-    sprites.add(wall)
+#for i in range(0, 500, 100):
+    #wall = Wall((i, 300), (100, 100), camera_group)    
     
-chest = Chest((300, 200), 80, 80)
-sprites.add(chest)
-    
-player = Player((300, 0), 75, 75)
-sprites.add(player)
+player = Player((300, 100), (75, 75), camera_group)
 
 ticks = 0
 runtime = True
@@ -39,12 +188,12 @@ while runtime:
     screen.fill((53, 85, 108)) # fills a surface with the rgb color
     
     # updates
-    sprites.draw(screen)
-    sprites.update(sprites)
+    #camera_group.custom_draw(player)
+    camera_group.draw(screen)
+    camera_group.update(camera_group)
         
     # updates screen
     pygame.display.update()
-
     clock.tick(60)
     
 
@@ -52,5 +201,3 @@ while runtime:
 pygame.quit()
 
 
-
-#
