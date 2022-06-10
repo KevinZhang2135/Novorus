@@ -152,7 +152,6 @@ class CameraGroup(pygame.sprite.Group):
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
-            pygame.draw.rect(self.display_surface, (255, 0, 0), sprite.rect, 1)
             
 
 pygame.init()
@@ -188,8 +187,8 @@ while runtime:
     screen.fill((53, 85, 108)) # fills a surface with the rgb color
     
     # updates
-    #camera_group.custom_draw(player)
-    camera_group.draw(screen)
+    camera_group.custom_draw(player)
+    #camera_group.draw(screen)
     camera_group.update(camera_group)
         
     # updates screen
