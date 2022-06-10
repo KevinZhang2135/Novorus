@@ -1,9 +1,9 @@
 import pygame, os, math, random
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, coords: list, dimensions: list, group):
+    def __init__(self, coords: list, size: list, group):
         super().__init__(group)
-        self.width, self.height = dimensions
+        self.width, self.height = size
 
     def load_image(self, image):
         '''Loads an image according to the input'''
@@ -11,10 +11,11 @@ class Sprite(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
 class Player(Sprite):
-    def __init__(self, coords: list, dimensions: list, groups):
-        super().__init__(coords, dimensions, groups)
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(coords, size, groups)
         self.load_image('knight_walk1.png')
-        self.rect = self.image.get_rect(center=coords)
+        self.rect = self.image.get_rect()
+        self.rect.inflate_ip(self.width * -0.3, 0)
         
         self.direction = pygame.math.Vector2()
         self.speed = 2
@@ -24,7 +25,7 @@ class Player(Sprite):
     def collision(self, sprites):
         '''Handles collision'''
         for sprite in sprites:
-            collision_distance = [(self.width + sprite.width) / 2, (self.height + sprite.height) / 2,]
+            collision_distance = [(self.rect.width + sprite.rect.width) / 2, (self.rect.height + sprite.rect.height) / 2,]
             distance = [self.rect.center[i] - sprite.rect.center[i] for i in range(2)]
             
             # checks if the distance of the sprites are within collision distance
@@ -32,22 +33,24 @@ class Player(Sprite):
                 # horizontal collision
                 if abs(distance[0]) > abs(distance[1]):
                     # left collision
-                    if distance[0] < 0:
-                        self.rect.left = sprite.rect.left - self.width
-                        
-                    # right collision
                     if distance[0] > 0: 
                         self.rect.left = sprite.rect.right
+                    
+                    # right collision
+                    if distance[0] < 0:
+                        self.rect.right = sprite.rect.left
                 
                 # vertical collision
                 else:
                     # bottom collision
+                    if distance[1] < 0: 
+                        self.rect.bottom = sprite.rect.top
+                    
+                    # top collision
                     if distance[1] > 0: 
                         self.rect.top = sprite.rect.bottom
                     
-                    # up collision
-                    if distance[1] < 0: 
-                        self.rect.top = sprite.rect.top - self.width
+                    
 
     def movement(self):
         '''Handles movement'''
@@ -103,18 +106,13 @@ class Player(Sprite):
         self.ticks += 1
         if self.ticks >= 120:
             self.ticks = 0
-
-class Wall(Sprite):
-    def __init__(self, coords: list, dimensions: list, groups):
-        super().__init__(coords, dimensions, groups)
-        self.load_image('gray_bricks.png')
-        self.rect = self.image.get_rect(center = coords)
                
 class Ghost(Sprite):
-    def __init__(self, coords: list, dimensions: list, groups):
-        super().__init__(coords, dimensions, groups)
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(coords, size, groups)
         self.load_image('ghost_idle1.png')
         self.rect = self.image.get_rect(center = coords)
+        self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
         
         self.ticks = random.randint(0, 30)
     
@@ -130,6 +128,16 @@ class Ghost(Sprite):
         self.ticks += 1
         if self.ticks >= 120:
             self.ticks = 0
+            
+class Wall(Sprite):
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(coords, size, groups)
+        self.load_image('gray_bricks.png')
+        self.rect = self.image.get_rect(center = coords)
+        
+class Ambience(Sprite):
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(coords, size, groups)
             
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -149,27 +157,54 @@ class CameraGroup(pygame.sprite.Group):
         # draws the screen according to player movement
         self.center_target(player)
         
-        for sprite in self.sprites():
+        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
-            
 
 pygame.init()
 pygame.display.set_caption('Novorus')
 
-screen = pygame.display.set_mode() # sets the dimensions of the screen; defaults to full screen
+screen = pygame.display.set_mode() # sets the size of the screen; defaults to full screen
 clock = pygame.time.Clock()
 
 camera_group = CameraGroup()
 enemies = pygame.sprite.Group()
 
-for i in range(3):
-    ghost = Ghost((random.randint(0, 500), random.randint(0, 500)), (75, 75), (camera_group, enemies))  
-    
-#for i in range(0, 500, 100):
-    #wall = Wall((i, 300), (100, 100), camera_group)    
-    
-player = Player((300, 100), (75, 75), camera_group)
+size = [75, 75]
+for i in range(10):
+    coords = [random.randint(0, 500), random.randint(0, 500)]
+    ghost = Ghost(coords, size, (camera_group, enemies))
+
+size = [50, 50]
+for i in range(25):
+    coords = [random.randint(0, 1000), random.randint(0, 1000)]
+    decor = Ambience(coords, size, camera_group)
+    if i % 2:
+        decor.load_image('grass1.png')
+        
+    else:    
+        decor.load_image('grass2.png')
+          
+    decor.rect = decor.image.get_rect(center = coords)
+
+size = [35, 35]
+for i in range(10):
+    coords = [random.randint(0, 1000), random.randint(0, 1000)]
+    decor = Ambience(coords, size, camera_group)
+    decor.load_image('rock1.png')
+        
+    decor.rect = decor.image.get_rect(center = coords)
+
+size = [125, 125]
+for i in range(20):
+    coords = [random.randint(0, 1000), random.randint(0, 1000)]
+    decor = Ambience(coords, size, camera_group)
+    decor.load_image('tree1.png')    
+    decor.rect = decor.image.get_rect(center = coords)    
+        
+coords = [500, 500]
+size = [75, 75]
+player = Player(coords, size, camera_group)
 
 ticks = 0
 runtime = True
@@ -184,12 +219,12 @@ while runtime:
             if event.key == pygame.K_ESCAPE:
                 runtime = False
     
-    screen.fill((53, 85, 108)) # fills a surface with the rgb color
+    screen.fill((111, 177, 70)) # fills a surface with the rgb color
     
     # updates
     camera_group.custom_draw(player)
     #camera_group.draw(screen)
-    camera_group.update(camera_group)
+    camera_group.update(enemies)
         
     # updates screen
     pygame.display.update()
@@ -198,5 +233,9 @@ while runtime:
 
 # closes pygame application
 pygame.quit()
+
+
+
+#
 
 
