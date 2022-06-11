@@ -157,7 +157,7 @@ class CameraGroup(pygame.sprite.Group):
         # draws the screen according to player movement
         self.center_target(player)
         
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
+        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery + sprite.rect.height * 0.4):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
 
@@ -170,39 +170,24 @@ clock = pygame.time.Clock()
 camera_group = CameraGroup()
 enemies = pygame.sprite.Group()
 
+size = [50, 15, 125]
+objects = ['rock', 'grass', 'tree']
+for i, obj in enumerate(objects):
+    for j in range(15 + 15 * i):
+        coords = [random.randint(0, 2000), random.randint(0, 2000)]
+        decor = Ambience(coords, (size[i], size[i]), camera_group)
+
+        variation = random.randint(1, 2)
+        decor.load_image(f'{obj}{variation}.png')
+        decor.rect = decor.image.get_rect(center = coords)
+
+
 size = [75, 75]
 for i in range(10):
-    coords = [random.randint(0, 500), random.randint(0, 500)]
+    coords = [random.randint(0, 2000), random.randint(0, 2000)]
     ghost = Ghost(coords, size, (camera_group, enemies))
-
-size = [50, 50]
-for i in range(25):
-    coords = [random.randint(0, 1000), random.randint(0, 1000)]
-    decor = Ambience(coords, size, camera_group)
-    if i % 2:
-        decor.load_image('grass1.png')
         
-    else:    
-        decor.load_image('grass2.png')
-          
-    decor.rect = decor.image.get_rect(center = coords)
-
-size = [35, 35]
-for i in range(10):
-    coords = [random.randint(0, 1000), random.randint(0, 1000)]
-    decor = Ambience(coords, size, camera_group)
-    decor.load_image('rock1.png')
-        
-    decor.rect = decor.image.get_rect(center = coords)
-
-size = [125, 125]
-for i in range(20):
-    coords = [random.randint(0, 1000), random.randint(0, 1000)]
-    decor = Ambience(coords, size, camera_group)
-    decor.load_image('tree1.png')    
-    decor.rect = decor.image.get_rect(center = coords)    
-        
-coords = [500, 500]
+coords = [1000, 1000]
 size = [75, 75]
 player = Player(coords, size, camera_group)
 
