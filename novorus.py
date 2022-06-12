@@ -1,7 +1,8 @@
 import pygame, os, math, random
 
+# sprites
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, group):
+    def __init__(self, size: list, group):
         super().__init__(group)
         self.width, self.height = size
 
@@ -12,14 +13,15 @@ class Sprite(pygame.sprite.Sprite):
 
 class Player(Sprite):
     def __init__(self, coords: list, size: list, groups):
-        super().__init__(coords, size, groups)
+        super().__init__( size, groups)
         self.load_image('knight_walk1.png')
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(center = coords)
         self.rect.inflate_ip(self.width * -0.3, 0)
         
         self.direction = pygame.math.Vector2()
         self.speed = 2
         
+        self.facing = 'right'
         self.ticks = 0
 
     def collision(self, sprites):
@@ -48,9 +50,7 @@ class Player(Sprite):
                     
                     # top collision
                     if distance[1] > 0: 
-                        self.rect.top = sprite.rect.bottom
-                    
-                    
+                        self.rect.top = sprite.rect.bottom       
 
     def movement(self):
         '''Handles movement'''
@@ -87,10 +87,16 @@ class Player(Sprite):
         if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:# or keys[pygame.K_UP]:
             self.load_image(movement_sprites[math.floor(self.ticks / 30)])
 
+            if keys[pygame.K_LEFT]: 
+                self.facing = 'left'
+            
+            else:
+                self.facing = 'right' 
+
         else:
             self.load_image(idle_sprites[math.floor(self.ticks / 30)])
 
-        if self.direction.x < 0:
+        if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
             
     def attack(self, ticks):
@@ -109,7 +115,7 @@ class Player(Sprite):
                
 class Ghost(Sprite):
     def __init__(self, coords: list, size: list, groups):
-        super().__init__(coords, size, groups)
+        super().__init__(size, groups)
         self.load_image('ghost_idle1.png')
         self.rect = self.image.get_rect(center = coords)
         self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
@@ -131,14 +137,15 @@ class Ghost(Sprite):
             
 class Wall(Sprite):
     def __init__(self, coords: list, size: list, groups):
-        super().__init__(coords, size, groups)
+        super().__init__(size, groups)
         self.load_image('gray_bricks.png')
         self.rect = self.image.get_rect(center = coords)
         
 class Ambience(Sprite):
     def __init__(self, coords: list, size: list, groups):
-        super().__init__(coords, size, groups)
-            
+        super().__init__(size, groups)
+
+# sprite groups
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
@@ -161,6 +168,23 @@ class CameraGroup(pygame.sprite.Group):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
 
+# hud
+class HUD():
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+        self.screen_size = pygame.math.Vector2()
+        self.screen_size.x = self.display_surface.get_width()
+        self.screen_size.y = self.display_surface.get_height()
+
+        self.ui_height = self.screen_size.y * 0.1
+
+        self.rect = pygame.Rect((0, self.screen_size.y - self.ui_height), (self.screen_size.x, self.ui_height))
+    
+    def update(self):
+        brown = [131, 105, 83, 0.3]
+        pygame.draw.rect(self.display_surface, brown, self.rect)
+
 pygame.init()
 pygame.display.set_caption('Novorus')
 
@@ -168,24 +192,29 @@ screen = pygame.display.set_mode() # sets the size of the screen; defaults to fu
 clock = pygame.time.Clock()
 
 camera_group = CameraGroup()
-enemies = pygame.sprite.Group()
+hud_group = CameraGroup()
+collision_group = pygame.sprite.Group()
 
-size = [50, 15, 125]
+hud = HUD()
+
+size = [50, 30, 125]
 objects = ['rock', 'grass', 'tree']
 for i, obj in enumerate(objects):
-    for j in range(15 + 15 * i):
+    for j in range(25 + 25 * i):
         coords = [random.randint(0, 2000), random.randint(0, 2000)]
         decor = Ambience(coords, (size[i], size[i]), camera_group)
 
-        variation = random.randint(1, 2)
+        variation = random.randint(1, 3)
         decor.load_image(f'{obj}{variation}.png')
         decor.rect = decor.image.get_rect(center = coords)
+        if random.randint(0, 1):
+            decor.image = pygame.transform.flip(decor.image, True, False)
 
 
 size = [75, 75]
 for i in range(10):
     coords = [random.randint(0, 2000), random.randint(0, 2000)]
-    ghost = Ghost(coords, size, (camera_group, enemies))
+    ghost = Ghost(coords, size, (camera_group, collision_group))
         
 coords = [1000, 1000]
 size = [75, 75]
@@ -209,7 +238,8 @@ while runtime:
     # updates
     camera_group.custom_draw(player)
     #camera_group.draw(screen)
-    camera_group.update(enemies)
+    camera_group.update(collision_group)
+    hud.update()
         
     # updates screen
     pygame.display.update()
