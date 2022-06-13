@@ -84,13 +84,13 @@ class Player(Sprite):
         idle_sprites = ['knight_walk1.png', 'knight_idle1.png', 'knight_walk1.png', 'knight_idle2.png']
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:# or keys[pygame.K_UP]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_DOWN] or keys[pygame.K_UP]:# or keys[pygame.K_UP]:
             self.load_image(movement_sprites[math.floor(self.ticks / 30)])
 
             if keys[pygame.K_LEFT]: 
                 self.facing = 'left'
             
-            else:
+            elif keys[pygame.K_RIGHT]:
                 self.facing = 'right' 
 
         else:
@@ -164,26 +164,18 @@ class CameraGroup(pygame.sprite.Group):
         # draws the screen according to player movement
         self.center_target(player)
         
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery + sprite.rect.height * 0.4):
+        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.bottom):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
 
 # hud
-class HUD():
+class HUD:
     def __init__(self):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.screen_size = pygame.math.Vector2()
         self.screen_size.x = self.display_surface.get_width()
         self.screen_size.y = self.display_surface.get_height()
-
-        self.ui_height = self.screen_size.y * 0.1
-
-        self.rect = pygame.Rect((0, self.screen_size.y - self.ui_height), (self.screen_size.x, self.ui_height))
-    
-    def update(self):
-        brown = [131, 105, 83, 0.3]
-        pygame.draw.rect(self.display_surface, brown, self.rect)
 
 pygame.init()
 pygame.display.set_caption('Novorus')
@@ -195,9 +187,9 @@ camera_group = CameraGroup()
 hud_group = CameraGroup()
 collision_group = pygame.sprite.Group()
 
-hud = HUD()
+#hud = HUD()
 
-size = [50, 30, 125]
+size = [60, 40, 150]
 objects = ['rock', 'grass', 'tree']
 for i, obj in enumerate(objects):
     for j in range(25 + 25 * i):
@@ -233,13 +225,12 @@ while runtime:
             if event.key == pygame.K_ESCAPE:
                 runtime = False
     
-    screen.fill((111, 177, 70)) # fills a surface with the rgb color
+    screen.fill((130, 200, 90)) # fills a surface with the rgb color
     
     # updates
     camera_group.custom_draw(player)
     #camera_group.draw(screen)
     camera_group.update(collision_group)
-    hud.update()
         
     # updates screen
     pygame.display.update()
@@ -250,7 +241,4 @@ while runtime:
 pygame.quit()
 
 
-
 #
-
-
