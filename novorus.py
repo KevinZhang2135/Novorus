@@ -11,6 +11,37 @@ class Sprite(pygame.sprite.Sprite):
         image = pygame.transform.scale(image, (self.width, self.height))
         
         return image
+        
+    def collision(self, sprites):
+        '''Handles collision'''
+        for sprite in sprites:
+            collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2, 
+                                                     (self.rect.height + sprite.rect.height) / 2)
+                                                     
+            distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
+                                           self.rect.centery - sprite.rect.centery)
+            
+            # checks if the distance of the sprites are within collision distance
+            if abs(distance.x) <= collision_distance.x and abs(distance.y) <= collision_distance.y:
+                # horizontal collision
+                if abs(distance.x) > abs(distance.y):
+                    # left collision
+                    if distance.x > 0: 
+                        self.rect.left = sprite.rect.right
+                    
+                    # right collision
+                    if distance.x < 0:
+                        self.rect.right = sprite.rect.left
+                
+                # vertical collision
+                else:
+                    # bottom collision
+                    if distance.y < 0: 
+                        self.rect.bottom = sprite.rect.top
+                    
+                    # top collision
+                    if distance.y > 0: 
+                        self.rect.top = sprite.rect.bottom   
 
 class Player(Sprite):
     def __init__(self, coords: list, size: list, groups):
@@ -19,65 +50,24 @@ class Player(Sprite):
         self.rect = self.image.get_rect(center=coords)
         self.rect.inflate_ip(self.width * -0.3, 0)
         
-        self.direction = pygame.math.Vector2()
-        self.speed = 2
-        
+        self.speed = 3
         self.facing = 'right'
         self.ticks = 0
-
-    def collision(self, sprites):
-        '''Handles collision'''
-        for sprite in sprites:
-            collision_distance = [(self.rect.width + sprite.rect.width) / 2, (self.rect.height + sprite.rect.height) / 2,]
-            distance = [self.rect.center[i] - sprite.rect.center[i] for i in range(2)]
-            
-            # checks if the distance of the sprites are within collision distance
-            if abs(distance[0]) <= collision_distance[0] and abs(distance[1]) <= collision_distance[1]:
-                # horizontal collision
-                if abs(distance[0]) > abs(distance[1]):
-                    # left collision
-                    if distance[0] > 0: 
-                        self.rect.left = sprite.rect.right
-                    
-                    # right collision
-                    if distance[0] < 0:
-                        self.rect.right = sprite.rect.left
-                
-                # vertical collision
-                else:
-                    # bottom collision
-                    if distance[1] < 0: 
-                        self.rect.bottom = sprite.rect.top
-                    
-                    # top collision
-                    if distance[1] > 0: 
-                        self.rect.top = sprite.rect.bottom       
 
     def movement(self):
         '''Handles movement'''
         keys = pygame.key.get_pressed()
+        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+        up = keys[pygame.K_UP] or keys[pygame.K_w]
         
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.direction.x = -self.speed
+        move = pygame.math.Vector2(right - left, down - up) # creates movement using falsy and truthy values that evaluate to 0 and 1
+        if move.length_squared() > 0: # checks if the player is moving
+            move.scale_to_length(self.speed) # converts the coordinates to a vector according to the radius
         
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.direction.x = self.speed
-        
-        # movement decay
-        else:
-            self.direction.x = 0
-
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.direction.y = self.speed
-
-        elif keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.direction.y = -self.speed
-        
-        # movement decay
-        else:
-            self.direction.y = 0
-
-        self.rect.center += self.direction * self.speed
+        self.rect.centerx += move.x
+        self.rect.centery += move.y
                     
     def animation(self):
         '''Handles animation'''
@@ -103,11 +93,10 @@ class Player(Sprite):
     def attack(self, ticks):
         pass
     
-    def update(self, sprites):
+    def update(self, player, sprites):
         '''Handles events'''
         self.movement()
         self.collision(sprites)
-
         self.animation()
 
         self.ticks += 1
@@ -121,15 +110,28 @@ class Ghost(Sprite):
         self.rect = self.image.get_rect(center = coords)
         self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
         
+        self.speed = 2
+        self.detection_distance = 350 * random.randint(3, 5) / 5
         self.ticks = random.randint(0, 30)
+    
+    def movement(self, player):
+        distance = pygame.math.Vector2(player.rect.centerx - self.rect.centerx ,
+                                       player.rect.centery - self.rect.centery)
+                                       
+        if distance.length() <= self.detection_distance and distance.length() > 0:
+            distance.scale_to_length(self.speed)
+            self.rect.centerx += distance.x
+            self.rect.centery += distance.y
     
     def animation(self):
         '''Handles animation'''
         idle_sprites = ['ghost_idle1.png', 'ghost_idle2.png', 'ghost_idle3.png', 'ghost_idle2.png']
         self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
         
-    def update(self, sprites):
+    def update(self, player, sprites):
         '''Handles events'''
+        self.movement(player)
+        self.collision(sprites)
         self.animation()
         
         self.ticks += 1
@@ -153,8 +155,8 @@ class CameraGroup(pygame.sprite.Group):
         
         # camera offset
         self.offset = pygame.math.Vector2()
-        self.half_width = self.display_surface.get_size()[0] // 2
-        self.half_height = self.display_surface.get_size()[1] // 2
+        self.half_width = self.display_surface.get_size()[0] / 2
+        self.half_height = self.display_surface.get_size()[1] / 2
         
     def center_target(self, target):
         self.offset.x = target.rect.centerx - self.half_width
@@ -174,10 +176,10 @@ class HUDBackground:
 
         self.display_surface = pygame.display.get_surface()
         ui_width = self.display_surface.get_width()
-        ui_height = self.display_surface.get_height() // 9
+        ui_height = self.display_surface.get_height() / 8
         
         self.rect = pygame.Rect(
-            (0, ui_height * 8),
+            (0, ui_height * 7),
             (ui_width, ui_height))
             
     def draw(self):
@@ -185,9 +187,43 @@ class HUDBackground:
         pygame.draw.rect(self.display_surface, brown, self.rect, 0)
         
 class Menu(Sprite):
-    def __init__(self, coords: list, size: list, groups):
-        super().__init__(size, groups)
+    def __init__(self, groups):
+        super().__init__([screen.get_height() * 3 / 32 for i in range(2)], groups)
+        self.image = self.load_image('menu1.png')
+        self.rect = self.image.get_rect(
+            center=[screen.get_width() - screen.get_height() / 16, 
+                    screen.get_height() * 15 / 16])
+                    
+        self.pressed = False
         
+    def update(self):
+        global paused
+        mouse_pressed = pygame.mouse.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
+        
+        # checks for left click
+        left_click = pygame.mouse.get_pressed()[0]
+        if left_click and self.rect.collidepoint(mouse_pos) and not self.pressed:
+            self.pressed = True
+            paused = not paused
+                
+        if not left_click and self.rect.collidepoint(mouse_pos):
+            self.pressed = False
+            
+        if paused:
+            self.image = self.load_image('menu2.png')
+        
+        else:
+            self.image = self.load_image('menu1.png')
+            
+class HealthBar(Sprite):
+        def __init__(self, groups):
+            super().__init__([screen.get_height() * 3 / 32 for i in range(2)], groups)
+            self.image = self.load_image('heart.png')
+            self.rect = self.image.get_rect(
+                center=[screen.get_width() / 4, 
+                        screen.get_height() * 15 / 16])
+            
 pygame.init()
 pygame.display.set_caption('Novorus')
 
@@ -214,20 +250,22 @@ for i, obj in enumerate(objects):
 
 # enemies
 size = [75, 75]
-for i in range(1):
+for i in range(25):
     coords = [random.randint(0, 2000), random.randint(0, 2000)]
     ghost = Ghost(coords, size, (camera_group, collision_group))
         
 # player
-coords = [1000, 1000]
 size = [75, 75]
+coords = [1000, 1000]
 player = Player(coords, size, camera_group)
 
 # hud
 hud_bg = HUDBackground()
+menu = Menu(hud_group)
+health_bar = HealthBar(hud_group)
 
 ticks = 0
-state = 'running'
+paused = True
 runtime = True
 while runtime:
     # event handling
@@ -245,15 +283,25 @@ while runtime:
     # updates
     camera_group.custom_draw(player)
     hud_bg.draw()
+    hud_group.draw(screen)#custom_draw(player)
     
     #camera_group.draw(screen)
-    if state != 'paused':
-        camera_group.update(collision_group)
+    if not paused:
+        camera_group.update(player, collision_group)
+        
+    hud_group.update()
     
     # updates screen
     pygame.display.update()
     clock.tick(60)
     
-
 # closes pygame application
 pygame.quit()
+
+
+
+
+
+#
+
+
