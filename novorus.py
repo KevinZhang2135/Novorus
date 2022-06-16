@@ -10,8 +10,34 @@ class Sprite(pygame.sprite.Sprite):
         image = pygame.image.load(os.path.join('sprites', image)).convert_alpha()
         image = pygame.transform.scale(image, (self.width, self.height))
         
-        return image
+        return image 
+
+class Player(Sprite):
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(size, groups)
+        self.image = self.load_image('knight_walk1.png')
+        self.rect = self.image.get_rect(center=coords)
+        self.rect.inflate_ip(self.width * -0.3, 0)
         
+        self.speed = 7
+        self.facing = 'right'
+        self.ticks = 0
+
+    def movement(self):
+        '''Handles movement'''
+        keys = pygame.key.get_pressed()
+        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+        up = keys[pygame.K_UP] or keys[pygame.K_w]
+        
+        move = pygame.math.Vector2(right - left, down - up) # creates movement using falsy and truthy values that evaluate to 0 and 1
+        if move.length_squared() > 0: # checks if the player is moving
+            move.scale_to_length(self.speed) # converts the coordinates to a vector according to the radius
+        
+        self.rect.centerx += move.x
+        self.rect.centery += move.y
+
     def collision(self, sprites):
         '''Handles collision'''
         for sprite in sprites:
@@ -41,33 +67,7 @@ class Sprite(pygame.sprite.Sprite):
                     
                     # top collision
                     if distance.y > 0: 
-                        self.rect.top = sprite.rect.bottom   
-
-class Player(Sprite):
-    def __init__(self, coords: list, size: list, groups):
-        super().__init__(size, groups)
-        self.image = self.load_image('knight_walk1.png')
-        self.rect = self.image.get_rect(center=coords)
-        self.rect.inflate_ip(self.width * -0.3, 0)
-        
-        self.speed = 3
-        self.facing = 'right'
-        self.ticks = 0
-
-    def movement(self):
-        '''Handles movement'''
-        keys = pygame.key.get_pressed()
-        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
-        up = keys[pygame.K_UP] or keys[pygame.K_w]
-        
-        move = pygame.math.Vector2(right - left, down - up) # creates movement using falsy and truthy values that evaluate to 0 and 1
-        if move.length_squared() > 0: # checks if the player is moving
-            move.scale_to_length(self.speed) # converts the coordinates to a vector according to the radius
-        
-        self.rect.centerx += move.x
-        self.rect.centery += move.y
+                        self.rect.top = sprite.rect.bottom  
                     
     def animation(self):
         '''Handles animation'''
@@ -111,7 +111,7 @@ class Ghost(Sprite):
         self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
         
         self.speed = 2
-        self.detection_distance = 350 * random.randint(3, 5) / 5
+        self.detection_distance = 3500 * random.randint(3, 5) / 5
         self.ticks = random.randint(0, 30)
     
     def movement(self, player):
@@ -130,8 +130,7 @@ class Ghost(Sprite):
         
     def update(self, player, sprites):
         '''Handles events'''
-        self.movement(player)
-        self.collision(sprites)
+        #self.movement(player)
         self.animation()
         
         self.ticks += 1
@@ -172,8 +171,6 @@ class CameraGroup(pygame.sprite.Group):
 
 class HUDBackground:
     def __init__(self):
-        super().__init__()
-
         self.display_surface = pygame.display.get_surface()
         ui_width = self.display_surface.get_width()
         ui_height = self.display_surface.get_height() / 8
@@ -181,11 +178,11 @@ class HUDBackground:
         self.rect = pygame.Rect(
             (0, ui_height * 7),
             (ui_width, ui_height))
-            
+ 
     def draw(self):
         brown = (104, 84, 66)
         pygame.draw.rect(self.display_surface, brown, self.rect, 0)
-        
+
 class Menu(Sprite):
     def __init__(self, groups):
         super().__init__([screen.get_height() * 3 / 32 for i in range(2)], groups)
@@ -198,11 +195,10 @@ class Menu(Sprite):
         
     def update(self):
         global paused
-        mouse_pressed = pygame.mouse.get_pressed()
+        left_click = pygame.mouse.get_pressed()[0]
         mouse_pos = pygame.mouse.get_pos()
         
         # checks for left click
-        left_click = pygame.mouse.get_pressed()[0]
         if left_click and self.rect.collidepoint(mouse_pos) and not self.pressed:
             self.pressed = True
             paused = not paused
@@ -216,13 +212,26 @@ class Menu(Sprite):
         else:
             self.image = self.load_image('menu1.png')
             
-class HealthBar(Sprite):
+class Heart(Sprite):
         def __init__(self, groups):
             super().__init__([screen.get_height() * 3 / 32 for i in range(2)], groups)
+            self.display_surface = pygame.display.get_surface()
+
             self.image = self.load_image('heart.png')
             self.rect = self.image.get_rect(
-                center=[screen.get_width() / 4, 
+                center=[screen.get_width() / 32, 
                         screen.get_height() * 15 / 16])
+
+class HealthBar:
+    def __init__(self):
+        self.display_surface = pygame.display.get_surface()
+        self.bar = pygame.Rect(
+            (screen.get_width() / 32, screen.get_height() * 59 / 64),
+            (screen.get_width() / 16, screen.get_height() / 32))
+ 
+    def draw(self):
+        red = (211, 47, 47)
+        pygame.draw.rect(self.display_surface, red, self.bar, 0)
             
 pygame.init()
 pygame.display.set_caption('Novorus')
@@ -239,7 +248,7 @@ size = [60, 40, 150]
 objects = ['rock', 'grass', 'tree']
 for i, obj in enumerate(objects):
     for j in range(25 + 25 * i):
-        coords = [random.randint(0, 2000), random.randint(0, 2000)]
+        coords = [round(random.randint(0, 2000), -2) for i in range(2)]
         decor = Ambience(coords, (size[i], size[i]), camera_group)
 
         variation = random.randint(1, 3)
@@ -250,8 +259,8 @@ for i, obj in enumerate(objects):
 
 # enemies
 size = [75, 75]
-for i in range(25):
-    coords = [random.randint(0, 2000), random.randint(0, 2000)]
+for i in range(10):
+    coords = [round(random.randint(0, 2000), -2) for i in range(2)]
     ghost = Ghost(coords, size, (camera_group, collision_group))
         
 # player
@@ -262,7 +271,10 @@ player = Player(coords, size, camera_group)
 # hud
 hud_bg = HUDBackground()
 menu = Menu(hud_group)
-health_bar = HealthBar(hud_group)
+
+heart = Heart(hud_group)
+health_bar = HealthBar()
+
 
 ticks = 0
 paused = True
@@ -281,19 +293,21 @@ while runtime:
     screen.fill((130, 200, 90)) # fills a surface with the rgb color
     
     # updates
-    camera_group.custom_draw(player)
-    hud_bg.draw()
-    hud_group.draw(screen)#custom_draw(player)
-    
-    #camera_group.draw(screen)
     if not paused:
         camera_group.update(player, collision_group)
-        
-    hud_group.update()
+
+    # draws
+    camera_group.custom_draw(player)
+    hud_bg.draw()
+    health_bar.draw()
+    hud_group.draw(screen)
     
+
+    hud_group.update()
+   
     # updates screen
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(30)
     
 # closes pygame application
 pygame.quit()
