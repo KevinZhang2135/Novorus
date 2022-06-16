@@ -10,7 +10,7 @@ class Sprite(pygame.sprite.Sprite):
         image = pygame.image.load(os.path.join('sprites', image)).convert_alpha()
         image = pygame.transform.scale(image, (self.width, self.height))
         
-        return image 
+        return image   
 
 class Player(Sprite):
     def __init__(self, coords: list, size: list, groups):
@@ -19,7 +19,9 @@ class Player(Sprite):
         self.rect = self.image.get_rect(center=coords)
         self.rect.inflate_ip(self.width * -0.3, 0)
         
-        self.speed = 7
+        self.colliding = False
+        self.speed = 3
+        
         self.facing = 'right'
         self.ticks = 0
 
@@ -37,7 +39,7 @@ class Player(Sprite):
         
         self.rect.centerx += move.x
         self.rect.centery += move.y
-
+        
     def collision(self, sprites):
         '''Handles collision'''
         for sprite in sprites:
@@ -67,21 +69,26 @@ class Player(Sprite):
                     
                     # top collision
                     if distance.y > 0: 
-                        self.rect.top = sprite.rect.bottom  
-                    
+                        self.rect.top = sprite.rect.bottom
+
     def animation(self):
         '''Handles animation'''
         movement_sprites = ['knight_walk1.png', 'knight_walk2.png', 'knight_walk1.png', 'knight_walk3.png']
         idle_sprites = ['knight_walk1.png', 'knight_idle1.png', 'knight_walk1.png', 'knight_idle2.png']
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_DOWN] or keys[pygame.K_UP]:# or keys[pygame.K_UP]:
+        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+        up = keys[pygame.K_UP] or keys[pygame.K_w]
+        
+        if left or right or down or up:
             self.image = self.load_image(movement_sprites[math.floor(self.ticks / 30)])
 
-            if keys[pygame.K_LEFT]: 
+            if left: 
                 self.facing = 'left'
             
-            elif keys[pygame.K_RIGHT]:
+            elif right:
                 self.facing = 'right' 
 
         else:
@@ -90,14 +97,18 @@ class Player(Sprite):
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
             
-    def attack(self, ticks):
-        pass
+    def attack(self, enemies):
+        for enemy in enemies:
+            if pygame.Rect.colliderect(self.rect, enemy.rect):
+                print('wwwww')
     
-    def update(self, player, sprites):
+    def update(self, enemies, collision_group):
         '''Handles events'''
         self.movement()
-        self.collision(sprites)
+        self.attack(enemies)
+        self.collision(collision_group)
         self.animation()
+        
 
         self.ticks += 1
         if self.ticks >= 120:
@@ -111,26 +122,16 @@ class Ghost(Sprite):
         self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
         
         self.speed = 2
-        self.detection_distance = 3500 * random.randint(3, 5) / 5
+        self.detection_distance = 350 * random.randint(3, 5) / 5
         self.ticks = random.randint(0, 30)
-    
-    def movement(self, player):
-        distance = pygame.math.Vector2(player.rect.centerx - self.rect.centerx ,
-                                       player.rect.centery - self.rect.centery)
-                                       
-        if distance.length() <= self.detection_distance and distance.length() > 0:
-            distance.scale_to_length(self.speed)
-            self.rect.centerx += distance.x
-            self.rect.centery += distance.y
     
     def animation(self):
         '''Handles animation'''
         idle_sprites = ['ghost_idle1.png', 'ghost_idle2.png', 'ghost_idle3.png', 'ghost_idle2.png']
         self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
         
-    def update(self, player, sprites):
+    def update(self, *groups):
         '''Handles events'''
-        #self.movement(player)
         self.animation()
         
         self.ticks += 1
@@ -169,69 +170,87 @@ class CameraGroup(pygame.sprite.Group):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
 
-class HUDBackground:
-    def __init__(self):
+class Menu(Sprite):
+    def __init__(self, groups):
         self.display_surface = pygame.display.get_surface()
+        sprite_width = self.display_surface.get_height() * 3 / 32
         ui_width = self.display_surface.get_width()
         ui_height = self.display_surface.get_height() / 8
         
-        self.rect = pygame.Rect(
-            (0, ui_height * 7),
-            (ui_width, ui_height))
- 
-    def draw(self):
-        brown = (104, 84, 66)
-        pygame.draw.rect(self.display_surface, brown, self.rect, 0)
-
-class Menu(Sprite):
-    def __init__(self, groups):
-        super().__init__([screen.get_height() * 3 / 32 for i in range(2)], groups)
+        menu_width = self.display_surface.get_height() / 2
+        menu_height = self.display_surface.get_height() / 2
+        
+        super().__init__((sprite_width, sprite_width), groups)
         self.image = self.load_image('menu1.png')
         self.rect = self.image.get_rect(
-            center=[screen.get_width() - screen.get_height() / 16, 
-                    screen.get_height() * 15 / 16])
-                    
+            center=[screen.get_width() - ui_height / 2, 
+                    screen.get_height() - ui_height / 2])
+        
+        self.bg_rect = pygame.Rect(
+            (0, ui_height * 7),
+            (ui_width, ui_height))
+            
+        self.menu_rect = pygame.Rect(
+            (
+                (self.display_surface.get_width() - menu_width) / 2 , 
+                (self.display_surface.get_height() - menu_height)/ 2),
+            (menu_width, menu_height))
+               
         self.pressed = False
         
+    def draw(self):
+        global paused
+        brown = (104, 84, 66)
+        light_brown = (131, 106, 83)
+        pygame.draw.rect(self.display_surface, light_brown, self.bg_rect, 0)
+        pygame.draw.rect(self.display_surface, brown, self.bg_rect, 5)
+        
+        if paused:
+            pygame.draw.rect(self.display_surface, light_brown, self.menu_rect, 0)
+            pygame.draw.rect(self.display_surface, brown, self.menu_rect, 5)    
+            
     def update(self):
         global paused
-        left_click = pygame.mouse.get_pressed()[0]
-        mouse_pos = pygame.mouse.get_pos()
+        left_click = (pygame.mouse.get_pressed()[0] 
+            and self.rect.collidepoint(pygame.mouse.get_pos()))
+            
+        escape_key = pygame.key.get_pressed()[pygame.K_ESCAPE]
         
-        # checks for left click
-        if left_click and self.rect.collidepoint(mouse_pos) and not self.pressed:
+        # checks for left click and escape_key to popup menu
+        if (left_click or escape_key) and not self.pressed:
             self.pressed = True
             paused = not paused
                 
-        if not left_click and self.rect.collidepoint(mouse_pos):
+        elif not (left_click or escape_key) and self.pressed:
             self.pressed = False
-            
+                    
         if paused:
             self.image = self.load_image('menu2.png')
         
         else:
             self.image = self.load_image('menu1.png')
-            
-class Heart(Sprite):
-        def __init__(self, groups):
-            super().__init__([screen.get_height() * 3 / 32 for i in range(2)], groups)
-            self.display_surface = pygame.display.get_surface()
 
+class HealthBar(Sprite):
+        def __init__(self, groups):
+            self.display_surface = pygame.display.get_surface()
+            sprite_width = self.display_surface.get_height() * 3 / 32
+            bar_height = screen.get_height() * 3 / 128
+            
+            super().__init__((sprite_width, sprite_width), groups)
             self.image = self.load_image('heart.png')
             self.rect = self.image.get_rect(
-                center=[screen.get_width() / 32, 
-                        screen.get_height() * 15 / 16])
-
-class HealthBar:
-    def __init__(self):
-        self.display_surface = pygame.display.get_surface()
-        self.bar = pygame.Rect(
-            (screen.get_width() / 32, screen.get_height() * 59 / 64),
-            (screen.get_width() / 16, screen.get_height() / 32))
- 
-    def draw(self):
-        red = (211, 47, 47)
-        pygame.draw.rect(self.display_surface, red, self.bar, 0)
+                center=[sprite_width / 2, 
+                        sprite_width *  10])
+            
+            self.bar = pygame.Rect(
+                (self.rect.centerx, self.rect.centery - bar_height / 2),
+                (self.rect.width * 2, bar_height))
+                        
+        def draw(self):
+            red = (211, 47, 47)
+            blood_red = (198, 40, 40)
+            pygame.draw.rect(self.display_surface, red, self.bar, 0)
+            pygame.draw.rect(self.display_surface, blood_red, self.bar, 2)
             
 pygame.init()
 pygame.display.set_caption('Novorus')
@@ -240,28 +259,49 @@ screen = pygame.display.set_mode() # sets the size of the screen; defaults to fu
 clock = pygame.time.Clock()
 
 camera_group = CameraGroup()
+enemies = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 hud_group = CameraGroup()
+
+used_coords = []
+coords = None
 
 # ambience
 size = [60, 40, 150]
 objects = ['rock', 'grass', 'tree']
-for i, obj in enumerate(objects):
-    for j in range(25 + 25 * i):
+for j in range(100):
+    obj = random.choice(objects)
+    while coords in used_coords or not coords:
         coords = [round(random.randint(0, 2000), -2) for i in range(2)]
-        decor = Ambience(coords, (size[i], size[i]), camera_group)
 
-        variation = random.randint(1, 3)
-        decor.image = decor.load_image(f'{obj}{variation}.png')
-        decor.rect = decor.image.get_rect(center = coords)
-        if random.randint(0, 1):
-            decor.image = pygame.transform.flip(decor.image, True, False)
+    used_coords.append(coords)
+    decor = Ambience(
+        coords, 
+        (
+            size[objects.index(obj)], 
+            size[objects.index(obj)]), 
+        camera_group)
+
+    variation = random.randint(1, 3)
+    decor.image = decor.load_image(f'{obj}{variation}.png')
+    decor.rect = decor.image.get_rect(center=coords)
+    if random.randint(0, 1):
+        decor.image = pygame.transform.flip(decor.image, True, False)
 
 # enemies
 size = [75, 75]
-for i in range(10):
-    coords = [round(random.randint(0, 2000), -2) for i in range(2)]
-    ghost = Ghost(coords, size, (camera_group, collision_group))
+for i in range(5):
+    while coords in used_coords or not coords:
+        coords = [round(random.randint(0, 2000), -2) for i in range(2)]
+    
+    used_coords.append(coords)
+    ghost = Ghost(
+        coords, 
+        size, 
+        (
+            camera_group, 
+            enemies, 
+            collision_group))
         
 # player
 size = [75, 75]
@@ -269,12 +309,8 @@ coords = [1000, 1000]
 player = Player(coords, size, camera_group)
 
 # hud
-hud_bg = HUDBackground()
 menu = Menu(hud_group)
-
-heart = Heart(hud_group)
-health_bar = HealthBar()
-
+health_bar = HealthBar(hud_group)
 
 ticks = 0
 paused = True
@@ -287,27 +323,30 @@ while runtime:
             runtime = False
          
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+            if event.key == pygame.K_SPACE:
                 runtime = False
     
     screen.fill((130, 200, 90)) # fills a surface with the rgb color
     
     # updates
+    #camera_group.draw(screen)
     if not paused:
-        camera_group.update(player, collision_group)
-
-    # draws
+        camera_group.update(enemies, collision_group)
+        
+    hud_group.update()
+    
+    # redraws sprites and images
     camera_group.custom_draw(player)
-    hud_bg.draw()
+    
+    # hud
+    menu.draw()
     health_bar.draw()
     hud_group.draw(screen)
-    
 
-    hud_group.update()
-   
+    
     # updates screen
     pygame.display.update()
-    clock.tick(30)
+    clock.tick(60)
     
 # closes pygame application
 pygame.quit()
@@ -316,6 +355,12 @@ pygame.quit()
 
 
 
-#
+
+
+
+
+
+
+
 
 
