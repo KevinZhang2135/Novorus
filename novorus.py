@@ -242,11 +242,13 @@ class Menu(Sprite):
              (self.display_surface.get_height() - menu_height) / 2),
             (menu_width, menu_height))
 
-        self.text_surface, self.text_rect = self.load_text(
-            (self.menu_rect.centerx, self.menu_rect.top + self.menu_rect.height / 8),
-            round(self.menu_rect.width / 8),
-            'Menu',
-            (50, 50, 50))
+        text_size = round(self.menu_rect.width / 8)
+        coords = (self.menu_rect.centerx, self.menu_rect.top + self.menu_rect.height / 8)
+        color = (50, 50, 50)
+
+        self.font = pygame.font.Font('comicoro.ttf', text_size)
+        self.text_surface = self.font.render('Menu', True, color)
+        self.text_rect = self.text_surface.get_rect(center=coords)
 
         self.pressed = False
 
@@ -304,18 +306,21 @@ class HealthBar(Sprite):
             (self.rect.centerx, self.rect.centery - bar_height / 2),
             (self.rect.width * 1.5, bar_height))
 
+        text_size = round(self.bar.height)
+        self.font = pygame.font.Font('comicoro.ttf', text_size)
+        
+
     def draw(self, player):
         red = (211, 47, 47)
         blood_red = (198, 40, 40)
         black = (50, 50, 50)
+       
         pygame.draw.rect(self.display_surface, red, self.bar, 0)
         pygame.draw.rect(self.display_surface, blood_red, self.bar, 2)
-        
-        self.text_surface, self.text_rect = self.load_text(
-            self.bar.center,
-            self.bar.height,
-            '%s / %s' % (player.health['current'], player.health['total']),
-            black)
+
+        text = f"{player.health['current']} / {player.health['total']}"
+        self.text_surface = self.font.render(text, True, black)
+        self.text_rect = self.text_surface.get_rect(center=self.bar.center)
 
         self.display_surface.blit(self.text_surface, self.text_rect)
 
@@ -336,6 +341,9 @@ class SpeedBar(Sprite):
             (self.rect.centerx, self.rect.centery - bar_height / 2),
             (self.rect.width, bar_height))
 
+        text_size = round(self.bar.height)
+        self.font = pygame.font.Font('comicoro.ttf', text_size)
+
     def draw(self, player):
         yellow = (255, 231, 45)
         gold = (255, 219, 14)
@@ -343,11 +351,9 @@ class SpeedBar(Sprite):
         pygame.draw.rect(self.display_surface, yellow, self.bar, 0)
         pygame.draw.rect(self.display_surface, gold, self.bar, 2)
         
-        self.text_surface, self.text_rect = self.load_text(
-            self.bar.center,
-            self.bar.height,
-            str(player.speed['current']),
-            black)
+        text = f"{player.speed['current']}"
+        self.text_surface = self.font.render(text, True, black)
+        self.text_rect = self.text_surface.get_rect(center=self.bar.center)
 
         self.display_surface.blit(self.text_surface, self.text_rect)
             
@@ -368,6 +374,9 @@ class AttackBar(Sprite):
             (self.rect.centerx, self.rect.centery - bar_height / 2),
             (self.rect.width, bar_height))
 
+        text_size = round(self.bar.height)
+        self.font = pygame.font.Font('comicoro.ttf', text_size)
+
     def draw(self, player):
         grey = [189] * 3
         dark_grey = [158] * 3
@@ -375,11 +384,9 @@ class AttackBar(Sprite):
         pygame.draw.rect(self.display_surface, grey, self.bar, 0)
         pygame.draw.rect(self.display_surface, dark_grey, self.bar, 2)
         
-        self.text_surface, self.text_rect = self.load_text(
-            self.bar.center,
-            self.bar.height,
-            str(player.attack['current']),
-            black)
+        text = f"{player.attack['current']}"
+        self.text_surface = self.font.render(text, True, black)
+        self.text_rect = self.text_surface.get_rect(center=self.bar.center)
 
         self.display_surface.blit(self.text_surface, self.text_rect)
 
