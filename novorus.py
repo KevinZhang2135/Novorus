@@ -3,13 +3,14 @@ import os
 import math
 import random
 
+# "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
+
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, size: list, group):
         super().__init__(group)
         self.display_surface = pygame.display.get_surface()
         self.width, self.height = size
-        
 
     def load_image(self, image):
         '''Loads an image according to the input'''
@@ -18,15 +19,6 @@ class Sprite(pygame.sprite.Sprite):
         image = pygame.transform.scale(image, (self.width, self.height))
 
         return image
-
-
-    def load_text(self, coords, size, text, color):
-        # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
-        font = pygame.font.Font('comicoro.ttf', round(size))
-        text_surface = font.render(text, True, color)
-        text_rect = text_surface.get_rect(center=coords)
-        
-        return text_surface, text_rect
 
 
 class Player(Sprite):
@@ -41,13 +33,13 @@ class Player(Sprite):
 
         self.facing = 'right'
         self.ticks = 0
-        
+
         self.health = {'current': 100,
                        'total': 100}
-                       
+
         self.attack = {'current': 20,
                        'total': 20}
-                       
+
         self.speed = {'current': 50,
                       'total': 50}
 
@@ -221,7 +213,7 @@ class Menu(Sprite):
     def __init__(self, groups):
         sprite_width = pygame.display.get_surface().get_height() * 3 / 32
         super().__init__((sprite_width, sprite_width), groups)
-        
+
         ui_width = self.display_surface.get_width()
         ui_height = self.display_surface.get_height() / 8
 
@@ -243,48 +235,72 @@ class Menu(Sprite):
             (menu_width, menu_height))
 
         text_size = round(self.menu_rect.width / 8)
-        coords = (self.menu_rect.centerx, self.menu_rect.top + self.menu_rect.height / 8)
-        color = (50, 50, 50)
-
         self.font = pygame.font.Font('comicoro.ttf', text_size)
-        self.text_surface = self.font.render('Menu', True, color)
-        self.text_rect = self.text_surface.get_rect(center=coords)
+
+        # menu text
+        self.menu_text = self.font.render('Menu', True, (50, 50, 50))
+        self.menu_text_rect = self.menu_text.get_rect(
+            center=(self.menu_rect.centerx,
+                    self.menu_rect.top + self.menu_rect.height / 8))
+
+        # exit text
+        self.exit_text = self.font.render('Exit', True, (50, 50, 50))
+        self.exit_text_rect = self.exit_text.get_rect(
+            center=(self.menu_rect.centerx,
+                    self.menu_rect.bottom - self.menu_rect.height / 8))
 
         self.pressed = False
 
     def draw(self):
         global paused
-        brown = (104, 84, 66)
-        light_brown = (131, 106, 83)
-        
-        pygame.draw.rect(self.display_surface, light_brown, self.bg_rect, 0)
-        pygame.draw.rect(self.display_surface, brown, self.bg_rect, 5)
+
+        pygame.draw.rect(self.display_surface, (131, 106, 83), self.bg_rect, 0)
+        pygame.draw.rect(self.display_surface, (104, 84, 66), self.bg_rect, 5)
 
         if paused:
             pygame.draw.rect(self.display_surface,
-                             light_brown, self.menu_rect, 0)
-                             
-            pygame.draw.rect(self.display_surface, brown, self.menu_rect, 5)
-            
-            self.display_surface.blit(self.text_surface, self.text_rect)
+                             (131, 106, 83), self.menu_rect, 0)
+
+            pygame.draw.rect(self.display_surface,
+                             (104, 84, 66), self.menu_rect, 5)
+
+            self.display_surface.blit(self.menu_text, self.menu_text_rect)
+            self.display_surface.blit(self.exit_text, self.exit_text_rect)
 
     def update(self):
         global paused
-        left_click = (pygame.mouse.get_pressed()[0]
-                      and self.rect.collidepoint(pygame.mouse.get_pos()))
+        global runtime
+
+        pause_left_click = (pygame.mouse.get_pressed()[0]
+                            and self.rect.collidepoint(pygame.mouse.get_pos()))
 
         escape_key = pygame.key.get_pressed()[pygame.K_ESCAPE]
 
         # checks for left click and escape_key to popup menu
-        if (left_click or escape_key) and not self.pressed:
+        if (pause_left_click or escape_key) and not self.pressed:
             self.pressed = True
             paused = not paused
 
-        elif not (left_click or escape_key) and self.pressed:
+        elif not (pause_left_click or escape_key) and self.pressed:
             self.pressed = False
 
         if paused:
             self.image = self.load_image('menu2.png')
+
+            if self.exit_text_rect.collidepoint(pygame.mouse.get_pos()):
+                self.exit_text = self.font.render('Exit', True, (255, 231, 45))
+                self.exit_text_rect = self.exit_text.get_rect(
+                    center=(self.menu_rect.centerx,
+                            self.menu_rect.bottom - self.menu_rect.height / 8))
+
+                if pygame.mouse.get_pressed()[0]:
+                    runtime = False
+
+            else:
+                self.exit_text = self.font.render('Exit', True, (50, 50, 50))
+                self.exit_text_rect = self.exit_text.get_rect(
+                    center=(self.menu_rect.centerx,
+                            self.menu_rect.bottom - self.menu_rect.height / 8))
 
         else:
             self.image = self.load_image('menu1.png')
@@ -294,7 +310,7 @@ class HealthBar(Sprite):
     def __init__(self, groups):
         sprite_width = pygame.display.get_surface().get_height() / 8
         super().__init__((sprite_width, sprite_width), groups)
-        
+
         bar_height = self.display_surface.get_height() / 32
 
         self.image = self.load_image('heart.png')
@@ -308,18 +324,13 @@ class HealthBar(Sprite):
 
         text_size = round(self.bar.height)
         self.font = pygame.font.Font('comicoro.ttf', text_size)
-        
 
     def draw(self, player):
-        red = (211, 47, 47)
-        blood_red = (198, 40, 40)
-        black = (50, 50, 50)
-       
-        pygame.draw.rect(self.display_surface, red, self.bar, 0)
-        pygame.draw.rect(self.display_surface, blood_red, self.bar, 2)
+        pygame.draw.rect(self.display_surface, (211, 47, 47), self.bar, 0)
+        pygame.draw.rect(self.display_surface, (198, 40, 40), self.bar, 2)
 
         text = f"{player.health['current']} / {player.health['total']}"
-        self.text_surface = self.font.render(text, True, black)
+        self.text_surface = self.font.render(text, True, (50, 50, 50))
         self.text_rect = self.text_surface.get_rect(center=self.bar.center)
 
         self.display_surface.blit(self.text_surface, self.text_rect)
@@ -329,7 +340,7 @@ class SpeedBar(Sprite):
     def __init__(self, groups):
         sprite_width = pygame.display.get_surface().get_height() / 8
         super().__init__((sprite_width, sprite_width), groups)
-        
+
         bar_height = self.display_surface.get_height() / 32
 
         self.image = self.load_image('lightning.png')
@@ -345,24 +356,21 @@ class SpeedBar(Sprite):
         self.font = pygame.font.Font('comicoro.ttf', text_size)
 
     def draw(self, player):
-        yellow = (255, 231, 45)
-        gold = (255, 219, 14)
-        black = (50, 50, 50)
-        pygame.draw.rect(self.display_surface, yellow, self.bar, 0)
-        pygame.draw.rect(self.display_surface, gold, self.bar, 2)
-        
+        pygame.draw.rect(self.display_surface, (255, 231, 45), self.bar, 0)
+        pygame.draw.rect(self.display_surface, (255, 219, 14), self.bar, 2)
+
         text = f"{player.speed['current']}"
-        self.text_surface = self.font.render(text, True, black)
+        self.text_surface = self.font.render(text, True, (50, 50, 50))
         self.text_rect = self.text_surface.get_rect(center=self.bar.center)
 
         self.display_surface.blit(self.text_surface, self.text_rect)
-            
-            
+
+
 class AttackBar(Sprite):
     def __init__(self, groups):
         sprite_width = pygame.display.get_surface().get_height() / 8
         super().__init__((sprite_width, sprite_width), groups)
-        
+
         bar_height = self.display_surface.get_height() / 32
 
         self.image = self.load_image('sword.png')
@@ -378,14 +386,11 @@ class AttackBar(Sprite):
         self.font = pygame.font.Font('comicoro.ttf', text_size)
 
     def draw(self, player):
-        grey = [189] * 3
-        dark_grey = [158] * 3
-        black = (50, 50, 50)
-        pygame.draw.rect(self.display_surface, grey, self.bar, 0)
-        pygame.draw.rect(self.display_surface, dark_grey, self.bar, 2)
-        
+        pygame.draw.rect(self.display_surface, (189, 189, 189), self.bar, 0)
+        pygame.draw.rect(self.display_surface, (158, 158, 158), self.bar, 2)
+
         text = f"{player.attack['current']}"
-        self.text_surface = self.font.render(text, True, black)
+        self.text_surface = self.font.render(text, True, (50, 50, 50))
         self.text_rect = self.text_surface.get_rect(center=self.bar.center)
 
         self.display_surface.blit(self.text_surface, self.text_rect)
@@ -418,7 +423,7 @@ for j in range(100):
     used_coords.append(coords)
     decor = Ambience(
         coords, (size[objects.index(obj)], size[objects.index(obj)]), camera_group)
-        
+
     variation = random.randint(1, 3)
     decor.image = decor.load_image(f'{obj}{variation}.png')
     decor.rect = decor.image.get_rect(center=coords)
@@ -438,16 +443,19 @@ for i in range(10):
 size = [75, 75]
 coords = [1000, 1000]
 player = Player(coords, size, camera_group)
-    
+
 # hud
 menu = Menu(hud_group)
-health_bar = HealthBar(hud_group)
-speed_bar = SpeedBar(hud_group)
-attack_bar = AttackBar(hud_group)
+ui_bars = [
+    HealthBar(hud_group),
+    SpeedBar(hud_group),
+    AttackBar(hud_group)
+]
 
 ticks = 0
 paused = True
 runtime = True
+
 while runtime:
     # event handling
     for event in pygame.event.get():
@@ -455,17 +463,13 @@ while runtime:
         if event.type == pygame.QUIT:
             runtime = False
 
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                runtime = False
-
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # updates
-   
+
     if not paused:
         camera_group.update(enemies, collision_group)
-        #camera_group.draw(screen)
+        # camera_group.draw(screen)
 
     hud_group.update()
 
@@ -474,10 +478,9 @@ while runtime:
 
     # hud
     menu.draw()
-    health_bar.draw(player)
-    speed_bar.draw(player)
-    attack_bar.draw(player)
-    
+    for bar in ui_bars:
+        bar.draw(player)
+
     hud_group.draw(screen)
 
     # updates screen
@@ -487,9 +490,6 @@ while runtime:
 # closes pygame application
 pygame.font.quit()
 pygame.quit()
-
-
-
 
 
 #
