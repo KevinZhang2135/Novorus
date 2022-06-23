@@ -14,11 +14,17 @@ class Sprite(pygame.sprite.Sprite):
 
     def load_image(self, image):
         '''Loads an image according to the input'''
-        image = pygame.image.load(os.path.join(
-            'sprites', image)).convert_alpha()
+        image = pygame.image.load(os.path.join('sprites', image)).convert_alpha()
         image = pygame.transform.scale(image, (self.width, self.height))
 
         return image
+
+    def load_text(self, text, coords, text_size, color):
+        font = pygame.font.Font('comicoro.ttf', round(text_size))
+        text = font.render(text, True, color)
+        text_rect = text.get_rect(center = coords)
+        
+        return text, text_rect
 
 
 class Player(Sprite):
@@ -234,22 +240,24 @@ class Menu(Sprite):
              (self.display_surface.get_height() - menu_height) / 2),
             (menu_width, menu_height))
 
-        text_size = round(self.menu_rect.width / 8)
-        self.font = pygame.font.Font('comicoro.ttf', text_size)
-
         # menu text
-        self.menu_text = self.font.render('Menu', True, (50, 50, 50))
-        self.menu_text_rect = self.menu_text.get_rect(
-            center=(self.menu_rect.centerx,
-                    self.menu_rect.top + self.menu_rect.height / 8))
+        self.menu_text, self.menu_text_rect = self.load_text(
+            'Menu', 
+            (self.menu_rect.centerx, self.menu_rect.top + self.menu_rect.height / 8),
+            self.menu_rect.width / 8,
+            (50, 50, 50))
 
         # exit text
-        self.exit_text = self.font.render('Exit', True, (50, 50, 50))
-        self.exit_text_rect = self.exit_text.get_rect(
-            center=(self.menu_rect.centerx,
-                    self.menu_rect.bottom - self.menu_rect.height / 8))
+        self.draw_exit_text((50, 50, 50))
 
         self.pressed = False
+    
+    def draw_exit_text(self, color):
+        self.exit_text, self.exit_text_rect = self.load_text(
+            'Exit', 
+            (self.menu_rect.centerx, self.menu_rect.bottom - self.menu_rect.height / 8),
+            self.menu_rect.width / 8,
+            color)
 
     def draw(self):
         global paused
@@ -288,19 +296,13 @@ class Menu(Sprite):
             self.image = self.load_image('menu2.png')
 
             if self.exit_text_rect.collidepoint(pygame.mouse.get_pos()):
-                self.exit_text = self.font.render('Exit', True, (255, 231, 45))
-                self.exit_text_rect = self.exit_text.get_rect(
-                    center=(self.menu_rect.centerx,
-                            self.menu_rect.bottom - self.menu_rect.height / 8))
+                self.draw_exit_text((255, 231, 45))
 
                 if pygame.mouse.get_pressed()[0]:
                     runtime = False
 
             else:
-                self.exit_text = self.font.render('Exit', True, (50, 50, 50))
-                self.exit_text_rect = self.exit_text.get_rect(
-                    center=(self.menu_rect.centerx,
-                            self.menu_rect.bottom - self.menu_rect.height / 8))
+                self.draw_exit_text((50, 50, 50))
 
         else:
             self.image = self.load_image('menu1.png')
@@ -322,16 +324,15 @@ class HealthBar(Sprite):
             (self.rect.centerx, self.rect.centery - bar_height / 2),
             (self.rect.width * 1.5, bar_height))
 
-        text_size = round(self.bar.height)
-        self.font = pygame.font.Font('comicoro.ttf', text_size)
-
     def draw(self, player):
         pygame.draw.rect(self.display_surface, (211, 47, 47), self.bar, 0)
         pygame.draw.rect(self.display_surface, (198, 40, 40), self.bar, 2)
 
-        text = f"{player.health['current']} / {player.health['total']}"
-        self.text_surface = self.font.render(text, True, (50, 50, 50))
-        self.text_rect = self.text_surface.get_rect(center=self.bar.center)
+        self.text_surface, self.text_rect = self.load_text(
+            f"{player.health['current']} / {player.health['total']}",
+            self.bar.center,
+            self.bar.height,
+            (50, 50, 50))
 
         self.display_surface.blit(self.text_surface, self.text_rect)
 
@@ -352,17 +353,16 @@ class SpeedBar(Sprite):
             (self.rect.centerx, self.rect.centery - bar_height / 2),
             (self.rect.width, bar_height))
 
-        text_size = round(self.bar.height)
-        self.font = pygame.font.Font('comicoro.ttf', text_size)
-
     def draw(self, player):
         pygame.draw.rect(self.display_surface, (255, 231, 45), self.bar, 0)
         pygame.draw.rect(self.display_surface, (255, 219, 14), self.bar, 2)
 
-        text = f"{player.speed['current']}"
-        self.text_surface = self.font.render(text, True, (50, 50, 50))
-        self.text_rect = self.text_surface.get_rect(center=self.bar.center)
-
+        self.text_surface, self.text_rect = self.load_text(
+            f"{player.speed['current']}",
+            self.bar.center,
+            self.bar.height,
+            (50, 50, 50))
+        
         self.display_surface.blit(self.text_surface, self.text_rect)
 
 
@@ -382,16 +382,15 @@ class AttackBar(Sprite):
             (self.rect.centerx, self.rect.centery - bar_height / 2),
             (self.rect.width, bar_height))
 
-        text_size = round(self.bar.height)
-        self.font = pygame.font.Font('comicoro.ttf', text_size)
-
     def draw(self, player):
         pygame.draw.rect(self.display_surface, (189, 189, 189), self.bar, 0)
         pygame.draw.rect(self.display_surface, (158, 158, 158), self.bar, 2)
 
-        text = f"{player.attack['current']}"
-        self.text_surface = self.font.render(text, True, (50, 50, 50))
-        self.text_rect = self.text_surface.get_rect(center=self.bar.center)
+        self.text_surface, self.text_rect = self.load_text(
+            f"{player.attack['current']}",
+            self.bar.center,
+            self.bar.height,
+            (50, 50, 50))
 
         self.display_surface.blit(self.text_surface, self.text_rect)
 
