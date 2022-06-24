@@ -1,3 +1,4 @@
+from turtle import right
 import pygame
 import os
 import math
@@ -25,7 +26,6 @@ class Sprite(pygame.sprite.Sprite):
         text_rect = text.get_rect(center = coords)
         
         return text, text_rect
-
 
 class Player(Sprite):
     def __init__(self, coords: list, size: list, groups):
@@ -145,12 +145,10 @@ class Player(Sprite):
             else:
                 self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
 
-        
-
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def update(self, enemies, collision_group):
+    def update(self, collision_group):
         '''Handles events'''
         self.movement()
         self.collision(collision_group)
@@ -161,7 +159,6 @@ class Player(Sprite):
             self.ticks = 0
             
 
-
 class Ghost(Sprite):
     def __init__(self, coords: list, size: list, groups):
         super().__init__(size, groups)
@@ -169,19 +166,23 @@ class Ghost(Sprite):
         self.rect = self.image.get_rect(center=coords)
         self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
 
+        self.in_combat = False
         self.attacking = False
 
         self.move_speed = 2
         self.ticks = random.randint(0, 30)
 
-        self.health = {'current': 40,
-                       'total': 40}
+        self.facing = random.choice(['left', 'right'])
+        self.name = 'Ghost'
+
+        self.health = {'current': 30,
+                       'total': 30}
 
         self.attack = {'current': 10,
                        'total': 10}
 
         self.speed = {'current': 0,
-                      'total': 50}
+                      'total': 30}
 
     def animation(self):
         '''Handles animation'''
@@ -190,16 +191,19 @@ class Ghost(Sprite):
                         'ghost_idle3.png',
                         'ghost_idle2.png']
 
+        #if not self.in_combat:
         self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
 
-    def update(self, *groups):
+        if self.facing == 'left':
+            self.image = pygame.transform.flip(self.image, True, False)
+
+    def update(self, collision_group):
         '''Handles events'''
         self.animation()
 
         self.ticks += 1
         if self.ticks >= 120:
             self.ticks = 0
-            self.attacking = False
         
 
 class Wall(Sprite):
@@ -490,15 +494,30 @@ while runtime:
     for enemy in enemies:
             if pygame.Rect.colliderect(player.rect, enemy.rect):
                 player.in_combat = True
+                enemy.in_combat = True
                 
+                # player and enemy face each other
+                if player.rect.centerx < enemy.rect.centerx:
+                    player.facing = 'right'
+                    enemy.facing = 'left'
+
+                else:
+                    player.facing = 'left'
+                    enemy.facing = 'right'
+
+                # player animation for attacking
                 if player.ticks == 0:
                     chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
                     if chance < player.speed['current']:
+                        # player attacks
                         player.attacking = True
 
                     else:
+                        # enemy attacks
+                        enemy.attacking = True
                         player.health['current'] -= enemy.attack['current']
 
+                # only deal damage after end of animation
                 if player.ticks == 119 and player.attacking:
                     enemy.health['current'] -= player.attack['current']
                     player.attacking = False
@@ -511,7 +530,7 @@ while runtime:
                     del enemy
 
     if not paused:
-        camera_group.update(enemies, collision_group)
+        camera_group.update(collision_group)
         # camera_group.draw(screen)
 
     hud_group.update()
