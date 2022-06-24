@@ -35,10 +35,14 @@ class Player(Sprite):
         self.rect.inflate_ip(self.width * -0.3, 0)
 
         self.colliding = False
+        self.in_combat = False
+        self.attacking = False
+
         self.move_speed = 5
+        self.ticks = 0
 
         self.facing = 'right'
-        self.ticks = 0
+        self.name = 'Player'
 
         self.health = {'current': 100,
                        'total': 100}
@@ -63,8 +67,9 @@ class Player(Sprite):
             # converts the coordinates to a vector according to the radius
             move.scale_to_length(self.move_speed)
 
-        self.rect.centerx += move.x
-        self.rect.centery += move.y
+        if not self.in_combat:
+            self.rect.centerx += move.x
+            self.rect.centery += move.y
 
     def collision(self, sprites):
         '''Handles collision'''
@@ -109,46 +114,52 @@ class Player(Sprite):
                         'knight_walk1.png',
                         'knight_idle2.png']
 
-        keys = pygame.key.get_pressed()
-        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
-        up = keys[pygame.K_UP] or keys[pygame.K_w]
+        combat_sprites = ['knight_walk1.png',
+                          'knight_attack1.png',
+                          'knight_attack2.png',
+                          'knight_attack3.png']
 
-        if left or right or down or up:
-            self.image = self.load_image(
-                movement_sprites[math.floor(self.ticks / 30)])
+        if not self.in_combat:
+            keys = pygame.key.get_pressed()
+            left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+            right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+            down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+            up = keys[pygame.K_UP] or keys[pygame.K_w]
 
-            if left:
-                self.facing = 'left'
+            if left or right or down or up:
+                self.image = self.load_image(movement_sprites[math.floor(self.ticks / 30)])
 
-            elif right:
-                self.facing = 'right'
+                if left:
+                    self.facing = 'left'
+
+                elif right:
+                    self.facing = 'right'
+
+            else:
+                self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
 
         else:
-            self.image = self.load_image(
-                idle_sprites[math.floor(self.ticks / 30)])
+            if self.attacking:
+                self.image = self.load_image(combat_sprites[math.floor(self.ticks / 30)])
+
+            else:
+                self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+
+        
 
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def battle(self, enemies):
-        for enemy in enemies:
-            if pygame.Rect.colliderect(self.rect, enemy.rect):
-                self.health['current'] -= 9
-                enemy.kill()
-                del enemy
-
     def update(self, enemies, collision_group):
         '''Handles events'''
         self.movement()
-        self.battle(enemies)
         self.collision(collision_group)
         self.animation()
 
         self.ticks += 1
         if self.ticks >= 120:
             self.ticks = 0
+            
 
 
 class Ghost(Sprite):
@@ -158,9 +169,19 @@ class Ghost(Sprite):
         self.rect = self.image.get_rect(center=coords)
         self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
 
+        self.attacking = False
+
         self.move_speed = 2
-        self.detection_distance = 350 * random.randint(3, 5) / 5
         self.ticks = random.randint(0, 30)
+
+        self.health = {'current': 40,
+                       'total': 40}
+
+        self.attack = {'current': 10,
+                       'total': 10}
+
+        self.speed = {'current': 0,
+                      'total': 50}
 
     def animation(self):
         '''Handles animation'''
@@ -178,7 +199,8 @@ class Ghost(Sprite):
         self.ticks += 1
         if self.ticks >= 120:
             self.ticks = 0
-
+            self.attacking = False
+        
 
 class Wall(Sprite):
     def __init__(self, coords: list, size: list, groups):
@@ -267,10 +289,10 @@ class Menu(Sprite):
 
         if paused:
             pygame.draw.rect(self.display_surface,
-                             (131, 106, 83), self.menu_rect, 0)
+                             (131, 106, 83), self.menu_rect, 0, 10)
 
             pygame.draw.rect(self.display_surface,
-                             (104, 84, 66), self.menu_rect, 5)
+                             (104, 84, 66), self.menu_rect, 5, 10)
 
             self.display_surface.blit(self.menu_text, self.menu_text_rect)
             self.display_surface.blit(self.exit_text, self.exit_text_rect)
@@ -325,8 +347,8 @@ class HealthBar(Sprite):
             (self.rect.width * 1.5, bar_height))
 
     def draw(self, player):
-        pygame.draw.rect(self.display_surface, (211, 47, 47), self.bar, 0)
-        pygame.draw.rect(self.display_surface, (198, 40, 40), self.bar, 2)
+        pygame.draw.rect(self.display_surface, (211, 47, 47), self.bar, 0, 5)
+        pygame.draw.rect(self.display_surface, (198, 40, 40), self.bar, 3, 5)
 
         self.text_surface, self.text_rect = self.load_text(
             f"{player.health['current']} / {player.health['total']}",
@@ -354,8 +376,8 @@ class SpeedBar(Sprite):
             (self.rect.width, bar_height))
 
     def draw(self, player):
-        pygame.draw.rect(self.display_surface, (255, 231, 45), self.bar, 0)
-        pygame.draw.rect(self.display_surface, (255, 219, 14), self.bar, 2)
+        pygame.draw.rect(self.display_surface, (255, 231, 45), self.bar, 0, 5)
+        pygame.draw.rect(self.display_surface, (255, 219, 14), self.bar, 3, 5)
 
         self.text_surface, self.text_rect = self.load_text(
             f"{player.speed['current']}",
@@ -383,8 +405,8 @@ class AttackBar(Sprite):
             (self.rect.width, bar_height))
 
     def draw(self, player):
-        pygame.draw.rect(self.display_surface, (189, 189, 189), self.bar, 0)
-        pygame.draw.rect(self.display_surface, (158, 158, 158), self.bar, 2)
+        pygame.draw.rect(self.display_surface, (188, 188, 188), self.bar, 0, 5)
+        pygame.draw.rect(self.display_surface, (168, 168, 168), self.bar, 3, 5)
 
         self.text_surface, self.text_rect = self.load_text(
             f"{player.attack['current']}",
@@ -400,7 +422,7 @@ pygame.font.init()
 pygame.display.set_caption('Novorus')
 
 # sets the size of the screen; defaults to full screen
-screen = pygame.display.set_mode()
+screen = pygame.display.set_mode((900, 900))
 clock = pygame.time.Clock()
 
 camera_group = CameraGroup()
@@ -436,7 +458,7 @@ for i in range(10):
         coords = [round(random.randint(0, 2000), -2) for i in range(2)]
 
     used_coords.append(coords)
-    ghost = Ghost(coords, size, (camera_group, enemies, collision_group))
+    ghost = Ghost(coords, size, (camera_group, enemies))
 
 # player
 size = [75, 75]
@@ -465,6 +487,28 @@ while runtime:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # updates
+    for enemy in enemies:
+            if pygame.Rect.colliderect(player.rect, enemy.rect):
+                player.in_combat = True
+                
+                if player.ticks == 0:
+                    chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
+                    if chance < player.speed['current']:
+                        player.attacking = True
+
+                    else:
+                        player.health['current'] -= enemy.attack['current']
+
+                if player.ticks == 119 and player.attacking:
+                    enemy.health['current'] -= player.attack['current']
+                    player.attacking = False
+
+                if enemy.health['current'] <= 0:
+                    player.in_combat = False
+                    player.attacking = False
+
+                    enemy.kill()
+                    del enemy
 
     if not paused:
         camera_group.update(enemies, collision_group)
