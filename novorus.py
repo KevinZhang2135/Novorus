@@ -493,8 +493,12 @@ while runtime:
     # updates
     for enemy in enemies:
             if pygame.Rect.colliderect(player.rect, enemy.rect):
-                player.in_combat = True
-                enemy.in_combat = True
+                if not player.in_combat:
+                    player.in_combat = True
+                    enemy.in_combat = True
+                    
+                    player.ticks = 0
+                    enemy.ticks = 0
                 
                 # player and enemy face each other
                 if player.rect.centerx < enemy.rect.centerx:
