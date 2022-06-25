@@ -194,7 +194,7 @@ class Ghost(Sprite):
         combat_sprites = ['ghost_idle1.png',
                           'ghost_attack1.png',
                           'ghost_attack2.png',
-                          'ghost_attack1.png']
+                          'ghost_attack3.png']
 
         if not self.in_combat:
            self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
@@ -438,7 +438,7 @@ pygame.font.init()
 pygame.display.set_caption('Novorus')
 
 # sets the size of the screen; defaults to full screen
-screen = pygame.display.set_mode((900, 900))
+screen = pygame.display.set_mode()
 clock = pygame.time.Clock()
 
 camera_group = CameraGroup()
@@ -504,56 +504,56 @@ while runtime:
 
     # updates
     for enemy in enemies:
-            if pygame.Rect.colliderect(player.rect, enemy.rect):
-                # sync ticks so combat immediately starts
-                if not player.in_combat:
-                    player.in_combat = True
-                    enemy.in_combat = True
+        if pygame.Rect.colliderect(player.rect, enemy.rect):
+            # sync ticks so combat immediately starts
+            if not player.in_combat:
+                player.in_combat = True
+                enemy.in_combat = True
 
-                    player.ticks = 0
-                    enemy.ticks = 0
-                
-                # player and enemy face each other
-                if player.rect.centerx < enemy.rect.centerx:
-                    player.facing = 'right'
-                    enemy.facing = 'left'
+                player.ticks = 0
+                enemy.ticks = 0
+            
+            # player and enemy face each other
+            if player.rect.centerx < enemy.rect.centerx:
+                player.facing = 'right'
+                enemy.facing = 'left'
+
+            else:
+                player.facing = 'left'
+                enemy.facing = 'right'
+
+            # player animation for attacking
+            if player.ticks == 0:
+                chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
+                if chance < player.speed['current']:
+                    # player attacks
+                    player.attacking = True
 
                 else:
-                    player.facing = 'left'
-                    enemy.facing = 'right'
-
-                # player animation for attacking
-                if player.ticks == 0:
-                    chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
-                    if chance < player.speed['current']:
-                        # player attacks
-                        player.attacking = True
-
-                    else:
-                        # enemy attacks
-                        enemy.attacking = True
-                        player.health['current'] -= enemy.attack['current']
-
-                # only deal damage after end of animation
-                if player.ticks == 119 and player.attacking:
-                    enemy.health['current'] -= player.attack['current']
-                    player.attacking = False
-
-                elif enemy.ticks == 119 and enemy.attacking:
+                    # enemy attacks
+                    enemy.attacking = True
                     player.health['current'] -= enemy.attack['current']
-                    enemy.attacking = False
 
-                # end of combat
-                if player.health['current'] <= 0 or enemy.health['current'] <= 0:
-                    player.in_combat = False
-                    player.attacking = False
+            # only deal damage after end of animation
+            if player.ticks == 119 and player.attacking:
+                enemy.health['current'] -= player.attack['current']
+                player.attacking = False
 
-                    if enemy.health['current'] <= 0:
-                        enemy.kill()
-                        del enemy
+            elif enemy.ticks == 119 and enemy.attacking:
+                player.health['current'] -= enemy.attack['current']
+                enemy.attacking = False
 
-                    else:
-                        pass
+            # end of combat
+            if player.health['current'] <= 0 or enemy.health['current'] <= 0:
+                player.in_combat = False
+                player.attacking = False
+
+                if enemy.health['current'] <= 0:
+                    enemy.kill()
+                    del enemy
+
+                else:
+                    pass
 
     if not paused:
         camera_group.update(collision_group)
