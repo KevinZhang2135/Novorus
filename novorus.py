@@ -27,6 +27,7 @@ class Sprite(pygame.sprite.Sprite):
         
         return text, text_rect
 
+
 class Player(Sprite):
     def __init__(self, coords: list, size: list, groups):
         super().__init__(size, groups)
