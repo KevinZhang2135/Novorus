@@ -181,7 +181,7 @@ class Ghost(Sprite):
         self.attack = {'current': 10,
                        'total': 10}
 
-        self.speed = {'current': 0,
+        self.speed = {'current': 30,
                       'total': 30}
 
     def animation(self):
@@ -191,8 +191,20 @@ class Ghost(Sprite):
                         'ghost_idle3.png',
                         'ghost_idle2.png']
 
-        #if not self.in_combat:
-        self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+        combat_sprites = ['ghost_idle1.png',
+                          'ghost_attack1.png',
+                          'ghost_attack2.png',
+                          'ghost_attack1.png']
+
+        if not self.in_combat:
+           self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+
+        else:
+            if self.attacking:
+                self.image = self.load_image(combat_sprites[math.floor(self.ticks / 30)])
+
+            else:
+                self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
 
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
@@ -493,10 +505,11 @@ while runtime:
     # updates
     for enemy in enemies:
             if pygame.Rect.colliderect(player.rect, enemy.rect):
+                # sync ticks so combat immediately starts
                 if not player.in_combat:
                     player.in_combat = True
                     enemy.in_combat = True
-                    
+
                     player.ticks = 0
                     enemy.ticks = 0
                 
@@ -526,12 +539,21 @@ while runtime:
                     enemy.health['current'] -= player.attack['current']
                     player.attacking = False
 
-                if enemy.health['current'] <= 0:
+                elif enemy.ticks == 119 and enemy.attacking:
+                    player.health['current'] -= enemy.attack['current']
+                    enemy.attacking = False
+
+                # end of combat
+                if player.health['current'] <= 0 or enemy.health['current'] <= 0:
                     player.in_combat = False
                     player.attacking = False
 
-                    enemy.kill()
-                    del enemy
+                    if enemy.health['current'] <= 0:
+                        enemy.kill()
+                        del enemy
+
+                    else:
+                        pass
 
     if not paused:
         camera_group.update(collision_group)
