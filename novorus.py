@@ -533,7 +533,6 @@ while runtime:
                 else:
                     # enemy attacks
                     enemy.attacking = True
-                    player.health['current'] -= enemy.attack['current']
 
             # only deal damage after end of animation
             if player.ticks == 119 and player.attacking:
