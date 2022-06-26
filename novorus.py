@@ -339,10 +339,10 @@ class Menu(Sprite):
 
 class Bar(Sprite):
     def __init__(self, coords, groups):
-        sprite_width = pygame.display.get_surface().get_height() / 8
+        sprite_width = pygame.display.get_surface().get_height() / 16
         super().__init__((sprite_width, sprite_width), groups)
 
-        self.bar_height = self.display_surface.get_height() / 32
+        self.bar_height = self.display_surface.get_height() / 64
         self.coords = coords
 
     def draw(self, text):
@@ -360,7 +360,7 @@ class Bar(Sprite):
     def set_health(self):
         self.image = self.load_image('heart.png')
         self.rect = self.image.get_rect(
-            center=self.coords)
+            topleft=self.coords)
 
         self.bar = pygame.Rect(
             (self.rect.centerx, self.rect.centery - self.bar_height / 2),
@@ -372,7 +372,7 @@ class Bar(Sprite):
     def set_speed(self):
         self.image = self.load_image('lightning.png')
         self.rect = self.image.get_rect(
-            center=coords)
+            topleft=self.coords)
 
         self.bar = pygame.Rect(
             (self.rect.centerx, self.rect.centery - self.bar_height / 2),
@@ -384,7 +384,7 @@ class Bar(Sprite):
     def set_attack(self):
         self.image = self.load_image('sword.png')
         self.rect = self.image.get_rect(
-            center=coords)
+            topleft=self.coords)
 
         self.bar = pygame.Rect(
             (self.rect.centerx, self.rect.centery - self.bar_height / 2),
@@ -442,17 +442,15 @@ player = Player((1000, 1000), (75, 75), camera_group)
 # hud
 menu = Menu(hud_group)
 
-player_health_bar = Bar(coords, hud_group)
+player_health_bar = Bar((0, 0), hud_group)
+player_speed_bar = Bar((0, screen.get_height() * 3 / 64), hud_group)
+player_attack_bar = Bar((0, screen.get_height() * 6 / 64), hud_group)
+
 player_health_bar.set_health()
-
-player_speed_bar = Bar(coords, hud_group)
 player_speed_bar.set_speed()
-
-player_attack_bar = Bar(coords, hud_group)
 player_attack_bar.set_attack()
 
-
-enemy_bars = []
+player_bars = [player_health_bar, player_speed_bar, player_attack_bar]
 
 ticks = 0
 paused = True
@@ -534,9 +532,12 @@ while runtime:
 
     # hud
     menu.draw()
-    player_health_bar.draw(f"{player.health['current']} / {player.health['total']}")
-    player_speed_bar.draw(f"{player.speed['current']}")
-    player_attack_bar.draw(f"{player.attack['current']}")
+    text = (f"{player.health['current']} / {player.health['total']}",
+            f"{player.speed['current']}",
+            f"{player.attack['current']}")
+
+    for index, bar in enumerate(player_bars):
+        bar.draw(text[index])
 
     hud_group.draw(screen)
 
