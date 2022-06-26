@@ -411,7 +411,7 @@ used_coords = []
 coords = None
 
 # ambience
-size = [60, 40, 150]
+size = (60, 40, 150)
 objects = ['rock', 'grass', 'tree']
 for j in range(100):
     obj = random.choice(objects)
@@ -429,18 +429,15 @@ for j in range(100):
         decor.image = pygame.transform.flip(decor.image, True, False)
 
 # enemies
-size = [75, 75]
 for i in range(10):
     while coords in used_coords or not coords:
         coords = [round(random.randint(0, 2000), -2) for i in range(2)]
 
     used_coords.append(coords)
-    ghost = Ghost(coords, size, (camera_group, enemies))
+    ghost = Ghost(coords, (75, 75), (camera_group, enemies))
 
 # player
-size = [75, 75]
-coords = [1000, 1000]
-player = Player(coords, size, camera_group)
+player = Player((1000, 1000), (75, 75), camera_group)
 
 # hud
 menu = Menu(hud_group)
