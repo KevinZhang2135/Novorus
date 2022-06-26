@@ -45,7 +45,7 @@ class Player(Sprite):
         self.facing = 'right'
         self.name = 'Player'
 
-        self.health = {'current': 100,
+        self.health = {'current': 10,
                        'total': 100}
 
         self.attack = {'current': 20,
@@ -259,20 +259,13 @@ class Menu(Sprite):
         sprite_width = pygame.display.get_surface().get_height() * 3 / 32
         super().__init__((sprite_width, sprite_width), groups)
 
-        ui_width = self.display_surface.get_width()
-        ui_height = self.display_surface.get_height() / 8
-
         menu_width = self.display_surface.get_height() / 3
         menu_height = self.display_surface.get_height() / 3
 
         self.image = self.load_image('menu1.png')
         self.rect = self.image.get_rect(
-            center=[self.display_surface.get_width() - ui_height / 2,
-                    self.display_surface.get_height() - ui_height / 2])
-
-        self.bg_rect = pygame.Rect(
-            (0, ui_height * 7),
-            (ui_width, ui_height))
+            bottomright=[self.display_surface.get_width(),
+                    self.display_surface.get_height()])
 
         self.menu_rect = pygame.Rect(
             ((self.display_surface.get_width() - menu_width) / 2,
@@ -301,15 +294,12 @@ class Menu(Sprite):
     def draw(self):
         global paused
 
-        pygame.draw.rect(self.display_surface, (131, 106, 83), self.bg_rect, 0)
-        pygame.draw.rect(self.display_surface, (104, 84, 66), self.bg_rect, 5)
-
         if paused:
             pygame.draw.rect(self.display_surface,
-                             (131, 106, 83), self.menu_rect, 0, 10)
+                             (131, 106, 83), self.menu_rect, 0)
 
             pygame.draw.rect(self.display_surface,
-                             (104, 84, 66), self.menu_rect, 5, 10)
+                             (104, 84, 66), self.menu_rect, 5)
 
             self.display_surface.blit(self.menu_text, self.menu_text_rect)
             self.display_surface.blit(self.exit_text, self.exit_text_rect)
@@ -347,91 +337,61 @@ class Menu(Sprite):
             self.image = self.load_image('menu1.png')
 
 
-class HealthBar(Sprite):
-    def __init__(self, groups):
+class Bar(Sprite):
+    def __init__(self, coords, groups):
         sprite_width = pygame.display.get_surface().get_height() / 8
         super().__init__((sprite_width, sprite_width), groups)
 
-        bar_height = self.display_surface.get_height() / 32
+        self.bar_height = self.display_surface.get_height() / 32
+        self.coords = coords
 
+    def draw(self, text):
+        pygame.draw.rect(self.display_surface, self.light_color, self.bar, 0)
+        pygame.draw.rect(self.display_surface, self.dark_color, self.bar, 3)
+
+        self.text_surface, self.text_rect = self.load_text(
+            text,
+            self.bar.center,
+            self.bar.height,
+            (50, 50, 50))
+
+        self.display_surface.blit(self.text_surface, self.text_rect)
+
+    def set_health(self):
         self.image = self.load_image('heart.png')
         self.rect = self.image.get_rect(
-            center=[sprite_width / 2,
-                    self.display_surface.get_height() - sprite_width / 2])
+            center=self.coords)
 
         self.bar = pygame.Rect(
-            (self.rect.centerx, self.rect.centery - bar_height / 2),
-            (self.rect.width * 1.5, bar_height))
+            (self.rect.centerx, self.rect.centery - self.bar_height / 2),
+            (self.rect.width * 1.5, self.bar_height))
 
-    def draw(self, player):
-        pygame.draw.rect(self.display_surface, (211, 47, 47), self.bar, 0, 5)
-        pygame.draw.rect(self.display_surface, (198, 40, 40), self.bar, 3, 5)
+        self.light_color = (211, 47, 47)
+        self.dark_color = (198, 40, 40)
 
-        self.text_surface, self.text_rect = self.load_text(
-            f"{player.health['current']} / {player.health['total']}",
-            self.bar.center,
-            self.bar.height,
-            (50, 50, 50))
-
-        self.display_surface.blit(self.text_surface, self.text_rect)
-
-
-class SpeedBar(Sprite):
-    def __init__(self, groups):
-        sprite_width = pygame.display.get_surface().get_height() / 8
-        super().__init__((sprite_width, sprite_width), groups)
-
-        bar_height = self.display_surface.get_height() / 32
-
+    def set_speed(self):
         self.image = self.load_image('lightning.png')
         self.rect = self.image.get_rect(
-            center=[sprite_width * 5 / 2,
-                    self.display_surface.get_height() - sprite_width / 2])
+            center=coords)
 
         self.bar = pygame.Rect(
-            (self.rect.centerx, self.rect.centery - bar_height / 2),
-            (self.rect.width, bar_height))
+            (self.rect.centerx, self.rect.centery - self.bar_height / 2),
+            (self.rect.width * 1.5, self.bar_height))
 
-    def draw(self, player):
-        pygame.draw.rect(self.display_surface, (255, 231, 45), self.bar, 0, 5)
-        pygame.draw.rect(self.display_surface, (255, 219, 14), self.bar, 3, 5)
+        self.light_color = (255, 231, 45)
+        self.dark_color = (255, 219, 14)
 
-        self.text_surface, self.text_rect = self.load_text(
-            f"{player.speed['current']}",
-            self.bar.center,
-            self.bar.height,
-            (50, 50, 50))
-        
-        self.display_surface.blit(self.text_surface, self.text_rect)
-
-
-class AttackBar(Sprite):
-    def __init__(self, groups):
-        sprite_width = pygame.display.get_surface().get_height() / 8
-        super().__init__((sprite_width, sprite_width), groups)
-
-        bar_height = self.display_surface.get_height() / 32
-
+    def set_attack(self):
         self.image = self.load_image('sword.png')
         self.rect = self.image.get_rect(
-            center=[sprite_width * 8 / 2,
-                    self.display_surface.get_height() - sprite_width / 2])
+            center=coords)
 
         self.bar = pygame.Rect(
-            (self.rect.centerx, self.rect.centery - bar_height / 2),
-            (self.rect.width, bar_height))
+            (self.rect.centerx, self.rect.centery - self.bar_height / 2),
+            (self.rect.width * 1.5, self.bar_height))
 
-    def draw(self, player):
-        pygame.draw.rect(self.display_surface, (188, 188, 188), self.bar, 0, 5)
-        pygame.draw.rect(self.display_surface, (168, 168, 168), self.bar, 3, 5)
-
-        self.text_surface, self.text_rect = self.load_text(
-            f"{player.attack['current']}",
-            self.bar.center,
-            self.bar.height,
-            (50, 50, 50))
-
-        self.display_surface.blit(self.text_surface, self.text_rect)
+        self.light_color = (188, 188, 188)
+        self.dark_color = (168, 168, 168)
 
 
 pygame.init()
@@ -484,11 +444,18 @@ player = Player(coords, size, camera_group)
 
 # hud
 menu = Menu(hud_group)
-ui_bars = [
-    HealthBar(hud_group),
-    SpeedBar(hud_group),
-    AttackBar(hud_group)
-]
+
+player_health_bar = Bar(coords, hud_group)
+player_health_bar.set_health()
+
+player_speed_bar = Bar(coords, hud_group)
+player_speed_bar.set_speed()
+
+player_attack_bar = Bar(coords, hud_group)
+player_attack_bar.set_attack()
+
+
+enemy_bars = []
 
 ticks = 0
 paused = True
@@ -506,47 +473,52 @@ while runtime:
     # updates
     for enemy in enemies:
         if pygame.Rect.colliderect(player.rect, enemy.rect):
-            # sync ticks so combat immediately starts
-            if not player.in_combat:
-                player.in_combat = True
-                enemy.in_combat = True
+            # checks health before entering combat
+            if player.health['current'] > 0 or enemy.health['current'] > 0:
+                # sync ticks so combat immediately starts
+                if not player.in_combat:
+                    player.in_combat = True
+                    enemy.in_combat = True
 
-                player.ticks = 0
-                enemy.ticks = 0
-            
-            # player and enemy face each other
-            if player.rect.centerx < enemy.rect.centerx:
-                player.facing = 'right'
-                enemy.facing = 'left'
-
-            else:
-                player.facing = 'left'
-                enemy.facing = 'right'
-
-            # player animation for attacking
-            if player.ticks == 0:
-                chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
-                if chance < player.speed['current']:
-                    # player attacks
-                    player.attacking = True
+                    player.ticks = 0
+                    enemy.ticks = 0
+                
+                # player and enemy face each other
+                if player.rect.centerx < enemy.rect.centerx:
+                    player.facing = 'right'
+                    enemy.facing = 'left'
 
                 else:
-                    # enemy attacks
-                    enemy.attacking = True
+                    player.facing = 'left'
+                    enemy.facing = 'right'
 
-            # only deal damage after end of animation
-            if player.ticks == 119 and player.attacking:
-                enemy.health['current'] -= player.attack['current']
-                player.attacking = False
+                # player animation for attacking
+                if player.ticks == 0:
+                    chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
+                    if chance < player.speed['current']:
+                        # player attacks
+                        player.attacking = True
 
-            elif enemy.ticks == 119 and enemy.attacking:
-                player.health['current'] -= enemy.attack['current']
-                enemy.attacking = False
+                    else:
+                        # enemy attacks
+                        enemy.attacking = True
+
+                # only deal damage after end of animation
+                if player.ticks == 119 and player.attacking:
+                    enemy.health['current'] -= player.attack['current']
+                    player.attacking = False
+
+                elif enemy.ticks == 119 and enemy.attacking:
+                    player.health['current'] -= enemy.attack['current']
+                    enemy.attacking = False
 
             # end of combat
             if player.health['current'] <= 0 or enemy.health['current'] <= 0:
                 player.in_combat = False
                 player.attacking = False
+
+                enemy.in_combat = False
+                enemy.attacking = False
 
                 if enemy.health['current'] <= 0:
                     enemy.kill()
@@ -557,7 +529,6 @@ while runtime:
 
     if not paused:
         camera_group.update(collision_group)
-        # camera_group.draw(screen)
 
     hud_group.update()
 
@@ -566,8 +537,9 @@ while runtime:
 
     # hud
     menu.draw()
-    for bar in ui_bars:
-        bar.draw(player)
+    player_health_bar.draw(f"{player.health['current']} / {player.health['total']}")
+    player_speed_bar.draw(f"{player.speed['current']}")
+    player_attack_bar.draw(f"{player.attack['current']}")
 
     hud_group.draw(screen)
 
