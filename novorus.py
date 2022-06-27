@@ -1,4 +1,3 @@
-from turtle import right
 import pygame
 import os
 import math
@@ -45,7 +44,7 @@ class Player(Sprite):
         self.facing = 'right'
         self.name = 'Player'
 
-        self.health = {'current': 10,
+        self.health = {'current': 100,
                        'total': 100}
 
         self.attack = {'current': 20,
@@ -394,6 +393,82 @@ class Bar(Sprite):
         self.dark_color = (168, 168, 168)
 
 
+class TargetBars:
+    def __init__(self, groups):
+        self.display_surface = pygame.display.get_surface()
+
+        self.health_bar = Bar((0,  self.display_surface.get_height() * 5 / 128), groups)
+        self.speed_bar = Bar((0, self.display_surface.get_height() * 10 / 128), groups)
+        self.attack_bar = Bar((0, self.display_surface.get_height() * 15 / 128), groups)
+
+        self.health_bar.set_health()
+        self.speed_bar.set_speed()
+        self.attack_bar.set_attack()
+
+    def draw(self, target):
+        text = (f"{target.health['current']} / {target.health['total']}",
+            f"{target.speed['current']}",
+            f"{target.attack['current']}")
+        
+        self.health_bar.draw(text[0])
+        self.speed_bar.draw(text[1])
+        self.attack_bar.draw(text[2])
+
+def combat(player, enemy):
+    # checks health before entering combat
+    if player.health['current'] > 0 or enemy.health['current'] > 0:
+        # sync ticks so combat immediately starts
+        if not player.in_combat:
+            player.in_combat = True
+            enemy.in_combat = True
+
+            player.ticks = 0
+            enemy.ticks = 0
+        
+        # player and enemy face each other
+        if player.rect.centerx < enemy.rect.centerx:
+            player.facing = 'right'
+            enemy.facing = 'left'
+
+        else:
+            player.facing = 'left'
+            enemy.facing = 'right'
+
+        # player animation for attacking
+        if player.ticks == 0:
+            chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
+            if chance < player.speed['current']:
+                # player attacks
+                player.attacking = True
+
+            else:
+                # enemy attacks
+                enemy.attacking = True
+
+        # only deal damage after end of animation
+        if player.ticks == 119 and player.attacking:
+            enemy.health['current'] -= player.attack['current']
+            player.attacking = False
+
+        elif enemy.ticks == 119 and enemy.attacking:
+            player.health['current'] -= enemy.attack['current']
+            enemy.attacking = False
+
+    # end of combat
+    if player.health['current'] <= 0 or enemy.health['current'] <= 0:
+        player.in_combat = False
+        player.attacking = False
+
+        enemy.in_combat = False
+        enemy.attacking = False
+
+        if enemy.health['current'] <= 0:
+            enemy.kill()
+            del enemy
+
+        else:
+            pass
+
 pygame.init()
 pygame.font.init()
 pygame.display.set_caption('Novorus')
@@ -442,15 +517,7 @@ player = Player((1000, 1000), (75, 75), camera_group)
 # hud
 menu = Menu(hud_group)
 
-player_health_bar = Bar((0, 0), hud_group)
-player_speed_bar = Bar((0, screen.get_height() * 3 / 64), hud_group)
-player_attack_bar = Bar((0, screen.get_height() * 6 / 64), hud_group)
-
-player_health_bar.set_health()
-player_speed_bar.set_speed()
-player_attack_bar.set_attack()
-
-player_bars = [player_health_bar, player_speed_bar, player_attack_bar]
+player_bars = TargetBars(hud_group)
 
 ticks = 0
 paused = True
@@ -468,59 +535,7 @@ while runtime:
     # updates
     for enemy in enemies:
         if pygame.Rect.colliderect(player.rect, enemy.rect):
-            # checks health before entering combat
-            if player.health['current'] > 0 or enemy.health['current'] > 0:
-                # sync ticks so combat immediately starts
-                if not player.in_combat:
-                    player.in_combat = True
-                    enemy.in_combat = True
-
-                    player.ticks = 0
-                    enemy.ticks = 0
-                
-                # player and enemy face each other
-                if player.rect.centerx < enemy.rect.centerx:
-                    player.facing = 'right'
-                    enemy.facing = 'left'
-
-                else:
-                    player.facing = 'left'
-                    enemy.facing = 'right'
-
-                # player animation for attacking
-                if player.ticks == 0:
-                    chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
-                    if chance < player.speed['current']:
-                        # player attacks
-                        player.attacking = True
-
-                    else:
-                        # enemy attacks
-                        enemy.attacking = True
-
-                # only deal damage after end of animation
-                if player.ticks == 119 and player.attacking:
-                    enemy.health['current'] -= player.attack['current']
-                    player.attacking = False
-
-                elif enemy.ticks == 119 and enemy.attacking:
-                    player.health['current'] -= enemy.attack['current']
-                    enemy.attacking = False
-
-            # end of combat
-            if player.health['current'] <= 0 or enemy.health['current'] <= 0:
-                player.in_combat = False
-                player.attacking = False
-
-                enemy.in_combat = False
-                enemy.attacking = False
-
-                if enemy.health['current'] <= 0:
-                    enemy.kill()
-                    del enemy
-
-                else:
-                    pass
+            combat(player, enemy)
 
     if not paused:
         camera_group.update(collision_group)
@@ -532,12 +547,8 @@ while runtime:
 
     # hud
     menu.draw()
-    text = (f"{player.health['current']} / {player.health['total']}",
-            f"{player.speed['current']}",
-            f"{player.attack['current']}")
-
-    for index, bar in enumerate(player_bars):
-        bar.draw(text[index])
+    
+    player_bars.draw(player)
 
     hud_group.draw(screen)
 
