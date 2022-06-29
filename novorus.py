@@ -5,6 +5,41 @@ import random
 
 # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
 
+class CameraGroup(pygame.sprite.Group):
+    def __init__(self, ):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+
+        # camera offset
+        self.offset = pygame.math.Vector2()
+        self.half_width = self.display_surface.get_size()[0] / 2
+        self.half_height = self.display_surface.get_size()[1] / 2
+
+    def center_target(self, target):
+        self.offset.x = target.rect.centerx - self.half_width
+        self.offset.y = target.rect.centery - self.half_height
+
+    def custom_draw(self, player, show_hitbox=False):
+        '''Draws the screen according to player movement'''
+        self.center_target(player)
+
+        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.bottom):
+            offset_pos = sprite.rect.topleft - self.offset
+            self.display_surface.blit(sprite.image, offset_pos)
+
+            if show_hitbox:
+                rectingle = pygame.Rect(
+                    sprite.rect.x - self.offset.x,
+                    sprite.rect.y - self.offset.y,
+                    sprite.rect.width,
+                    sprite.rect.height)
+
+                pygame.draw.rect(
+                    self.display_surface,     
+                    (255, 0, 0), 
+                    rectingle,
+                    1)
+
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, size: list, group):
@@ -33,8 +68,7 @@ class Player(Sprite):
         super().__init__(size, groups)
         self.image = self.load_image('knight_walk1.png')
         self.rect = self.image.get_rect(center=coords)
-        self.rect.inflate_ip(self.width * -0.3, 0)
-
+                    
         self.colliding = False
         self.in_combat = False
         self.attacking = False
@@ -82,7 +116,7 @@ class Player(Sprite):
                                            self.rect.centery - sprite.rect.centery)
 
             # checks if the distance of the sprites are within collision distance
-            if abs(distance.x) <= collision_distance.x and abs(distance.y) <= collision_distance.y:
+            if abs(distance.x) < collision_distance.x and abs(distance.y) < collision_distance.y:
                 # horizontal collision
                 if abs(distance.x) > abs(distance.y):
                     # left collision
@@ -94,7 +128,7 @@ class Player(Sprite):
                         self.rect.right = sprite.rect.left
 
                 # vertical collision
-                else:
+                elif abs(distance.y) > abs(distance.x):
                     # bottom collision
                     if distance.y < 0:
                         self.rect.bottom = sprite.rect.top
@@ -169,7 +203,6 @@ class Ghost(Sprite):
         super().__init__(size, groups)
         self.image = self.load_image('ghost_idle1.png')
         self.rect = self.image.get_rect(center=coords)
-        self.rect.inflate_ip(self.width * -0.3, self.height * -0.15)
 
         self.in_combat = False
         self.attacking = False
@@ -238,29 +271,6 @@ class Ambience(Sprite):
         super().__init__(size, groups)
 
 
-class CameraGroup(pygame.sprite.Group):
-    def __init__(self, ):
-        super().__init__()
-        self.display_surface = pygame.display.get_surface()
-
-        # camera offset
-        self.offset = pygame.math.Vector2()
-        self.half_width = self.display_surface.get_size()[0] / 2
-        self.half_height = self.display_surface.get_size()[1] / 2
-
-    def center_target(self, target):
-        self.offset.x = target.rect.centerx - self.half_width
-        self.offset.y = target.rect.centery - self.half_height
-
-    def custom_draw(self, player):
-        '''Draws the screen according to player movement'''
-        self.center_target(player)
-
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.bottom):
-            offset_pos = sprite.rect.topleft - self.offset
-            self.display_surface.blit(sprite.image, offset_pos)
-
-
 class Menu(Sprite):
     def __init__(self, groups):
         sprite_width = pygame.display.get_surface().get_height() * 3 / 32
@@ -275,9 +285,10 @@ class Menu(Sprite):
                          self.display_surface.get_height()])
 
         self.menu_rect = pygame.Rect(
-            ((self.display_surface.get_width() - menu_width) / 2,
-             (self.display_surface.get_height() - menu_height) / 2),
-            (menu_width, menu_height))
+            (self.display_surface.get_width() - menu_width) / 2,
+            (self.display_surface.get_height() - menu_height) / 2,
+            menu_width,
+            menu_height)
 
         # menu text
         self.menu_text, self.menu_text_rect = self.load_text(
@@ -302,10 +313,16 @@ class Menu(Sprite):
         global paused
 
         if paused:
-            pygame.draw.rect(self.display_surface,
-                             (131, 106, 83), self.menu_rect)
-            pygame.draw.rect(self.display_surface,
-                             (104, 84, 66), self.menu_rect, 5)
+            pygame.draw.rect(
+                self.display_surface,     
+                (131, 106, 83), 
+                self.menu_rect)
+
+            pygame.draw.rect(
+                self.display_surface,
+                (104, 84, 66), 
+                self.menu_rect, 
+                5)
 
             self.display_surface.blit(self.menu_text, self.menu_text_rect)
             self.display_surface.blit(self.exit_text, self.exit_text_rect)
@@ -368,8 +385,10 @@ class Bar(Sprite):
             topleft=self.coords)
 
         self.bar = pygame.Rect(
-            (self.rect.centerx, self.rect.centery - self.bar_height / 2),
-            (self.rect.width * 1.5, self.bar_height))
+            self.rect.centerx, 
+            self.rect.centery - self.bar_height / 2,
+            self.rect.width * 1.5, 
+            self.bar_height)
 
         self.light_color = (211, 47, 47)
         self.dark_color = (198, 40, 40)
@@ -380,8 +399,10 @@ class Bar(Sprite):
             topleft=self.coords)
 
         self.bar = pygame.Rect(
-            (self.rect.centerx, self.rect.centery - self.bar_height / 2),
-            (self.rect.width * 1.5, self.bar_height))
+            self.rect.centerx, 
+            self.rect.centery - self.bar_height / 2,
+            self.rect.width * 1.5,
+            self.bar_height)
 
         self.light_color = (255, 231, 45)
         self.dark_color = (255, 219, 14)
@@ -392,8 +413,10 @@ class Bar(Sprite):
             topleft=self.coords)
 
         self.bar = pygame.Rect(
-            (self.rect.centerx, self.rect.centery - self.bar_height / 2),
-            (self.rect.width * 1.5, self.bar_height))
+            self.rect.centerx, 
+            self.rect.centery - self.bar_height / 2,
+            self.rect.width * 1.5, 
+            self.bar_height)
 
         self.light_color = (188, 188, 188)
         self.dark_color = (168, 168, 168)
@@ -533,6 +556,9 @@ enemy_bars = TargetBars((0, screen.get_height() * 11 / 64), hud_group)
 # player
 player = Player((1000, 1000), (75, 75), camera_group)
 
+wall = Wall((1000, 1200), (100, 100), (camera_group, collision_group))
+wall2 = Wall((1000, 1100), (100, 100), (camera_group, collision_group))
+
 used_coords = []
 coords = None
 
@@ -577,15 +603,15 @@ while runtime:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player)
+    camera_group.custom_draw(player, show_hitbox=True)
 
     # updates
     for enemy in enemies:
         if pygame.Rect.colliderect(player.rect, enemy.rect):
             combat(player, enemy)
-            enemy_bars.add_sprites(hud_group)
-            enemy_bars.draw(enemy)
-            
+            if player.in_combat:
+                enemy_bars.add_sprites(hud_group)
+                enemy_bars.draw(enemy)
 
     if not player.in_combat:
         enemy_bars.hide_sprites()
