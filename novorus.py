@@ -14,7 +14,8 @@ class Sprite(pygame.sprite.Sprite):
 
     def load_image(self, image):
         '''Loads an image according to the input'''
-        image = pygame.image.load(os.path.join('sprites', image)).convert_alpha()
+        image = pygame.image.load(os.path.join(
+            'sprites', image)).convert_alpha()
         image = pygame.transform.scale(image, (self.width, self.height))
 
         return image
@@ -22,8 +23,8 @@ class Sprite(pygame.sprite.Sprite):
     def load_text(self, text, coords, text_size, color):
         font = pygame.font.Font('comicoro.ttf', round(text_size))
         text = font.render(text, True, color)
-        text_rect = text.get_rect(center = coords)
-        
+        text_rect = text.get_rect(center=coords)
+
         return text, text_rect
 
 
@@ -127,7 +128,8 @@ class Player(Sprite):
             up = keys[pygame.K_UP] or keys[pygame.K_w]
 
             if left or right or down or up:
-                self.image = self.load_image(movement_sprites[math.floor(self.ticks / 30)])
+                self.image = self.load_image(
+                    movement_sprites[math.floor(self.ticks / 30)])
 
                 if left:
                     self.facing = 'left'
@@ -136,14 +138,17 @@ class Player(Sprite):
                     self.facing = 'right'
 
             else:
-                self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+                self.image = self.load_image(
+                    idle_sprites[math.floor(self.ticks / 30)])
 
         else:
             if self.attacking:
-                self.image = self.load_image(combat_sprites[math.floor(self.ticks / 30)])
+                self.image = self.load_image(
+                    combat_sprites[math.floor(self.ticks / 30)])
 
             else:
-                self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+                self.image = self.load_image(
+                    idle_sprites[math.floor(self.ticks / 30)])
 
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
@@ -157,7 +162,7 @@ class Player(Sprite):
         self.ticks += 1
         if self.ticks >= 120:
             self.ticks = 0
-            
+
 
 class Ghost(Sprite):
     def __init__(self, coords: list, size: list, groups):
@@ -197,14 +202,17 @@ class Ghost(Sprite):
                           'ghost_attack3.png']
 
         if not self.in_combat:
-           self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+            self.image = self.load_image(
+                idle_sprites[math.floor(self.ticks / 30)])
 
         else:
             if self.attacking:
-                self.image = self.load_image(combat_sprites[math.floor(self.ticks / 30)])
+                self.image = self.load_image(
+                    combat_sprites[math.floor(self.ticks / 30)])
 
             else:
-                self.image = self.load_image(idle_sprites[math.floor(self.ticks / 30)])
+                self.image = self.load_image(
+                    idle_sprites[math.floor(self.ticks / 30)])
 
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
@@ -216,7 +224,7 @@ class Ghost(Sprite):
         self.ticks += 1
         if self.ticks >= 120:
             self.ticks = 0
-        
+
 
 class Wall(Sprite):
     def __init__(self, coords: list, size: list, groups):
@@ -264,7 +272,7 @@ class Menu(Sprite):
         self.image = self.load_image('menu1.png')
         self.rect = self.image.get_rect(
             bottomright=[self.display_surface.get_width(),
-                    self.display_surface.get_height()])
+                         self.display_surface.get_height()])
 
         self.menu_rect = pygame.Rect(
             ((self.display_surface.get_width() - menu_width) / 2,
@@ -273,7 +281,7 @@ class Menu(Sprite):
 
         # menu text
         self.menu_text, self.menu_text_rect = self.load_text(
-            'Menu', 
+            'Menu',
             (self.menu_rect.centerx, self.menu_rect.top + self.menu_rect.height / 8),
             self.menu_rect.width / 8,
             (50, 50, 50))
@@ -282,10 +290,10 @@ class Menu(Sprite):
         self.draw_exit_text((50, 50, 50))
 
         self.pressed = False
-    
+
     def draw_exit_text(self, color):
         self.exit_text, self.exit_text_rect = self.load_text(
-            'Exit', 
+            'Exit',
             (self.menu_rect.centerx, self.menu_rect.bottom - self.menu_rect.height / 8),
             self.menu_rect.width / 8,
             color)
@@ -295,8 +303,7 @@ class Menu(Sprite):
 
         if paused:
             pygame.draw.rect(self.display_surface,
-                             (131, 106, 83), self.menu_rect, 0)
-
+                             (131, 106, 83), self.menu_rect)
             pygame.draw.rect(self.display_surface,
                              (104, 84, 66), self.menu_rect, 5)
 
@@ -348,13 +355,12 @@ class Bar(Sprite):
         pygame.draw.rect(self.display_surface, self.light_color, self.bar, 0)
         pygame.draw.rect(self.display_surface, self.dark_color, self.bar, 3)
 
-        self.text_surface, self.text_rect = self.load_text(
-            text,
-            self.bar.center,
-            self.bar.height,
-            (50, 50, 50))
-
-        self.display_surface.blit(self.text_surface, self.text_rect)
+        self.display_surface.blit(
+            *self.load_text(
+                text,
+                self.bar.center,
+                self.bar.height,
+                (50, 50, 50)))
 
     def set_health(self):
         self.image = self.load_image('heart.png')
@@ -393,26 +399,61 @@ class Bar(Sprite):
         self.dark_color = (168, 168, 168)
 
 
-class TargetBars:
-    def __init__(self, groups):
+class TargetBars(Sprite):
+    def __init__(self, coords: list, groups):
         self.display_surface = pygame.display.get_surface()
+        self.coords = pygame.math.Vector2(coords)
+        self.width = self.display_surface.get_height() * 9 / 64
+        self.height = self.display_surface.get_height() * 11 / 64
 
-        self.health_bar = Bar((0,  self.display_surface.get_height() * 5 / 128), groups)
-        self.speed_bar = Bar((0, self.display_surface.get_height() * 10 / 128), groups)
-        self.attack_bar = Bar((0, self.display_surface.get_height() * 15 / 128), groups)
+        self.health_bar = Bar(
+            (self.coords.x,  self.display_surface.get_height()
+             * 4 / 128 + self.coords.y),
+            groups)
+
+        self.speed_bar = Bar(
+            (self.coords.x, self.display_surface.get_height()
+             * 9 / 128 + self.coords.y),
+            groups)
+
+        self.attack_bar = Bar(
+            (self.coords.x, self.display_surface.get_height()
+             * 14 / 128 + self.coords.y),
+            groups)
 
         self.health_bar.set_health()
         self.speed_bar.set_speed()
         self.attack_bar.set_attack()
 
+        self.rect = pygame.Rect(coords, (self.width, self.height))
+
+    def hide_sprites(self):
+        self.health_bar.kill()
+        self.speed_bar.kill()
+        self.attack_bar.kill()
+
+    def add_sprites(self, group):
+        group.add(self.health_bar)
+        group.add(self.speed_bar)
+        group.add(self.attack_bar)
+
     def draw(self, target):
-        text = (f"{target.health['current']} / {target.health['total']}",
-            f"{target.speed['current']}",
-            f"{target.attack['current']}")
-        
-        self.health_bar.draw(text[0])
-        self.speed_bar.draw(text[1])
-        self.attack_bar.draw(text[2])
+        pygame.draw.rect(self.display_surface, (131, 106, 83), self.rect)
+        pygame.draw.rect(self.display_surface, (104, 84, 66), self.rect, 5)
+
+        self.health_bar.draw(
+            f"{target.health['current']} / {target.health['total']}")
+        self.speed_bar.draw(f"{target.speed['current']}")
+        self.attack_bar.draw(f"{target.attack['current']}")
+
+        self.display_surface.blit(
+            *self.load_text(
+                f'{target.name}',
+                (self.coords.x + self.width / 2, self.coords.y +
+                 self.display_surface.get_height() * 3 / 128),
+                self.display_surface.get_height() / 32,
+                (50, 50, 50)))
+
 
 def combat(player, enemy):
     # checks health before entering combat
@@ -424,7 +465,7 @@ def combat(player, enemy):
 
             player.ticks = 0
             enemy.ticks = 0
-        
+
         # player and enemy face each other
         if player.rect.centerx < enemy.rect.centerx:
             player.facing = 'right'
@@ -436,7 +477,8 @@ def combat(player, enemy):
 
         # player animation for attacking
         if player.ticks == 0:
-            chance = random.randint(0, player.speed['current'] + enemy.speed['current'])
+            chance = random.randint(
+                0, player.speed['current'] + enemy.speed['current'])
             if chance < player.speed['current']:
                 # player attacks
                 player.attacking = True
@@ -469,6 +511,7 @@ def combat(player, enemy):
         else:
             pass
 
+
 pygame.init()
 pygame.font.init()
 pygame.display.set_caption('Novorus')
@@ -481,6 +524,14 @@ camera_group = CameraGroup()
 enemies = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 hud_group = CameraGroup()
+
+# hud
+menu = Menu(hud_group)
+player_bars = TargetBars((0, 0), hud_group)
+enemy_bars = TargetBars((0, screen.get_height() * 11 / 64), hud_group)
+
+# player
+player = Player((1000, 1000), (75, 75), camera_group)
 
 used_coords = []
 coords = None
@@ -511,13 +562,6 @@ for i in range(10):
     used_coords.append(coords)
     ghost = Ghost(coords, (75, 75), (camera_group, enemies))
 
-# player
-player = Player((1000, 1000), (75, 75), camera_group)
-
-# hud
-menu = Menu(hud_group)
-
-player_bars = TargetBars(hud_group)
 
 ticks = 0
 paused = True
@@ -532,24 +576,28 @@ while runtime:
 
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
+    # redraws sprites and images
+    camera_group.custom_draw(player)
+
     # updates
     for enemy in enemies:
         if pygame.Rect.colliderect(player.rect, enemy.rect):
             combat(player, enemy)
+            enemy_bars.add_sprites(hud_group)
+            enemy_bars.draw(enemy)
+            
+
+    if not player.in_combat:
+        enemy_bars.hide_sprites()
 
     if not paused:
         camera_group.update(collision_group)
 
     hud_group.update()
 
-    # redraws sprites and images
-    camera_group.custom_draw(player)
-
     # hud
     menu.draw()
-    
     player_bars.draw(player)
-
     hud_group.draw(screen)
 
     # updates screen
