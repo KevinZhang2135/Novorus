@@ -68,10 +68,11 @@ class Player(Sprite):
         super().__init__(size, groups)
         self.image = self.load_image('knight_walk1.png')
         self.rect = self.image.get_rect(center=coords)
-                    
+
         self.colliding = False
         self.in_combat = False
         self.attacking = False
+        print(self.rect.center)
 
         self.move_speed = 5
         self.ticks = 0
