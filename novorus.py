@@ -1,3 +1,4 @@
+from re import T
 import pygame
 import os
 import math
@@ -72,22 +73,51 @@ class Player(Sprite):
         self.colliding = False
         self.in_combat = False
         self.attacking = False
-        print(self.rect.center)
-
-        self.move_speed = 5
-        self.ticks = 0
 
         self.facing = 'right'
         self.name = 'Player'
 
+        self.bonuses = {'health': 0,
+                        'speed': 0,
+                        'attack': 0}
+
         self.health = {'current': 100,
                        'total': 100}
 
+        self.speed = {'current': 30,
+                      'total': 30}
+            
         self.attack = {'current': 20,
                        'total': 20}
 
-        self.speed = {'current': 50,
-                      'total': 50}
+        self._level = 1
+        self.level = self._level
+        self.move_speed = 5
+        self.ticks = 0
+        
+    
+    @property
+    def level(self):
+        return self._level    
+
+    @level.setter
+    def level(self, value):
+        self._level = value
+
+        for status in self.health:
+            self.health[status] = round(self.health[status] 
+                                        * (1 + self.bonuses['health']) 
+                                        * (1.05**(self._level - 1)))
+
+        for status in self.speed:
+            self.speed[status] = round(self.speed[status] 
+                                       * (1 + self.bonuses['speed']) 
+                                       * (1.05**(self._level - 1)))
+
+        for status in self.attack:
+            self.attack[status] = round(self.attack[status] 
+                                        * (1 + self.bonuses['attack']) 
+                                        * (1.05**(self._level - 1)))
 
     def movement(self):
         '''Handles movement'''
@@ -179,7 +209,7 @@ class Player(Sprite):
         else:
             if self.attacking:
                 self.image = self.load_image(
-                    combat_sprites[math.floor(self.ticks / 30)])
+                    combat_sprites[math.floor((self.ticks - 40) / 20)])
 
             else:
                 self.image = self.load_image(
@@ -188,7 +218,7 @@ class Player(Sprite):
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def update(self, collision_group):
+    def update(self, player, collision_group):
         '''Handles events'''
         self.movement()
         self.collision(collision_group)
@@ -204,24 +234,28 @@ class Ghost(Sprite):
         super().__init__(size, groups)
         self.image = self.load_image('ghost_idle1.png')
         self.rect = self.image.get_rect(center=coords)
-
+    
         self.in_combat = False
         self.attacking = False
 
         self.move_speed = 2
         self.ticks = random.randint(0, 30)
+        self.level = random.randint(1, 2)
 
         self.facing = random.choice(['left', 'right'])
         self.name = 'Ghost'
 
-        self.health = {'current': 30,
-                       'total': 30}
+        health = round(30 * (1.1**(self.level - 1)))
+        self.health = {'current': health,
+                       'total': health}
 
-        self.attack = {'current': 10,
-                       'total': 10}
+        attack = round(10 * (1.1**(self.level - 1)))
+        self.attack = {'current': attack,
+                       'total': attack}
 
-        self.speed = {'current': 30,
-                      'total': 30}
+        speed = round(15 * (1.1**(self.level - 1)))
+        self.speed = {'current': speed,
+                      'total': speed}
 
     def animation(self):
         '''Handles animation'''
@@ -242,7 +276,7 @@ class Ghost(Sprite):
         else:
             if self.attacking:
                 self.image = self.load_image(
-                    combat_sprites[math.floor(self.ticks / 30)])
+                    combat_sprites[math.floor((self.ticks - 40) / 20)])
 
             else:
                 self.image = self.load_image(
@@ -251,7 +285,7 @@ class Ghost(Sprite):
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def update(self, collision_group):
+    def update(self, player, collision_group):
         '''Handles events'''
         self.animation()
 
@@ -260,17 +294,45 @@ class Ghost(Sprite):
             self.ticks = 0
 
 
-class Wall(Sprite):
-    def __init__(self, coords: list, size: list, groups):
+class Ambience(Sprite):
+    def __init__(self, coords: list, size: list, image:str, groups):
         super().__init__(size, groups)
-        self.image = self.load_image('gray_bricks.png')
+        self.image = self.load_image(image)
         self.rect = self.image.get_rect(center=coords)
 
+        if random.randint(0, 1):
+            self.image = pygame.transform.flip(self.image, True, False)
 
-class Ambience(Sprite):
+
+class Chest(Sprite):
     def __init__(self, coords: list, size: list, groups):
         super().__init__(size, groups)
+        self.image = self.load_image('chest_closed.png')
+        self.rect = self.image.get_rect(center=coords)
 
+        self.opened = False
+
+    def collision(self, player):
+        collision_distance = pygame.math.Vector2((self.rect.width + player.rect.width) / 2,
+                                                     (self.rect.height + player.rect.height) / 2)
+
+        distance = pygame.math.Vector2(self.rect.centerx - player.rect.centerx,
+                                        self.rect.centery - player.rect.centery)
+
+        # checks if the distance of the sprites are within collision distance
+        if (abs(distance.x) - 1 < collision_distance.x 
+            and abs(distance.y) - 1 < collision_distance.y
+            and not self.opened):
+
+            self.image = self.load_image('chest_opened.png')
+            self.opened = True
+
+            player.level += 1
+
+
+    def update(self, player, collision_group):
+        self.collision(player)
+        
 
 class Menu(Sprite):
     def __init__(self, groups):
@@ -506,10 +568,12 @@ def combat(player, enemy):
             if chance < player.speed['current']:
                 # player attacks
                 player.attacking = True
+                player.ticks = 40
 
             else:
                 # enemy attacks
                 enemy.attacking = True
+                enemy.ticks = 40
 
         # only deal damage after end of animation
         if player.ticks == 119 and player.attacking:
@@ -555,40 +619,44 @@ player_bars = TargetBars((0, 0), hud_group)
 enemy_bars = TargetBars((0, screen.get_height() * 11 / 64), hud_group)
 
 # player
-player = Player((1000, 1000), (75, 75), camera_group)
+player = Player((0, 0), (75, 75), camera_group)
 
-wall = Wall((1000, 1200), (100, 100), (camera_group, collision_group))
-wall2 = Wall((1000, 1100), (100, 100), (camera_group, collision_group))
-
-used_coords = []
+used_coords = [(0, 0)]
 coords = None
 
 # ambience
-size = (60, 40, 150)
+size = (60, 40, 125, 100)
 objects = ['rock', 'grass', 'tree']
 for j in range(100):
     obj = random.choice(objects)
     while coords in used_coords or not coords:
-        coords = [round(random.randint(0, 2000), -2) for i in range(2)]
+        coords = [round(random.randint(-1000, 1000), -2) for i in range(2)]
 
     used_coords.append(coords)
-    decor = Ambience(
-        coords, (size[objects.index(obj)], size[objects.index(obj)]), camera_group)
-
+    groups = [camera_group]
     variation = random.randint(1, 3)
-    decor.image = decor.load_image(f'{obj}{variation}.png')
-    decor.rect = decor.image.get_rect(center=coords)
-    if random.randint(0, 1):
-        decor.image = pygame.transform.flip(decor.image, True, False)
+        
+    decor = Ambience(
+        coords, 
+        [size[objects.index(obj)]] * 2,
+        f'{obj}{variation}.png',
+        groups)
 
 # enemies
 for i in range(10):
     while coords in used_coords or not coords:
-        coords = [round(random.randint(0, 2000), -2) for i in range(2)]
+        coords = [round(random.randint(-1000, 1000), -2) for i in range(2)]
 
     used_coords.append(coords)
-    ghost = Ghost(coords, (75, 75), (camera_group, enemies))
+    ghost = Ghost(coords, (60, 60), (camera_group, enemies))
 
+# chests
+for i in range(3):
+    while coords in used_coords or not coords:
+        coords = [round(random.randint(-500, 500), -2) for i in range(2)]
+
+    used_coords.append(coords)
+    chest = Chest(coords, (60, 60), (camera_group, collision_group))
 
 ticks = 0
 paused = True
@@ -604,7 +672,7 @@ while runtime:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitbox=True)
+    camera_group.custom_draw(player, show_hitbox=False)
 
     # updates
     for enemy in enemies:
@@ -618,7 +686,7 @@ while runtime:
         enemy_bars.hide_sprites()
 
     if not paused:
-        camera_group.update(collision_group)
+        camera_group.update(player, collision_group)
 
     hud_group.update()
 
