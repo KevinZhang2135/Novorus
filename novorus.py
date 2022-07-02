@@ -627,10 +627,10 @@ coords = None
 # ambience
 size = (60, 40, 125, 100)
 objects = ['rock', 'grass', 'tree']
-for j in range(100):
+for j in range(150):
     obj = random.choice(objects)
     while coords in used_coords or not coords:
-        coords = [round(random.randint(-1000, 1000), -2) for i in range(2)]
+        coords = [round(random.randint(-1500, 1500), -2) for i in range(2)]
 
     used_coords.append(coords)
     groups = [camera_group]
@@ -643,17 +643,17 @@ for j in range(100):
         groups)
 
 # enemies
-for i in range(10):
+for i in range(20):
     while coords in used_coords or not coords:
-        coords = [round(random.randint(-1000, 1000), -2) for i in range(2)]
+        coords = [round(random.randint(-1500, 1500), -2) for i in range(2)]
 
     used_coords.append(coords)
     ghost = Ghost(coords, (60, 60), (camera_group, enemies))
 
 # chests
-for i in range(3):
+for i in range(5):
     while coords in used_coords or not coords:
-        coords = [round(random.randint(-500, 500), -2) for i in range(2)]
+        coords = [round(random.randint(-1500, 1500), -2) for i in range(2)]
 
     used_coords.append(coords)
     chest = Chest(coords, (60, 60), (camera_group, collision_group))
