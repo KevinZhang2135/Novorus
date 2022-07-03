@@ -6,6 +6,22 @@ import random
 
 # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
 
+def load_image(image, size: list):
+    '''Loads an image according to the input'''
+    image = pygame.image.load(os.path.join(
+        'sprites', image)).convert_alpha()
+    image = pygame.transform.scale(image, size)
+
+    return image
+
+def load_text(text, coords, text_size, color):
+    font = pygame.font.Font('comicoro.ttf', round(text_size))
+    text = font.render(text, True, color)
+    text_rect = text.get_rect(center=coords)
+
+    return text, text_rect
+
+
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, ):
         super().__init__()
@@ -36,39 +52,20 @@ class CameraGroup(pygame.sprite.Group):
                     sprite.rect.height)
 
                 pygame.draw.rect(
-                    self.display_surface,     
-                    (255, 0, 0), 
+                    self.display_surface,
+                    (255, 0, 0),
                     rectingle,
                     1)
 
-
-class Sprite(pygame.sprite.Sprite):
-    def __init__(self, size: list, group):
-        super().__init__(group)
-        self.display_surface = pygame.display.get_surface()
-        self.width, self.height = size
-
-    def load_image(self, image):
-        '''Loads an image according to the input'''
-        image = pygame.image.load(os.path.join(
-            'sprites', image)).convert_alpha()
-        image = pygame.transform.scale(image, (self.width, self.height))
-
-        return image
-
-    def load_text(self, text, coords, text_size, color):
-        font = pygame.font.Font('comicoro.ttf', round(text_size))
-        text = font.render(text, True, color)
-        text_rect = text.get_rect(center=coords)
-
-        return text, text_rect
-
-
-class Player(Sprite):
+#self.display_surface = pygame.display.get_surface()
+class Player(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, groups):
-        super().__init__(size, groups)
-        self.image = self.load_image('knight_walk1.png')
+        super().__init__(groups)
+        self.width, self.height = size
+        
+        self.image = load_image('knight_walk1.png', size)
         self.rect = self.image.get_rect(center=coords)
+        self.mask = pygame.mask.from_surface(self.image)
 
         self.colliding = False
         self.in_combat = False
@@ -86,7 +83,7 @@ class Player(Sprite):
 
         self.speed = {'current': 30,
                       'total': 30}
-            
+
         self.attack = {'current': 20,
                        'total': 20}
 
@@ -94,29 +91,28 @@ class Player(Sprite):
         self.level = self._level
         self.move_speed = 5
         self.ticks = 0
-        
-    
+
     @property
     def level(self):
-        return self._level    
+        return self._level
 
     @level.setter
     def level(self, value):
         self._level = value
 
         for status in self.health:
-            self.health[status] = round(self.health[status] 
-                                        * (1 + self.bonuses['health']) 
+            self.health[status] = round(self.health[status]
+                                        * (1 + self.bonuses['health'])
                                         * (1.05**(self._level - 1)))
 
         for status in self.speed:
-            self.speed[status] = round(self.speed[status] 
-                                       * (1 + self.bonuses['speed']) 
+            self.speed[status] = round(self.speed[status]
+                                       * (1 + self.bonuses['speed'])
                                        * (1.05**(self._level - 1)))
 
         for status in self.attack:
-            self.attack[status] = round(self.attack[status] 
-                                        * (1 + self.bonuses['attack']) 
+            self.attack[status] = round(self.attack[status]
+                                        * (1 + self.bonuses['attack'])
                                         * (1.05**(self._level - 1)))
 
     def movement(self):
@@ -147,26 +143,28 @@ class Player(Sprite):
                                            self.rect.centery - sprite.rect.centery)
 
             # checks if the distance of the sprites are within collision distance
-            if abs(distance.x) < collision_distance.x and abs(distance.y) < collision_distance.y:
+            if (abs(distance.x) + self.width / 6 < collision_distance.x
+                and abs(distance.y) + self.height / 6 < collision_distance.y):
+
                 # horizontal collision
                 if abs(distance.x) > abs(distance.y):
                     # left collision
                     if distance.x > 0:
-                        self.rect.left = sprite.rect.right
+                        self.rect.left = sprite.rect.right - self.width / 6
 
                     # right collision
                     if distance.x < 0:
-                        self.rect.right = sprite.rect.left
+                        self.rect.right = sprite.rect.left + self.width / 6
 
                 # vertical collision
                 elif abs(distance.y) > abs(distance.x):
                     # bottom collision
                     if distance.y < 0:
-                        self.rect.bottom = sprite.rect.top
+                        self.rect.bottom = sprite.rect.top + self.height / 6
 
                     # top collision
                     if distance.y > 0:
-                        self.rect.top = sprite.rect.bottom
+                        self.rect.top = sprite.rect.bottom - self.height / 6
 
     def animation(self):
         '''Handles animation'''
@@ -193,8 +191,9 @@ class Player(Sprite):
             up = keys[pygame.K_UP] or keys[pygame.K_w]
 
             if left or right or down or up:
-                self.image = self.load_image(
-                    movement_sprites[math.floor(self.ticks / 30)])
+                self.image = load_image(
+                    movement_sprites[math.floor(self.ticks / 30)], 
+                    (self.width, self.height))
 
                 if left:
                     self.facing = 'left'
@@ -203,17 +202,20 @@ class Player(Sprite):
                     self.facing = 'right'
 
             else:
-                self.image = self.load_image(
-                    idle_sprites[math.floor(self.ticks / 30)])
+                self.image = load_image(
+                    idle_sprites[math.floor(self.ticks / 30)],
+                    (self.width, self.height))
 
         else:
             if self.attacking:
-                self.image = self.load_image(
-                    combat_sprites[math.floor((self.ticks - 40) / 20)])
+                self.image = load_image(
+                    combat_sprites[math.floor((self.ticks - 20) / 25)],
+                    (self.width, self.height))
 
             else:
-                self.image = self.load_image(
-                    idle_sprites[math.floor(self.ticks / 30)])
+                self.image = load_image(
+                    idle_sprites[math.floor(self.ticks / 30)],
+                    (self.width, self.height))
 
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
@@ -229,12 +231,15 @@ class Player(Sprite):
             self.ticks = 0
 
 
-class Ghost(Sprite):
+class Ghost(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, groups):
-        super().__init__(size, groups)
-        self.image = self.load_image('ghost_idle1.png')
+        super().__init__(groups)
+        self.width, self.height = size
+        
+        self.image = load_image('ghost_idle1.png', size)
         self.rect = self.image.get_rect(center=coords)
-    
+        self.mask = pygame.mask.from_surface(self.image)
+
         self.in_combat = False
         self.attacking = False
 
@@ -270,17 +275,20 @@ class Ghost(Sprite):
                           'ghost_attack3.png']
 
         if not self.in_combat:
-            self.image = self.load_image(
-                idle_sprites[math.floor(self.ticks / 30)])
+            self.image = load_image(
+                idle_sprites[math.floor(self.ticks / 30)], 
+                (self.width, self.height))
 
         else:
             if self.attacking:
-                self.image = self.load_image(
-                    combat_sprites[math.floor((self.ticks - 40) / 20)])
+                self.image = load_image(
+                    combat_sprites[math.floor((self.ticks - 40) / 25)], 
+                    (self.width, self.height))
 
             else:
-                self.image = self.load_image(
-                    idle_sprites[math.floor(self.ticks / 30)])
+                self.image = load_image(
+                    idle_sprites[math.floor(self.ticks / 30)], 
+                    (self.width, self.height))
 
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
@@ -294,67 +302,72 @@ class Ghost(Sprite):
             self.ticks = 0
 
 
-class Ambience(Sprite):
-    def __init__(self, coords: list, size: list, image:str, groups):
-        super().__init__(size, groups)
-        self.image = self.load_image(image)
+class Ambience(pygame.sprite.Sprite):
+    def __init__(self, coords: list, size: list, image: str, groups):
+        super().__init__(groups)
+        self.width, self.height = size
+
+        self.image = load_image(image, size)
         self.rect = self.image.get_rect(center=coords)
 
         if random.randint(0, 1):
             self.image = pygame.transform.flip(self.image, True, False)
 
 
-class Chest(Sprite):
+class Chest(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, groups):
-        super().__init__(size, groups)
-        self.image = self.load_image('chest_closed.png')
+        super().__init__(groups)
+        self.width, self.height = size
+
+        self.image = load_image('chest_closed.png', size)
         self.rect = self.image.get_rect(center=coords)
 
         self.opened = False
 
     def collision(self, player):
         collision_distance = pygame.math.Vector2((self.rect.width + player.rect.width) / 2,
-                                                     (self.rect.height + player.rect.height) / 2)
+                                                 (self.rect.height + player.rect.height) / 2)
 
         distance = pygame.math.Vector2(self.rect.centerx - player.rect.centerx,
-                                        self.rect.centery - player.rect.centery)
+                                       self.rect.centery - player.rect.centery)
 
         # checks if the distance of the sprites are within collision distance
-        if (abs(distance.x) - 1 < collision_distance.x 
+        if (abs(distance.x) - 1 < collision_distance.x
             and abs(distance.y) - 1 < collision_distance.y
-            and not self.opened):
+                and not self.opened):
 
-            self.image = self.load_image('chest_opened.png')
+            self.image = load_image(
+                'chest_opened.png',
+                (self.width, self.height))
+
             self.opened = True
-
             player.level += 1
-
 
     def update(self, player, collision_group):
         self.collision(player)
-        
 
-class Menu(Sprite):
+
+class Menu(pygame.sprite.Sprite):
     def __init__(self, groups):
-        sprite_width = pygame.display.get_surface().get_height() * 3 / 32
-        super().__init__((sprite_width, sprite_width), groups)
+        super().__init__(groups)
+        self.display_surface = pygame.display.get_surface()
 
+        self.width, self.height = [pygame.display.get_surface().get_height() * 3 / 32] * 2
         menu_width = self.display_surface.get_height() / 3
-        menu_height = self.display_surface.get_height() / 3
 
-        self.image = self.load_image('menu1.png')
+        self.image = load_image('menu1.png', (self.width, self.height))
         self.rect = self.image.get_rect(
             bottomright=[self.display_surface.get_width(),
                          self.display_surface.get_height()])
 
         self.menu_rect = pygame.Rect(
             (self.display_surface.get_width() - menu_width) / 2,
-            (self.display_surface.get_height() - menu_height) / 2,
+            (self.display_surface.get_height() - menu_width) / 2,
             menu_width,
-            menu_height)
+            menu_width)
 
         # menu text
-        self.menu_text, self.menu_text_rect = self.load_text(
+        self.menu_text, self.menu_text_rect = load_text(
             'Menu',
             (self.menu_rect.centerx, self.menu_rect.top + self.menu_rect.height / 8),
             self.menu_rect.width / 8,
@@ -362,11 +375,10 @@ class Menu(Sprite):
 
         # exit text
         self.draw_exit_text((50, 50, 50))
-
         self.pressed = False
 
     def draw_exit_text(self, color):
-        self.exit_text, self.exit_text_rect = self.load_text(
+        self.exit_text, self.exit_text_rect = load_text(
             'Exit',
             (self.menu_rect.centerx, self.menu_rect.bottom - self.menu_rect.height / 8),
             self.menu_rect.width / 8,
@@ -377,14 +389,14 @@ class Menu(Sprite):
 
         if paused:
             pygame.draw.rect(
-                self.display_surface,     
-                (131, 106, 83), 
+                self.display_surface,
+                (131, 106, 83),
                 self.menu_rect)
 
             pygame.draw.rect(
                 self.display_surface,
-                (104, 84, 66), 
-                self.menu_rect, 
+                (104, 84, 66),
+                self.menu_rect,
                 5)
 
             self.display_surface.blit(self.menu_text, self.menu_text_rect)
@@ -408,11 +420,10 @@ class Menu(Sprite):
             self.pressed = False
 
         if paused:
-            self.image = self.load_image('menu2.png')
+            self.image = load_image('menu2.png', (self.width, self.height))
 
             if self.exit_text_rect.collidepoint(pygame.mouse.get_pos()):
                 self.draw_exit_text((255, 231, 45))
-
                 if pygame.mouse.get_pressed()[0]:
                     runtime = False
 
@@ -420,14 +431,15 @@ class Menu(Sprite):
                 self.draw_exit_text((50, 50, 50))
 
         else:
-            self.image = self.load_image('menu1.png')
+            self.image = load_image('menu1.png', (self.width, self.height))
 
 
-class Bar(Sprite):
+class Bar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
-        sprite_width = pygame.display.get_surface().get_height() / 16
-        super().__init__((sprite_width, sprite_width), groups)
+        super().__init__(groups)
+        self.display_surface = pygame.display.get_surface()
 
+        self.width, self.height = [pygame.display.get_surface().get_height() / 16] * 2
         self.bar_height = self.display_surface.get_height() / 64
         self.coords = coords
 
@@ -436,58 +448,56 @@ class Bar(Sprite):
         pygame.draw.rect(self.display_surface, self.dark_color, self.bar, 3)
 
         self.display_surface.blit(
-            *self.load_text(
+            *load_text(
                 text,
                 self.bar.center,
                 self.bar.height,
                 (50, 50, 50)))
 
+    def bar_rect(self):
+        bar = pygame.Rect(
+            self.rect.centerx,
+            self.rect.centery - self.bar_height / 2,
+            self.rect.width * 1.5,
+            self.bar_height)
+
+        return bar
+
     def set_health(self):
-        self.image = self.load_image('heart.png')
+        self.image = load_image('heart.png', (self.width, self.height))
         self.rect = self.image.get_rect(
             topleft=self.coords)
 
-        self.bar = pygame.Rect(
-            self.rect.centerx, 
-            self.rect.centery - self.bar_height / 2,
-            self.rect.width * 1.5, 
-            self.bar_height)
+        self.bar = self.bar_rect()
 
         self.light_color = (211, 47, 47)
         self.dark_color = (198, 40, 40)
 
     def set_speed(self):
-        self.image = self.load_image('lightning.png')
+        self.image = load_image('lightning.png', (self.width, self.height))
         self.rect = self.image.get_rect(
             topleft=self.coords)
 
-        self.bar = pygame.Rect(
-            self.rect.centerx, 
-            self.rect.centery - self.bar_height / 2,
-            self.rect.width * 1.5,
-            self.bar_height)
+        self.bar = self.bar_rect()
 
         self.light_color = (255, 231, 45)
         self.dark_color = (255, 219, 14)
 
     def set_attack(self):
-        self.image = self.load_image('sword.png')
+        self.image = load_image('sword.png', (self.width, self.height))
         self.rect = self.image.get_rect(
             topleft=self.coords)
 
-        self.bar = pygame.Rect(
-            self.rect.centerx, 
-            self.rect.centery - self.bar_height / 2,
-            self.rect.width * 1.5, 
-            self.bar_height)
+        self.bar = self.bar_rect()
 
         self.light_color = (188, 188, 188)
         self.dark_color = (168, 168, 168)
 
 
-class TargetBars(Sprite):
+class TargetBars: 
     def __init__(self, coords: list, groups):
         self.display_surface = pygame.display.get_surface()
+
         self.coords = pygame.math.Vector2(coords)
         self.width = self.display_surface.get_height() * 9 / 64
         self.height = self.display_surface.get_height() * 11 / 64
@@ -507,6 +517,8 @@ class TargetBars(Sprite):
              * 14 / 128 + self.coords.y),
             groups)
 
+        self.bars = [self.health_bar, self.speed_bar, self.attack_bar]
+
         self.health_bar.set_health()
         self.speed_bar.set_speed()
         self.attack_bar.set_attack()
@@ -514,26 +526,26 @@ class TargetBars(Sprite):
         self.rect = pygame.Rect(coords, (self.width, self.height))
 
     def hide_sprites(self):
-        self.health_bar.kill()
-        self.speed_bar.kill()
-        self.attack_bar.kill()
-
+        for bar in self.bars:
+            bar.kill()
+            
     def add_sprites(self, group):
-        group.add(self.health_bar)
-        group.add(self.speed_bar)
-        group.add(self.attack_bar)
+        for bar in self.bars:
+            group.add(bar)
 
     def draw(self, target):
         pygame.draw.rect(self.display_surface, (131, 106, 83), self.rect)
         pygame.draw.rect(self.display_surface, (104, 84, 66), self.rect, 5)
 
-        self.health_bar.draw(
-            f"{target.health['current']} / {target.health['total']}")
-        self.speed_bar.draw(f"{target.speed['current']}")
-        self.attack_bar.draw(f"{target.attack['current']}")
+        text = [f"{target.health['current']} / {target.health['total']}",
+                f"{target.speed['current']}",
+                f"{target.attack['current']}"]
+
+        for index, bar in enumerate(self.bars):
+            bar.draw(text[index])
 
         self.display_surface.blit(
-            *self.load_text(
+            *load_text(
                 f'{target.name}',
                 (self.coords.x + self.width / 2, self.coords.y +
                  self.display_surface.get_height() * 3 / 128),
@@ -550,7 +562,6 @@ def combat(player, enemy):
             enemy.in_combat = True
 
             player.ticks = 0
-            enemy.ticks = 0
 
         # player and enemy face each other
         if player.rect.centerx < enemy.rect.centerx:
@@ -568,7 +579,7 @@ def combat(player, enemy):
             if chance < player.speed['current']:
                 # player attacks
                 player.attacking = True
-                player.ticks = 40
+                player.ticks =  20
 
             else:
                 # enemy attacks
@@ -605,7 +616,7 @@ pygame.font.init()
 pygame.display.set_caption('Novorus')
 
 # sets the size of the screen; defaults to full screen
-screen = pygame.display.set_mode()
+screen = pygame.display.set_mode((1920, 1020), pygame.RESIZABLE)
 clock = pygame.time.Clock()
 
 camera_group = CameraGroup()
@@ -624,6 +635,8 @@ player = Player((0, 0), (75, 75), camera_group)
 used_coords = [(0, 0)]
 coords = None
 
+wall = Ambience((100, 100), (100, 100), 'wall1.png', (camera_group, collision_group))
+
 # ambience
 size = (60, 40, 125, 100)
 objects = ['rock', 'grass', 'tree']
@@ -635,9 +648,9 @@ for j in range(150):
     used_coords.append(coords)
     groups = [camera_group]
     variation = random.randint(1, 3)
-        
+
     decor = Ambience(
-        coords, 
+        coords,
         [size[objects.index(obj)]] * 2,
         f'{obj}{variation}.png',
         groups)
@@ -661,6 +674,7 @@ for i in range(5):
 ticks = 0
 paused = True
 runtime = True
+fullscreen = True
 
 while runtime:
     # event handling
@@ -672,15 +686,23 @@ while runtime:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitbox=False)
+    camera_group.custom_draw(player, show_hitbox=True)
 
     # updates
-    for enemy in enemies:
-        if pygame.Rect.colliderect(player.rect, enemy.rect):
-            combat(player, enemy)
-            if player.in_combat:
-                enemy_bars.add_sprites(hud_group)
-                enemy_bars.draw(enemy)
+
+    # checks if the player rect is within an enemy rect
+    if pygame.sprite.spritecollide(player, enemies, False):
+        # checks if the player mask overlaps an enemy mask
+        if pygame.sprite.spritecollide(player, enemies, False, pygame.sprite.collide_mask):
+            for enemy in enemies:
+                # determines which enemy is withing the player rect
+                if pygame.Rect.colliderect(player.rect, enemy.rect):
+                    combat(player, enemy)
+                    if player.in_combat:
+                        enemy_bars.add_sprites(hud_group)
+                        enemy_bars.draw(enemy)
+
+                    break
 
     if not player.in_combat:
         enemy_bars.hide_sprites()
