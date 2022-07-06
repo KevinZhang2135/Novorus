@@ -21,22 +21,25 @@ class Player(pygame.sprite.Sprite):
         self.name = 'Player'
 
         self.bonuses = {'health': 0,
-                        'speed': 0,
-                        'attack': 0}
+                         'speed': 0,
+                         'attack': 0}
 
         self.health = {'current': 100,
-                       'total': 100}
+                       'total': 100,
+                       'base': 100}
 
         self.speed = {'current': 30,
-                      'total': 30}
+                      'total': 30,
+                      'base': 30}
 
         self.attack = {'current': 20,
-                       'total': 20}
-
-        self._level = 1
-        self.level = self._level
+                       'total': 20,
+                       'base': 20}
+        
         self.move_speed = 5
         self.ticks = 0
+        self._level = 1
+        self.set_stats()
 
     @property
     def level(self):
@@ -45,21 +48,21 @@ class Player(pygame.sprite.Sprite):
     @level.setter
     def level(self, value):
         self._level = value
+        self.set_stats()
+    
+    def set_stats(self):
+        stats = {'health': self.health,
+                 'speed': self.speed,
+                 'attack': self.attack}
 
-        for status in self.health:
-            self.health[status] = round(self.health[status]
-                                        * (1 + self.bonuses['health'])
+        for type in stats:
+            ratio = stats[type]['current'] / stats[type]['total']
+            
+            stats[type]['total'] = round(stats[type]['base']
+                                        * (1 + self.bonuses[type])
                                         * (1.05**(self._level - 1)))
 
-        for status in self.speed:
-            self.speed[status] = round(self.speed[status]
-                                       * (1 + self.bonuses['speed'])
-                                       * (1.05**(self._level - 1)))
-
-        for status in self.attack:
-            self.attack[status] = round(self.attack[status]
-                                        * (1 + self.bonuses['attack'])
-                                        * (1.05**(self._level - 1)))
+            stats[type]['current'] = round(ratio * stats[type]['total'])
 
     def movement(self):
         '''Handles movement'''

@@ -7,7 +7,7 @@ def load_image(image, size: list):
     '''Loads an image according to the input'''
     image = pygame.image.load(os.path.join(
         'sprites', image)).convert_alpha()
-    image = pygame.transform.scale(image, size)
+    image = pygame.transform.scale(image, [round(i) for i in size])
 
     return image
 

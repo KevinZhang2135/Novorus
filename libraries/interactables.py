@@ -23,14 +23,15 @@ class Chest(pygame.sprite.Sprite):
         # checks if the distance of the sprites are within collision distance
         if (abs(distance.x) - 1 < collision_distance.x
             and abs(distance.y) - 1 < collision_distance.y
-                and not self.opened):
+            and not self.opened):
 
             self.image = load_image(
                 'chest_opened.png',
                 (self.width, self.height))
 
             self.opened = True
-            player.level += 1
+            player.bonuses['attack'] += 1
+            player.set_stats()
 
     def update(self, player, collision_group):
         self.collision(player)
