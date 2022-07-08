@@ -61,15 +61,16 @@ class Menu(pygame.sprite.Sprite):
 
         self.width, self.height = [
             pygame.display.get_surface().get_height() * 3 / 32] * 2
+
         menu_width = self.display_surface.get_height() / 3
 
         self.menu_sprites = {
             'menu': load_image(
-                os.path.join('sprites/menu', 'menu.png'), 
+                os.path.join('sprites/menu', 'menu.png'),
                 (self.width, self.height)),
 
             'paused': load_image(
-                os.path.join('sprites/menu', 'paused.png'), 
+                os.path.join('sprites/menu', 'paused.png'),
                 (self.width, self.height))}
 
         self.image = self.menu_sprites['menu']
@@ -106,7 +107,9 @@ class Menu(pygame.sprite.Sprite):
 
         return exit_text, exit_text_rect
 
-    def update(self, game_state):
+    def update(self):
+        global game_state
+
         pause_left_click = (pygame.mouse.get_pressed()[0]
                             and self.rect.collidepoint(pygame.mouse.get_pos()))
 
@@ -138,7 +141,7 @@ class Menu(pygame.sprite.Sprite):
             self.display_surface.blit(*self.exit_text)
 
             if self.exit_text[1].collidepoint(pygame.mouse.get_pos()):
-                self.exit_text= self.yellow_exit_text
+                self.exit_text = self.yellow_exit_text
                 if pygame.mouse.get_pressed()[0]:
                     game_state['runtime'] = False
 
@@ -163,7 +166,7 @@ class Bar(pygame.sprite.Sprite):
 
     def set_health(self):
         self.image = load_image(
-            os.path.join('sprites/menu', 'heart.png'), 
+            os.path.join('sprites/menu', 'heart.png'),
             (self.width, self.height))
 
         self.create_bar()
@@ -173,7 +176,7 @@ class Bar(pygame.sprite.Sprite):
 
     def set_speed(self):
         self.image = load_image(
-            os.path.join('sprites/menu', 'lightning.png'), 
+            os.path.join('sprites/menu', 'lightning.png'),
             (self.width, self.height))
 
         self.create_bar()
@@ -183,7 +186,7 @@ class Bar(pygame.sprite.Sprite):
 
     def set_attack(self):
         self.image = load_image(
-            os.path.join('sprites/menu', 'sword.png'), 
+            os.path.join('sprites/menu', 'sword.png'),
             (self.width, self.height))
 
         self.create_bar()
@@ -296,7 +299,7 @@ class Player(pygame.sprite.Sprite):
         self.width, self.height = size
 
         self.image = load_image(
-            os.path.join('sprites/player/idle', 'knight_idle1.png'), 
+            os.path.join('sprites/player/idle', 'knight_idle1.png'),
             (self.width, self.height))
 
         self.rect = self.image.get_rect(center=coords)
@@ -306,10 +309,12 @@ class Player(pygame.sprite.Sprite):
         self.attacking = False
         self.exp = [0, 10]
 
+        self.action = 'idle'
         self.facing = 'right'
         self.name = 'Player'
 
         self.move_speed = 5
+        self.time = pygame.time.get_ticks()
         self.frame = 0
         self.level = 1
 
@@ -336,11 +341,11 @@ class Player(pygame.sprite.Sprite):
                                 'attack': []}
 
         for type in self.animation_types:
-            print(type)
             num_of_frames = len(os.listdir(f'sprites/player/{type}'))
             for i in range(num_of_frames):
                 image = load_image(
-                    os.path.join(f'sprites/player/{type}', f'knight_{type}{i + 1}.png'), 
+                    os.path.join(
+                        f'sprites/player/{type}', f'knight_{type}{i + 1}.png'),
                     (self.width, self.height))
 
                 self.animation_types[type].append(image)
@@ -361,25 +366,28 @@ class Player(pygame.sprite.Sprite):
 
     def movement(self):
         '''Handles movement'''
-        keys = pygame.key.get_pressed()
-        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
-        up = keys[pygame.K_UP] or keys[pygame.K_w]
-
-        # creates movement using falsy and truthy values that evaluate to 0 and 1
-        move = pygame.math.Vector2(right - left, down - up)
-        if move.length_squared() > 0:  # checks if the player is moving
-            # converts the coordinates to a vector according to the radius
-            move.scale_to_length(self.move_speed)
-
         if not self.in_combat:
+            keys = pygame.key.get_pressed()
+            left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+            right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+            down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+            up = keys[pygame.K_UP] or keys[pygame.K_w]
+
+            # creates movement using falsy and truthy values that evaluate to 0 and 1
+            move = pygame.math.Vector2(right - left, down - up)
+            if move.length_squared() > 0:  # checks if the player is moving
+                # converts the coordinates to a vector according to the radius
+                move.scale_to_length(self.move_speed)
+
+            
             self.rect.centerx += move.x
             self.rect.centery += move.y
 
-    def collision(self, sprites):
+    def collision(self):
         '''Handles collision'''
-        for sprite in sprites:
+        global collision_group
+
+        for sprite in collision_group:
             collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
                                                      (self.rect.height + sprite.rect.height) / 2)
 
@@ -410,17 +418,43 @@ class Player(pygame.sprite.Sprite):
                     if distance.y > 0:
                         self.rect.top = sprite.rect.bottom - self.height / 6
 
+    def attack_enemy(self):
+        global enemies
+
+        # checks if the player rect overlaps an enemy rect
+        if pygame.sprite.spritecollide(self, enemies, False):
+            # checks if the player mask overlaps an enemy mask
+            if pygame.sprite.spritecollide(self, enemies, False, pygame.sprite.collide_mask):
+                for enemy in enemies:
+                    # determines which enemy is withing the player rect
+                    if pygame.Rect.colliderect(player.rect, enemy.rect):
+                        self.in_combat = True
+                        enemy.in_combat = True
+                            
+                        if player.health['current'] > 0 or enemy.health['current'] > 0:
+
+                            # player and enemy face each other
+                            if self.rect.centerx < enemy.rect.centerx:
+                                player.facing = 'right'
+                                enemy.facing = 'left'
+
+                            else:
+                                player.facing = 'left'
+                                enemy.facing = 'right'
+
+
+
     def animation(self):
         '''Handles animation'''
+        animation_cooldown = 500
         if not self.in_combat:
             keys = pygame.key.get_pressed()
             left = keys[pygame.K_LEFT] or keys[pygame.K_a]
             right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
             down = keys[pygame.K_DOWN] or keys[pygame.K_s]
             up = keys[pygame.K_UP] or keys[pygame.K_w]
-
             if left or right or down or up:
-                self.image = self.animation_types['run'][math.floor(self.frame / 30)]
+                self.action = 'run'
 
                 if left:
                     self.facing = 'left'
@@ -429,27 +463,37 @@ class Player(pygame.sprite.Sprite):
                     self.facing = 'right'
 
             else:
-                self.image = self.animation_types['idle'][math.floor(self.frame / 30)]
+                self.action = 'idle'
 
         else:
             if self.attacking:
-                self.image = self.animation_types['attack'][math.floor((self.frame - 20) / 25)]
+                self.action = 'attack'
 
             else:
-                self.image = self.animation_types['idle'][math.floor(self.frame / 30)]
+                self.action = 'idle'
 
+        # set image
+        self.image = self.animation_types[self.action][self.frame]
+
+        # determines whether the animation cooldown is over
+        if pygame.time.get_ticks() - self.time > animation_cooldown:
+            self.time = pygame.time.get_ticks()
+            self.frame += 1 
+
+            # loops frames
+            if self.frame >= len(self.animation_types[self.action]):
+                self.frame = 0
+
+        # reflect image if facing left
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def update(self, player, collision_group):
+    def update(self):
         '''Handles events'''
         self.movement()
-        self.collision(collision_group)
+        self.collision()
+        self.attack_enemy()
         self.animation()
-
-        self.frame += 1
-        if self.frame >= 120:
-            self.frame = 0
 
 
 class Ghost(pygame.sprite.Sprite):
@@ -467,10 +511,12 @@ class Ghost(pygame.sprite.Sprite):
         self.in_combat = False
         self.attacking = False
 
-        self.frame = random.randint(0, 30)
+        self.time = pygame.time.get_ticks()
+        self.frame = 0
         self.level = random.randint(1, 2)
         self.exp = 10 * self.level
 
+        self.action = 'idle'
         self.facing = random.choice(['left', 'right'])
         self.name = 'Ghost'
 
@@ -493,34 +539,49 @@ class Ghost(pygame.sprite.Sprite):
             num_of_frames = len(os.listdir(f'sprites/ghost/{type}'))
             for i in range(num_of_frames):
                 image = load_image(
-                    os.path.join(f'sprites/ghost/{type}', f'ghost_{type}{i + 1}.png'), 
+                    os.path.join(
+                        f'sprites/ghost/{type}', f'ghost_{type}{i + 1}.png'),
                     (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
+    def attack_enemy(self):
+        global player
+        global player_group
+        
+        if self.in_combat:
+            pass
+                    
+
     def animation(self):
         '''Handles animation'''
+        animation_cooldown = 400
 
         if not self.in_combat:
-            self.image = self.animation_types['idle'][math.floor(self.frame / 30)]
+            self.action = 'idle'
 
         else:
             if self.attacking:
-                self.image = self.animation_types['attack'][math.floor((self.frame - 40) / 25)]
+                self.action = 'attack'
 
             else:
-                self.image = self.animation_types['idle'][math.floor(self.frame / 30)]
+                self.action = 'idle'
+
+        self.image = self.animation_types[self.action][self.frame]
+        if pygame.time.get_ticks() - self.time > animation_cooldown:
+            self.time = pygame.time.get_ticks()
+            self.frame += 1
+
+            if self.frame >= len(self.animation_types[self.action]):
+                self.frame = 0
 
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def update(self, player, collision_group):
+    def update(self):
         '''Handles events'''
+        self.attack_enemy()
         self.animation()
-
-        self.frame += 1
-        if self.frame >= 120:
-            self.frame = 0
 
 
 class Chest(pygame.sprite.Sprite):
@@ -528,15 +589,23 @@ class Chest(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = load_image(
-            os.path.join('sprites', 'chest_closed.png'),
-            (self.width, self.height))
+        self.chest_sprites = {
+            'closed': load_image(
+                os.path.join('sprites', 'chest_closed.png'),
+                (self.width, self.height)),
+
+            'opened': load_image(
+                os.path.join('sprites', 'chest_opened.png'),
+                (self.width, self.height)), }
+
+        self.image = self.chest_sprites['closed']
 
         self.rect = self.image.get_rect(center=coords)
 
         self.opened = False
 
-    def collision(self, player):
+    def collision(self):
+        global player
         collision_distance = pygame.math.Vector2((self.rect.width + player.rect.width) / 2,
                                                  (self.rect.height + player.rect.height) / 2)
 
@@ -548,18 +617,15 @@ class Chest(pygame.sprite.Sprite):
             and abs(distance.y) - 1 < collision_distance.y
                 and not self.opened):
 
-            self.image = load_image(
-                'chest_opened.png',
-                (self.width, self.height))
-
+            self.image = self.chest_sprites['opened']
             self.opened = True
 
             player.bonuses['health'] += 1
             player.bonuses['attack'] += 1
             player.set_stats()
 
-    def update(self, player, collision_group):
-        self.collision(player)
+    def update(self):
+        self.collision()
 
 
 class Ambience(pygame.sprite.Sprite):
@@ -591,64 +657,6 @@ def load_text(text, coords, text_size, color):
     return text, text_rect
 
 
-def combat(player, enemy):
-    # checks health before entering combat
-    if player.health['current'] > 0 or enemy.health['current'] > 0:
-        # sync ticks so combat immediately starts
-        if not player.in_combat:
-            player.in_combat = True
-            enemy.in_combat = True
-
-        # player and enemy face each other
-        if player.rect.centerx < enemy.rect.centerx:
-            player.facing = 'right'
-            enemy.facing = 'left'
-
-        else:
-            player.facing = 'left'
-            enemy.facing = 'right'
-
-        # player animation for attacking
-        if not player.attacking or not enemy.attacking:
-            chance = random.randint(
-                0, player.speed['current'] + enemy.speed['current'])
-            if chance < player.speed['current']:
-                # player attacks
-                player.attacking = True
-                player.frame = 20
-
-            else:
-                # enemy attacks
-                enemy.attacking = True
-                enemy.frame = 40
-
-        # only deal damage after end of animation
-        if player.frame == 119 and player.attacking:
-            enemy.health['current'] -= player.attack['current']
-            player.attacking = False
-
-        elif enemy.frame == 119 and enemy.attacking:
-            player.health['current'] -= enemy.attack['current']
-            enemy.attacking = False
-            if player.health['current'] < 0:
-                player.health = 0
-
-    # end of combat
-    if player.health['current'] <= 0 or enemy.health['current'] <= 0:
-        player.in_combat = False
-        player.attacking = False
-
-        enemy.in_combat = False
-        enemy.attacking = False
-
-        if enemy.health['current'] <= 0:
-            enemy.kill()
-            del enemy
-
-        else:
-            pass
-
-
 game_state = {'paused': True,
               'runtime': True,
               'fullscreen': True}
@@ -661,6 +669,7 @@ pygame.display.set_caption('Novorus')
 screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 
+player_group = pygame.sprite.GroupSingle()
 camera_group = CameraGroup()
 enemies = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
@@ -668,9 +677,8 @@ hud_group = CameraGroup()
 
 # hud
 menu = Menu(hud_group)
-player_bars = TargetBars((0, 0), hud_group)
+player_bars = TargetBars((0, 0), (player_group, hud_group))
 enemy_bars = TargetBars((0, screen.get_height() * 11 / 64), hud_group)
-print(screen.get_width, screen.get_height())
 
 # player
 player = Player((0, 0), (75, 75), camera_group)
@@ -728,33 +736,27 @@ while game_state['runtime']:
     # redraws sprites and images
     camera_group.custom_draw(player, show_hitboxes=False)
 
-    # updates
-
     # checks if the player rect is within an enemy rect
-    if pygame.sprite.spritecollide(player, enemies, False):
-        # checks if the player mask overlaps an enemy mask
-        if pygame.sprite.spritecollide(player, enemies, False, pygame.sprite.collide_mask):
-            for enemy in enemies:
-                # determines which enemy is withing the player rect
-                if pygame.Rect.colliderect(player.rect, enemy.rect):
-                    combat(player, enemy)
-                    if player.in_combat:
-                        enemy_bars.add_sprites(hud_group)
-                        enemy_bars.draw(enemy)
+    for enemy in enemies:
+        # determines which enemy is withing the player rect
+        if enemy.in_combat:
+            enemy_bars.add_sprites(hud_group)
+            enemy_bars.draw(enemy)
+            break
+            
+        else:
+            enemy_bars.hide_sprites()
 
-                    break
-
-    if not player.in_combat:
-        enemy_bars.hide_sprites()
-
-    if not game_state['paused']:
-        camera_group.update(player, collision_group)
-
-    hud_group.update(game_state)
-
-    # hud
+    # redraws sprites and images
     player_bars.draw(player)
     hud_group.draw(screen)
+    
+    
+    # updates
+    if not game_state['paused']:
+        camera_group.update()
+
+    hud_group.update()
 
     # updates screen
     pygame.display.update()
