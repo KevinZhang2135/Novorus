@@ -25,8 +25,8 @@ class CameraGroup(pygame.sprite.Group):
 
         # camera offset
         self.offset = pygame.math.Vector2()
-        self.half_width = self.display_surface.get_size()[0] / 2
-        self.half_height = self.display_surface.get_size()[1] / 2
+        self.half_width = self.display_surface.get_width() / 2
+        self.half_height = self.display_surface.get_height() / 2
 
     def center_target(self, target):
         self.offset.x = target.rect.centerx - self.half_width
@@ -382,7 +382,6 @@ class Player(pygame.sprite.Sprite):
                 # converts the coordinates to a vector according to the radius
                 self.move.scale_to_length(self.move_speed)
 
-            
             self.rect.centerx += self.move.x
             self.rect.centery += self.move.y
 
@@ -424,7 +423,6 @@ class Player(pygame.sprite.Sprite):
     def attack_enemy(self):
         global enemies
 
-        
         # checks if the player rect overlaps an enemy rect
         if pygame.sprite.spritecollide(self, enemies, False):
             # checks if the player mask overlaps an enemy mask
@@ -454,7 +452,7 @@ class Player(pygame.sprite.Sprite):
                             if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
                                 self.attacking = True
                                 self.frame = 0
-                            
+
                             # only deal damage when animation ends
                             if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
                                 if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
@@ -474,7 +472,7 @@ class Player(pygame.sprite.Sprite):
                             # player dies
                             pass
                         break
-                            
+
     def animation(self):
         '''Handles animation'''
         if not self.in_combat:
@@ -503,7 +501,7 @@ class Player(pygame.sprite.Sprite):
         # determines whether the animation cooldown is over
         if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
             self.animation_time = pygame.time.get_ticks()
-            self.frame += 1 
+            self.frame += 1
 
             # loops frames
             if self.frame >= len(self.animation_types[self.action]):
@@ -582,7 +580,7 @@ class Ghost(pygame.sprite.Sprite):
             if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
                 self.attacking = True
                 self.frame = 0
-            
+
             # only deal damage when animation ends
             if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
                 if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
@@ -599,7 +597,7 @@ class Ghost(pygame.sprite.Sprite):
         else:
             # ghost dies
             pass
-                    
+
     def animation(self):
         '''Handles animation'''
         if not self.in_combat:
@@ -702,6 +700,14 @@ def load_text(text, coords, text_size, color):
     return text, text_rect
 
 
+def offset_mouse_pos():
+    mouse_pos = list(pygame.mouse.get_pos())
+    mouse_pos[0] += player.rect.centerx - screen.get_width() / 2
+    mouse_pos[1] += player.rect.centery - screen.get_height() / 2
+
+    return mouse_pos
+
+
 game_state = {'paused': True,
               'runtime': True,
               'fullscreen': True}
@@ -711,7 +717,7 @@ pygame.font.init()
 pygame.display.set_caption('Novorus')
 
 # sets the size of the screen; defaults to full screen
-screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((1920, 1080))  # , pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 
 player_group = pygame.sprite.GroupSingle()
@@ -729,8 +735,11 @@ enemy_bars = TargetBars((0, screen.get_height() * 11 / 64), hud_group)
 player = Player((0, 0), (75, 75), camera_group)
 
 # ambience
-wall = Ambience((100, 100), (100, 100), 'sprites/wall1.png',
-                (camera_group, collision_group))
+wall = Ambience(
+    (100, 100),
+    (100, 100),
+    os.path.join('sprites/walls', 'wall_middle.png'),
+    (camera_group, collision_group))
 
 used_coords = [(0, 0), (100, 100)]
 coords = None
@@ -779,24 +788,21 @@ while game_state['runtime']:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=False)
+    camera_group.custom_draw(player, show_hitboxes=True)
 
-    # checks if the player rect is within an enemy rect
     for enemy in enemies:
-        # determines which enemy is withing the player rect
-        if enemy.in_combat:
+        if enemy.in_combat or enemy.rect.collidepoint(offset_mouse_pos()):
             enemy_bars.add_sprites(hud_group)
             enemy_bars.draw(enemy)
             break
-            
+
         else:
             enemy_bars.hide_sprites()
 
     # redraws sprites and images
     player_bars.draw(player)
     hud_group.draw(screen)
-    
-    
+
     # updates
     if not game_state['paused']:
         camera_group.update()
