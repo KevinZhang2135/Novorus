@@ -293,6 +293,39 @@ class TargetBars:
                 BLACK))
 
 
+class Cursor(pygame.sprite.Sprite):
+    def __init__(self, group):
+        super().__init__(group)
+
+        self.display_surface = pygame.display.get_surface()
+        self.image = load_image(os.path.join('sprites', 'cursor.png'), (100, 100))
+        self.rect = self.image.get_rect(center=(0, 0))
+
+    def update(self):
+        global player
+
+        coords = self.offset_mouse_pos()
+        coords[0] = round(coords[0] / 100) * 100
+        coords[0] -= player.rect.centerx - self.display_surface.get_width() / 2
+
+        coords[1] = round(coords[1] / 100) * 100
+        coords[1] -= player.rect.centery - self.display_surface.get_height() / 2
+            
+        self.rect.center = coords
+
+    @staticmethod
+    def offset_mouse_pos():
+        global player
+
+        display_surface = pygame.display.get_surface()
+
+        mouse_pos = list(pygame.mouse.get_pos())
+        mouse_pos[0] += player.rect.centerx - display_surface.get_width() / 2
+        mouse_pos[1] += player.rect.centery - display_surface.get_height() / 2
+
+        return mouse_pos
+
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, groups):
         super().__init__(groups)
@@ -318,9 +351,11 @@ class Player(pygame.sprite.Sprite):
 
         self.frame = 0
         self.level = 1
-        self.move_speed = 5
-        self.move = pygame.math.Vector2(0, 0)
 
+        self.acceleration = pygame.math.Vector2(0, 0)
+        self.velocity = pygame.math.Vector2(0, 0)
+        self.max_velocity = 7
+        
         self.bonuses = {'health': 0,
                         'speed': 0,
                         'attack': 0}
@@ -377,13 +412,21 @@ class Player(pygame.sprite.Sprite):
             up = keys[pygame.K_UP] or keys[pygame.K_w]
 
             # creates movement using falsy and truthy values that evaluate to 0 and 1
-            self.move = pygame.math.Vector2(right - left, down - up)
-            if self.move.length_squared() > 0:  # checks if the player is moving
+            self.acceleration = pygame.math.Vector2(right - left, down - up)
+            if self.acceleration.length_squared() > 0:  # checks if the player is moving
                 # converts the coordinates to a vector according to the radius
-                self.move.scale_to_length(self.move_speed)
+                self.acceleration.scale_to_length(self.max_velocity)
+            
+            self.velocity += self.acceleration
+            self.velocity *= 0.5
+            if abs(self.velocity.x) < 0.25:
+                self.velocity.x = 0
+            
+            if abs(self.velocity.y) < 0.25:
+                self.velocity.y = 0
 
-            self.rect.centerx += self.move.x
-            self.rect.centery += self.move.y
+            self.rect.centerx += self.velocity.x
+            self.rect.centery += self.velocity.y
 
     def collision(self):
         '''Handles collision'''
@@ -476,13 +519,13 @@ class Player(pygame.sprite.Sprite):
     def animation(self):
         '''Handles animation'''
         if not self.in_combat:
-            if self.move.length_squared() > 0:
+            if self.velocity.length_squared() > 0:
                 self.action = 'run'
 
-                if self.move.x < 0:
+                if self.velocity.x < 0:
                     self.facing = 'left'
 
-                elif self.move.x > 0:
+                elif self.velocity.x > 0:
                     self.facing = 'right'
 
             else:
@@ -700,14 +743,6 @@ def load_text(text, coords, text_size, color):
     return text, text_rect
 
 
-def offset_mouse_pos():
-    mouse_pos = list(pygame.mouse.get_pos())
-    mouse_pos[0] += player.rect.centerx - screen.get_width() / 2
-    mouse_pos[1] += player.rect.centery - screen.get_height() / 2
-
-    return mouse_pos
-
-
 game_state = {'paused': True,
               'runtime': True,
               'fullscreen': True}
@@ -724,9 +759,11 @@ player_group = pygame.sprite.GroupSingle()
 camera_group = CameraGroup()
 enemies = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
+cursor_group = pygame.sprite.GroupSingle()
 hud_group = CameraGroup()
 
 # hud
+cursor = Cursor(cursor_group)
 menu = Menu(hud_group)
 player_bars = TargetBars((0, 0), (player_group, hud_group))
 enemy_bars = TargetBars((0, screen.get_height() * 11 / 64), hud_group)
@@ -789,9 +826,10 @@ while game_state['runtime']:
 
     # redraws sprites and images
     camera_group.custom_draw(player, show_hitboxes=True)
-
+    cursor_group.draw(screen)
+    player_bars.draw(player)
     for enemy in enemies:
-        if enemy.in_combat or enemy.rect.collidepoint(offset_mouse_pos()):
+        if enemy.in_combat or enemy.rect.collidepoint(Cursor.offset_mouse_pos()):
             enemy_bars.add_sprites(hud_group)
             enemy_bars.draw(enemy)
             break
@@ -799,14 +837,13 @@ while game_state['runtime']:
         else:
             enemy_bars.hide_sprites()
 
-    # redraws sprites and images
-    player_bars.draw(player)
     hud_group.draw(screen)
 
     # updates
     if not game_state['paused']:
         camera_group.update()
 
+    cursor_group.update()
     hud_group.update()
 
     # updates screen
