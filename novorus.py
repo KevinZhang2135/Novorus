@@ -346,7 +346,7 @@ class Player(pygame.sprite.Sprite):
         self.facing = 'right'
         self.name = 'Player'
 
-        self.animation_cooldown = 500
+        self.animation_cooldown = 350
         self.animation_time = pygame.time.get_ticks()
 
         self.frame = 0
@@ -825,7 +825,7 @@ while game_state['runtime']:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=True)
+    camera_group.custom_draw(player, show_hitboxes=False)
     cursor_group.draw(screen)
     player_bars.draw(player)
     for enemy in enemies:
