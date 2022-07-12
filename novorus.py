@@ -19,7 +19,7 @@ DARK_BROWN = (104, 84, 66)
 
 
 class CameraGroup(pygame.sprite.Group):
-    def __init__(self, ):
+    def __init__(self):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
 
@@ -152,145 +152,168 @@ class Menu(pygame.sprite.Sprite):
             self.image = self.menu_sprites['menu']
 
 
-class Bar(pygame.sprite.Sprite):
+class HealthBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
+        self.coords = coords
 
         self.width = pygame.display.get_surface().get_height() / 16
         self.height = pygame.display.get_surface().get_height() / 16
 
         self.bar_width = self.width * 1.5
         self.bar_height = self.display_surface.get_height() / 64
-        self.coords = coords
 
-    def set_health(self):
         self.image = load_image(
             os.path.join('sprites/menu', 'heart.png'),
             (self.width, self.height))
 
-        self.create_bar()
-
-        self.light_color = RED
-        self.dark_color = BLOOD_RED
-
-    def set_speed(self):
-        self.image = load_image(
-            os.path.join('sprites/menu', 'lightning.png'),
-            (self.width, self.height))
-
-        self.create_bar()
-
-        self.light_color = YELLOW
-        self.dark_color = GOLD
-
-    def set_attack(self):
-        self.image = load_image(
-            os.path.join('sprites/menu', 'sword.png'),
-            (self.width, self.height))
-
-        self.create_bar()
-
-        self.light_color = GREY
-        self.dark_color = DARK_GREY
-
-    def create_bar(self):
-        self.rect = self.image.get_rect(
-            topleft=self.coords)
-
+        self.rect = self.image.get_rect(topleft=self.coords)
         self.bar = pygame.Rect(
             self.rect.centerx,
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
 
-        self.lost_bar = pygame.Rect(
+        self.total_bar = pygame.Rect(
             self.rect.centerx,
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
 
-        self.text_center = self.bar.center
-
-    def draw(self, text, ratio=1):
+    def draw(self, target):
+        ratio = target.health['current'] / target.health['total']
         self.bar.width = self.bar_width * ratio
 
-        if ratio < 1:
-            pygame.draw.rect(self.display_surface,
-                             PECAN, self.lost_bar, 2)
-
-        pygame.draw.rect(self.display_surface, self.light_color, self.bar)
-        pygame.draw.rect(self.display_surface, self.dark_color, self.bar, 2)
+        pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2)
+        pygame.draw.rect(self.display_surface, RED, self.bar)
+        pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2)
 
         self.display_surface.blit(
             *load_text(
-                text,
-                self.text_center,
+                str(target.health['current']),
+                self.total_bar.center,
                 self.bar.height,
                 BLACK))
 
 
-class TargetBars:
-    def __init__(self, coords: list, groups):
+class SpeedBar(pygame.sprite.Sprite):
+    def __init__(self, coords, groups):
+        super().__init__(groups)
+        self.display_surface = pygame.display.get_surface()
+        self.coords = coords
+
+        self.width = pygame.display.get_surface().get_height() / 16
+        self.height = pygame.display.get_surface().get_height() / 16
+
+        self.bar_width = self.width * 1.5
+        self.bar_height = self.display_surface.get_height() / 64
+
+        self.image = load_image(
+            os.path.join('sprites/menu', 'lightning.png'),
+            (self.width, self.height))
+
+        self.rect = self.image.get_rect(topleft=self.coords)
+        self.bar = pygame.Rect(
+            self.rect.centerx,
+            self.rect.centery - self.bar_height / 2,
+            self.bar_width,
+            self.bar_height)
+
+    def draw(self, target):
+        pygame.draw.rect(self.display_surface, YELLOW, self.bar)
+        pygame.draw.rect(self.display_surface, GOLD, self.bar, 2)
+
+        self.display_surface.blit(
+            *load_text(
+                str(target.speed['current']),
+                self.bar.center,
+                self.bar.height,
+                BLACK))
+
+
+class AttackBar(pygame.sprite.Sprite):
+    def __init__(self, coords, groups):
+        super().__init__(groups)
+        self.display_surface = pygame.display.get_surface()
+        self.coords = coords
+
+        self.width = pygame.display.get_surface().get_height() / 16
+        self.height = pygame.display.get_surface().get_height() / 16
+
+        self.bar_width = self.width * 1.5
+        self.bar_height = self.display_surface.get_height() / 64
+
+        self.image = load_image(
+            os.path.join('sprites/menu', 'sword.png'),
+            (self.width, self.height))
+
+        self.rect = self.image.get_rect(topleft=self.coords)
+        self.bar = pygame.Rect(
+            self.rect.centerx,
+            self.rect.centery - self.bar_height / 2,
+            self.bar_width,
+            self.bar_height)
+
+    def draw(self, target):
+        pygame.draw.rect(self.display_surface, GREY, self.bar)
+        pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2)
+
+        self.display_surface.blit(
+            *load_text(
+                str(target.attack['current']),
+                self.bar.center,
+                self.bar.height,
+                BLACK))
+
+
+class Bars(pygame.sprite.Group):
+    def __init__(self, coords):
+        super().__init__()
         self.display_surface = pygame.display.get_surface()
 
         self.coords = pygame.math.Vector2(coords)
         self.width = self.display_surface.get_height() * 9 / 64
         self.height = self.display_surface.get_height() * 11 / 64
+        self.rect = pygame.Rect(self.coords, (self.width, self.height))
 
-        self.health_bar = Bar(
-            (self.coords.x,  self.display_surface.get_height()
-             * 4 / 128 + self.coords.y),
-            groups)
+    def custom_draw(self, always_show=True):
+        global player
+        global enemy_group
 
-        self.speed_bar = Bar(
-            (self.coords.x, self.display_surface.get_height()
-             * 9 / 128 + self.coords.y),
-            groups)
+        if always_show:
+            pygame.draw.rect(self.display_surface, BROWN, self.rect)
+            pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
+            self.display_surface.blit(
+                *load_text(
+                    f'{player.name}',
+                    (self.coords.x + self.width / 2,
+                     self.coords.y + self.display_surface.get_height() * 3 / 128),
+                    self.display_surface.get_height() / 32,
+                    BLACK))
 
-        self.attack_bar = Bar(
-            (self.coords.x, self.display_surface.get_height()
-             * 14 / 128 + self.coords.y),
-            groups)
+            for sprite in self.sprites():
+                sprite.draw(player)
+                self.display_surface.blit(sprite.image, sprite.coords)
 
-        self.bars = [self.health_bar, self.speed_bar, self.attack_bar]
+        else:
+            for enemy in enemy_group:
+                if enemy.in_combat or enemy.rect.collidepoint(Cursor.offset_mouse_pos()):
+                    pygame.draw.rect(self.display_surface, BROWN, self.rect)
+                    pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
+                    self.display_surface.blit(
+                        *load_text(
+                            f'{enemy.name}',
+                            (self.coords.x + self.width / 2,
+                                self.coords.y + self.display_surface.get_height() * 3 / 128),
+                            self.display_surface.get_height() / 32,
+                            BLACK))
 
-        self.health_bar.set_health()
-        self.speed_bar.set_speed()
-        self.attack_bar.set_attack()
-
-        self.rect = pygame.Rect(coords, (self.width, self.height))
-
-    def hide_sprites(self):
-        for bar in self.bars:
-            bar.kill()
-
-    def add_sprites(self, group):
-        for bar in self.bars:
-            group.add(bar)
-
-    def draw(self, target):
-        pygame.draw.rect(self.display_surface, BROWN, self.rect)
-        pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
-
-        health_ratio = target.health['current'] / target.health['total']
-        text = [f"{target.speed['current']}",
-                f"{target.attack['current']}"]
-
-        for index, bar in enumerate(self.bars[1:]):
-            bar.draw(text[index])
-
-        self.health_bar.draw(
-            f"{target.health['current']} / {target.health['total']}",
-            health_ratio)
-
-        self.display_surface.blit(
-            *load_text(
-                f'{target.name}',
-                (self.coords.x + self.width / 2, self.coords.y +
-                 self.display_surface.get_height() * 3 / 128),
-                self.display_surface.get_height() / 32,
-                BLACK))
+                    for sprite in self.sprites():
+                        sprite.draw(enemy)
+                        self.display_surface.blit(sprite.image, sprite.coords)
+                        
+                    break
 
 
 class Cursor(pygame.sprite.Sprite):
@@ -298,7 +321,8 @@ class Cursor(pygame.sprite.Sprite):
         super().__init__(group)
 
         self.display_surface = pygame.display.get_surface()
-        self.image = load_image(os.path.join('sprites', 'cursor.png'), (100, 100))
+        self.image = load_image(os.path.join(
+            'sprites', 'cursor.png'), (100, 100))
         self.rect = self.image.get_rect(center=(0, 0))
 
     def update(self):
@@ -309,8 +333,9 @@ class Cursor(pygame.sprite.Sprite):
         coords[0] -= player.rect.centerx - self.display_surface.get_width() / 2
 
         coords[1] = round(coords[1] / 100) * 100
-        coords[1] -= player.rect.centery - self.display_surface.get_height() / 2
-            
+        coords[1] -= player.rect.centery - \
+            self.display_surface.get_height() / 2
+
         self.rect.center = coords
 
     @staticmethod
@@ -355,7 +380,7 @@ class Player(pygame.sprite.Sprite):
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
         self.max_velocity = 7
-        
+
         self.bonuses = {'health': 0,
                         'speed': 0,
                         'attack': 0}
@@ -416,12 +441,12 @@ class Player(pygame.sprite.Sprite):
             if self.acceleration.length_squared() > 0:  # checks if the player is moving
                 # converts the coordinates to a vector according to the radius
                 self.acceleration.scale_to_length(self.max_velocity)
-            
+
             self.velocity += self.acceleration
             self.velocity *= 0.5
             if abs(self.velocity.x) < 0.25:
                 self.velocity.x = 0
-            
+
             if abs(self.velocity.y) < 0.25:
                 self.velocity.y = 0
 
@@ -464,13 +489,13 @@ class Player(pygame.sprite.Sprite):
                         self.rect.top = sprite.rect.bottom - self.height / 6
 
     def attack_enemy(self):
-        global enemies
+        global enemy_group
 
         # checks if the player rect overlaps an enemy rect
-        if pygame.sprite.spritecollide(self, enemies, False):
+        if pygame.sprite.spritecollide(self, enemy_group, False):
             # checks if the player mask overlaps an enemy mask
-            if pygame.sprite.spritecollide(self, enemies, False, pygame.sprite.collide_mask):
-                for enemy in enemies:
+            if pygame.sprite.spritecollide(self, enemy_group, False, pygame.sprite.collide_mask):
+                for enemy in enemy_group:
                     # determines which enemy is withing the player rect
                     if pygame.Rect.colliderect(player.rect, enemy.rect):
                         if not self.in_combat and self.health['current'] > 0 and enemy.health['current'] > 0:
@@ -755,18 +780,26 @@ pygame.display.set_caption('Novorus')
 screen = pygame.display.set_mode((1920, 1080))  # , pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 
-player_group = pygame.sprite.GroupSingle()
 camera_group = CameraGroup()
-enemies = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
+player_group = pygame.sprite.GroupSingle()
+enemy_group = pygame.sprite.Group()
 cursor_group = pygame.sprite.GroupSingle()
 hud_group = CameraGroup()
+player_bars = Bars((0, 0))
+enemy_bars = Bars((0, screen.get_height() * 11 / 64))
 
 # hud
 cursor = Cursor(cursor_group)
 menu = Menu(hud_group)
-player_bars = TargetBars((0, 0), (player_group, hud_group))
-enemy_bars = TargetBars((0, screen.get_height() * 11 / 64), hud_group)
+
+player_health_bar = HealthBar((0, screen.get_height() * 4 / 128), player_bars)
+player_speed_bar = SpeedBar((0, screen.get_height() * 9 / 128), player_bars)
+player_attack_bar = AttackBar((0, screen.get_height() * 14 / 128), player_bars)
+
+enemy_health_bar = HealthBar((0, screen.get_height() * 26 / 128), enemy_bars)
+enemy_speed_bar = SpeedBar((0, screen.get_height() * 31 / 128), enemy_bars)
+enemy_attack_bar = AttackBar((0, screen.get_height() * 36 / 128), enemy_bars)
 
 # player
 player = Player((0, 0), (75, 75), camera_group)
@@ -805,7 +838,7 @@ for i in range(20):
         coords = [round(random.randint(-1500, 1500), -2) for i in range(2)]
 
     used_coords.append(coords)
-    ghost = Ghost(coords, (60, 60), (camera_group, enemies))
+    ghost = Ghost(coords, (60, 60), (camera_group, enemy_group))
 
 # chests
 for i in range(5):
@@ -827,16 +860,8 @@ while game_state['runtime']:
     # redraws sprites and images
     camera_group.custom_draw(player, show_hitboxes=False)
     cursor_group.draw(screen)
-    player_bars.draw(player)
-    for enemy in enemies:
-        if enemy.in_combat or enemy.rect.collidepoint(Cursor.offset_mouse_pos()):
-            enemy_bars.add_sprites(hud_group)
-            enemy_bars.draw(enemy)
-            break
-
-        else:
-            enemy_bars.hide_sprites()
-
+    player_bars.custom_draw()
+    enemy_bars.custom_draw(always_show=False)
     hud_group.draw(screen)
 
     # updates
