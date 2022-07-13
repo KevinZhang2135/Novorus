@@ -7,7 +7,7 @@ RED = (211, 47, 47)
 BLOOD_RED = (198, 40, 40)
 
 ORANGE = (255, 174, 66)
-TANGERINE = (242, 133, 0)
+TANGERINE = (212, 103, 0)
 
 YELLOW = (255, 231, 45)
 GOLD = (255, 219, 14)
@@ -167,7 +167,7 @@ class PopUpText:
     def __init__(self):
         self.display_surface = pygame.display.get_surface()
         self.texts = []
-        self.offset = pygame.math.Vsector2()
+        self.offset = pygame.math.Vector2()
         
     def center_target(self, player):
         self.offset.x = player.rect.centerx - self.display_surface.get_width() / 2
@@ -425,11 +425,12 @@ class Player(pygame.sprite.Sprite):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 300
-        self.attack_cooldown = 2#75
+        self.attack_cooldown = 275
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
         self.level = 1
+        self.crit_chance = 0.05
 
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -449,7 +450,7 @@ class Player(pygame.sprite.Sprite):
 
         self.attack = {'current': 20,
                        'total': 20,
-                       'base': 1}
+                       'base': 20}
 
         self.set_stats()
 
@@ -587,18 +588,32 @@ class Player(pygame.sprite.Sprite):
                                 # only deal damage when attack cooldown ends
                                 if pygame.time.get_ticks() - self.animation_time > self.cooldown:
                                     dodge_chance = random.randint(
-                                        0, 5 * (enemy.speed['current'] + self.speed['current']))
+                                        0, 
+                                        5 * (enemy.speed['current'] + self.speed['current']))
 
                                     enemy_coords = [
                                         random.randint(
-                                            (enemy.rect.left + enemy.rect.centerx) / 2, 
-                                            (enemy.rect.right + enemy.rect.centerx) / 2),
+                                            round((enemy.rect.left + enemy.rect.centerx) / 2), 
+                                            round((enemy.rect.right + enemy.rect.centerx) / 2)),
                                         enemy.rect.top]
 
                                     if dodge_chance > enemy.speed['current']:
-                                        enemy.health['current'] -= self.attack['current']
-                                        pop_up_text.add_text(self.attack['current'], enemy_coords, 30, ORANGE)
+                                        # randomizes damage between 0.9 and 1.1
+                                        damage = random.randint(
+                                            round(self.attack['current'] * 0.9),
+                                            round(self.attack['current'] * 1.1))
 
+                                        # doubles damage if crit
+                                        crit = random.randint(0, 100) / 100 <= self.crit_chance
+                                        if crit:
+                                            damage *= 2
+                                            pop_up_text.add_text(damage, enemy_coords, 35, TANGERINE)                
+
+                                        else:
+                                            pop_up_text.add_text(damage, enemy_coords, 30, ORANGE)
+
+                                        enemy.health['current'] -= damage
+                                        
                                     else:
                                         pop_up_text.add_text('Dodged', enemy_coords, 20, GOLD)
 
@@ -664,60 +679,7 @@ class Player(pygame.sprite.Sprite):
         self.attack_enemy()
         self.animation()
 
-
-class Ghost(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, groups):
-        super().__init__(groups)
-        self.width, self.height = size
-
-        self.image = load_image(
-            os.path.join('sprites/ghost/idle', 'ghost_idle1.png'),
-            (self.width, self.height))
-
-        self.rect = self.image.get_rect(center=coords)
-        self.mask = pygame.mask.from_surface(self.image)
-
-        self.in_combat = False
-        self.attacking = False
-
-        self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 400
-        self.attack_cooldown = 325
-        self.cooldown = self.animation_cooldown
-
-        self.frame = 0
-        self.level = random.randint(1, 2)
-        self.exp = 10 * self.level
-
-        self.action = 'idle'
-        self.facing = random.choice(['left', 'right'])
-        self.name = 'Ghost'
-
-        health = round(30 * (1.1**(self.level - 1)))
-        self.health = {'current': health,
-                       'total': health}
-
-        attack = round(10 * (1.1**(self.level - 1)))
-        self.attack = {'current': attack,
-                       'total': attack}
-
-        speed = round(6 * (1.1**(self.level - 1)))
-        self.speed = {'current': speed,
-                      'total': speed}
-
-        self.animation_types = {'idle': [],
-                                'attack': []}
-
-        for type in self.animation_types:
-            num_of_frames = len(os.listdir(f'sprites/ghost/{type}'))
-            for i in range(num_of_frames):
-                image = load_image(
-                    os.path.join(
-                        f'sprites/ghost/{type}', f'ghost_{type}{i + 1}.png'),
-                        (self.width, self.height))
-
-                self.animation_types[type].append(image)
-
+class GenericEnemy:
     def attack_enemy(self):
         global player
         global PopUpText
@@ -735,14 +697,27 @@ class Ghost(pygame.sprite.Sprite):
 
                     player_coords = [
                         random.randint(
-                            (player.rect.left + player.rect.centerx) / 2, 
-                            (player.rect.right + player.rect.centerx) / 2),
+                            round((player.rect.left + player.rect.centerx) / 2), 
+                            round((player.rect.right + player.rect.centerx) / 2)),
                         player.rect.top]
 
                     if dodge_chance > player.speed['current']:
-                        player.health['current'] -= self.attack['current']
-                        pop_up_text.add_text(self.attack['current'], player_coords, 25, BLOOD_RED)
+                        # randomizes damage between 0.9 and 1.1
+                        damage = random.randint(
+                            round(self.attack['current'] * 0.9),
+                            round(self.attack['current'] * 1.1))
 
+                        # doubles damage if crit
+                        crit = random.randint(0, 100) / 100 <= self.crit_chance
+                        if crit:
+                            damage *= 2
+                            pop_up_text.add_text(damage, player_coords, 35, BLOOD_RED)  
+
+                        else:
+                            pop_up_text.add_text(damage, player_coords, 25, RED)
+
+                        player.health['current'] -= damage
+                        
                     else:
                         pop_up_text.add_text('Dodged', player_coords, 20, GOLD)
 
@@ -755,7 +730,7 @@ class Ghost(pygame.sprite.Sprite):
                         self.cooldown = self.animation_cooldown
 
         elif self.health['current'] > 0:
-            # ghost dies
+            # enemy dies
             self.in_combat = False
             self.cooldown = self.animation_cooldown
 
@@ -786,6 +761,61 @@ class Ghost(pygame.sprite.Sprite):
         # reflects over y-axis if facing left
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
+
+
+class Ghost(pygame.sprite.Sprite, GenericEnemy):
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(groups)
+        self.width, self.height = size
+
+        self.image = load_image(
+            os.path.join('sprites/ghost/idle', 'ghost_idle1.png'),
+            (self.width, self.height))
+
+        self.rect = self.image.get_rect(center=coords)
+        self.mask = pygame.mask.from_surface(self.image)
+
+        self.in_combat = False
+        self.attacking = False
+
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldown = 400
+        self.attack_cooldown = 325
+        self.cooldown = self.animation_cooldown
+
+        self.frame = 0
+        self.level = random.randint(1, 2)
+        self.exp = 10 * self.level
+        self.crit_chance = 0.05
+
+        self.action = 'idle'
+        self.facing = random.choice(['left', 'right'])
+        self.name = 'Ghost'
+
+        health = round(30 * (1.1**(self.level - 1)))
+        self.health = {'current': health,
+                       'total': health}
+
+        attack = round(10 * (1.1**(self.level - 1)))
+        self.attack = {'current': attack,
+                       'total': attack}
+
+        speed = round(6 * (1.1**(self.level - 1)))
+        self.speed = {'current': speed,
+                      'total': speed}
+
+        self.animation_types = {'idle': [],
+                                'attack': []}
+
+        for type in self.animation_types:
+            num_of_frames = len(os.listdir(f'sprites/ghost/{type}'))
+            for i in range(num_of_frames):
+                image = load_image(
+                    os.path.join(
+                        f'sprites/ghost/{type}', f'ghost_{type}{i + 1}.png'),
+                        (self.width, self.height))
+
+                self.animation_types[type].append(image)
 
     def update(self):
         '''Handles events'''
