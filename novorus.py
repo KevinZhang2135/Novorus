@@ -277,11 +277,11 @@ class Bars(pygame.sprite.Group):
         self.height = self.display_surface.get_height() * 11 / 64
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
 
-    def custom_draw(self, always_show=True):
+    def custom_draw(self, show_player=True):
         global player
         global enemy_group
 
-        if always_show:
+        if show_player:
             pygame.draw.rect(self.display_surface, BROWN, self.rect)
             pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
             self.display_surface.blit(
@@ -312,7 +312,7 @@ class Bars(pygame.sprite.Group):
                     for sprite in self.sprites():
                         sprite.draw(enemy)
                         self.display_surface.blit(sprite.image, sprite.coords)
-                        
+
                     break
 
 
@@ -371,8 +371,10 @@ class Player(pygame.sprite.Sprite):
         self.facing = 'right'
         self.name = 'Player'
 
-        self.animation_cooldown = 350
         self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldown = 300
+        self.attack_cooldown = 275
+        self.cooldown = self.animation_cooldown
 
         self.frame = 0
         self.level = 1
@@ -441,15 +443,18 @@ class Player(pygame.sprite.Sprite):
             if self.acceleration.length_squared() > 0:  # checks if the player is moving
                 # converts the coordinates to a vector according to the radius
                 self.acceleration.scale_to_length(self.max_velocity)
+                self.velocity += self.acceleration
+                self.velocity *= 0.5
+                
+            else:
+                self.velocity *= 0.8
 
-            self.velocity += self.acceleration
-            self.velocity *= 0.5
             if abs(self.velocity.x) < 0.25:
                 self.velocity.x = 0
 
             if abs(self.velocity.y) < 0.25:
                 self.velocity.y = 0
-
+            
             self.rect.centerx += self.velocity.x
             self.rect.centery += self.velocity.y
 
@@ -496,7 +501,7 @@ class Player(pygame.sprite.Sprite):
             # checks if the player mask overlaps an enemy mask
             if pygame.sprite.spritecollide(self, enemy_group, False, pygame.sprite.collide_mask):
                 for enemy in enemy_group:
-                    # determines which enemy is withing the player rect
+                    # determines which enemy is within the player rect
                     if pygame.Rect.colliderect(player.rect, enemy.rect):
                         if not self.in_combat and self.health['current'] > 0 and enemy.health['current'] > 0:
                             self.in_combat = True
@@ -517,14 +522,23 @@ class Player(pygame.sprite.Sprite):
                                 enemy.facing = 'right'
 
                         if self.in_combat:
-                            if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+                            self.cooldown = self.attack_cooldown
+
+                            # attack animation
+                            if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
                                 self.attacking = True
                                 self.frame = 0
 
-                            # only deal damage when animation ends
+                            # checks if the animation ended
                             if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
-                                if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
-                                    enemy.health['current'] -= self.attack['current']
+                                # only deal damage when attack cooldown ends
+                                if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                                    dodge_chance = random.randint(0, 5 * (enemy.speed['current'] + self.speed['current']))
+                                    if dodge_chance > enemy.speed['current']:
+                                        enemy.health['current'] -= self.attack['current']
+
+                                    else:
+                                        print('dodged')
 
                                     if enemy.health['current'] <= 0:
                                         enemy.health['current'] = 0
@@ -534,12 +548,19 @@ class Player(pygame.sprite.Sprite):
 
                                         self.in_combat = False
                                         self.animation_time = pygame.time.get_ticks()
+                                        self.cooldown = self.animation_cooldown
                                         self.frame = 0
 
                         else:
                             # player dies
-                            pass
+                            self.in_combat = False
+                            self.animation_time = pygame.time.get_ticks()
+                            self.cooldown = self.animation_cooldown
+                            self.frame = 0
+                        
+                        
                         break
+                
 
     def animation(self):
         '''Handles animation'''
@@ -563,17 +584,17 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.action = 'idle'
 
+        # loops frames
+        if self.frame >= len(self.animation_types[self.action]):
+            self.frame = 0
+
         # set image
         self.image = self.animation_types[self.action][self.frame]
 
         # determines whether the animation cooldown is over
-        if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+        if pygame.time.get_ticks() - self.animation_time > self.cooldown:
             self.animation_time = pygame.time.get_ticks()
             self.frame += 1
-
-            # loops frames
-            if self.frame >= len(self.animation_types[self.action]):
-                self.frame = 0
 
         # reflect image if facing left
         if self.facing == 'left':
@@ -601,11 +622,11 @@ class Ghost(pygame.sprite.Sprite):
 
         self.in_combat = False
         self.attacking = False
-
-        self.attack_cooldown = 250
-        self.attack_time = pygame.time.get_ticks()
-        self.animation_cooldown = 400
+        
         self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldown = 400
+        self.attack_cooldown = 325
+        self.cooldown = self.animation_cooldown
 
         self.frame = 0
         self.level = random.randint(1, 2)
@@ -645,14 +666,20 @@ class Ghost(pygame.sprite.Sprite):
         global player_group
 
         if self.in_combat:
-            if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+            self.cooldown = self.attack_cooldown
+            if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
                 self.attacking = True
                 self.frame = 0
 
             # only deal damage when animation ends
             if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
-                if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
-                    player.health['current'] -= self.attack['current']
+                if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                    dodge_chance = random.randint(0, 5 * (player.speed['current'] + self.speed['current']))
+                    if dodge_chance > player.speed['current']:
+                        player.health['current'] -= self.attack['current']
+                    
+                    else:
+                        print('dodged')
 
                     if player.health['current'] <= 0:
                         player.health['current'] = 0
@@ -660,11 +687,15 @@ class Ghost(pygame.sprite.Sprite):
 
                         self.in_combat = False
                         self.animation_time = pygame.time.get_ticks()
+                        self.cooldown = self.animation_cooldown
                         self.frame = 0
 
         else:
             # ghost dies
-            pass
+            self.in_combat = False
+            self.animation_time = pygame.time.get_ticks()
+            self.cooldown = self.animation_cooldown
+            self.frame = 0
 
     def animation(self):
         '''Handles animation'''
@@ -678,14 +709,19 @@ class Ghost(pygame.sprite.Sprite):
             else:
                 self.action = 'idle'
 
+        # loops frames
+        if self.frame >= len(self.animation_types[self.action]):
+            self.frame = 0
+
+        # set image
         self.image = self.animation_types[self.action][self.frame]
-        if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+
+        # determines whether the animation cooldown is over
+        if pygame.time.get_ticks() - self.animation_time > self.cooldown:
             self.animation_time = pygame.time.get_ticks()
             self.frame += 1
 
-            if self.frame >= len(self.animation_types[self.action]):
-                self.frame = 0
-
+        # reflects over y-axis if facing left
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
@@ -861,7 +897,7 @@ while game_state['runtime']:
     camera_group.custom_draw(player, show_hitboxes=False)
     cursor_group.draw(screen)
     player_bars.custom_draw()
-    enemy_bars.custom_draw(always_show=False)
+    enemy_bars.custom_draw(show_player=False)
     hud_group.draw(screen)
 
     # updates
