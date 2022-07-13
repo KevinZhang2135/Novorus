@@ -865,8 +865,6 @@ def load_text(text, coords, text_size, color):
     text = font.render(str(text), True, color)
     text_rect = text.get_rect(center=coords)
     
-        
-
     return text, text_rect
 
 
