@@ -173,9 +173,9 @@ class PopUpText:
         self.offset.x = player.rect.centerx - self.display_surface.get_width() / 2
         self.offset.y = player.rect.centery - self.display_surface.get_height() / 2
 
-    def add_text(self, text, coords, size, color, bold=False):
+    def add_text(self, text, coords, size, color):
         global Text
-        text = Text(*load_text(text, coords, size, color, bold))
+        text = Text(*load_text(text, coords, size, color))
         self.texts.append(text)
 
     def move_text(self, text):
