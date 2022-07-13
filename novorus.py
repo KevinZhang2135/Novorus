@@ -532,7 +532,7 @@ class Player(pygame.sprite.Sprite):
                             # checks if the animation ended
                             if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
                                 # only deal damage when attack cooldown ends
-                                if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                                if pygame.time.get_ticks() - self.animation_time > self.cooldown: 
                                     dodge_chance = random.randint(0, 5 * (enemy.speed['current'] + self.speed['current']))
                                     if dodge_chance > enemy.speed['current']:
                                         enemy.health['current'] -= self.attack['current']
@@ -549,19 +549,15 @@ class Player(pygame.sprite.Sprite):
                                         self.in_combat = False
                                         self.animation_time = pygame.time.get_ticks()
                                         self.cooldown = self.animation_cooldown
-                                        self.frame = 0
 
-                        else:
+                        elif self.health['current'] > 0:
                             # player dies
                             self.in_combat = False
-                            self.animation_time = pygame.time.get_ticks()
                             self.cooldown = self.animation_cooldown
-                            self.frame = 0
                         
                         
                         break
                 
-
     def animation(self):
         '''Handles animation'''
         if not self.in_combat:
@@ -590,7 +586,7 @@ class Player(pygame.sprite.Sprite):
 
         # set image
         self.image = self.animation_types[self.action][self.frame]
-
+    
         # determines whether the animation cooldown is over
         if pygame.time.get_ticks() - self.animation_time > self.cooldown:
             self.animation_time = pygame.time.get_ticks()
@@ -688,14 +684,11 @@ class Ghost(pygame.sprite.Sprite):
                         self.in_combat = False
                         self.animation_time = pygame.time.get_ticks()
                         self.cooldown = self.animation_cooldown
-                        self.frame = 0
 
-        else:
+        elif self.health['current'] > 0:
             # ghost dies
             self.in_combat = False
-            self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.animation_cooldown
-            self.frame = 0
 
     def animation(self):
         '''Handles animation'''
@@ -711,12 +704,11 @@ class Ghost(pygame.sprite.Sprite):
 
         # loops frames
         if self.frame >= len(self.animation_types[self.action]):
-            print(self.frame)
             self.frame = 0
 
         # set image
         self.image = self.animation_types[self.action][self.frame]
-
+        
         # determines whether the animation cooldown is over
         if pygame.time.get_ticks() - self.animation_time > self.cooldown:
             self.animation_time = pygame.time.get_ticks()
