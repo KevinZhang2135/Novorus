@@ -713,7 +713,7 @@ class Ghost(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.animation_time > self.cooldown:
             self.animation_time = pygame.time.get_ticks()
             self.frame += 1
-
+            print('yes')
         # reflects over y-axis if facing left
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
