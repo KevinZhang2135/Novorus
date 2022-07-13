@@ -711,6 +711,7 @@ class Ghost(pygame.sprite.Sprite):
 
         # loops frames
         if self.frame >= len(self.animation_types[self.action]):
+            print(self.frame)
             self.frame = 0
 
         # set image
