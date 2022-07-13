@@ -857,12 +857,10 @@ def load_image(image, size: list):
     return image
 
 
-def load_text(text, coords, text_size, color, bold=False):
+def load_text(text, coords, text_size, color):
     # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
     font = pygame.font.Font('comicoro.ttf', round(text_size))
-    if bold:
-        pygame.font.Font.set_bold(font, 1)
-        
+    #pygame.font.Font.set_bold(font, 1) # creates a bold font if the boolean is true
 
     text = font.render(str(text), True, color)
     text_rect = text.get_rect(center=coords)
