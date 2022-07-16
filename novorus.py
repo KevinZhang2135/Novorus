@@ -1,3 +1,4 @@
+from colorama import Cursor
 import pygame
 import random
 import os
@@ -154,6 +155,7 @@ class Menu(pygame.sprite.Sprite):
         else:
             self.image = self.menu_sprites['menu']
 
+
 class Text:
     def __init__(self, text, rect):
         self.text = text
@@ -162,7 +164,8 @@ class Text:
         self.time = pygame.time.get_ticks()
         self.acceleration = -0.1
         self.velocity = random.randint(1250, 2000) / 1000 + 1.5
-        
+
+
 class PopUpText:
     def __init__(self):
         self.display_surface = pygame.display.get_surface()
@@ -174,7 +177,6 @@ class PopUpText:
         self.offset.y = player.rect.centery - self.display_surface.get_height() / 2
 
     def add_text(self, text, coords, size, color):
-        global Text
         text = Text(*load_text(text, coords, size, color))
         self.texts.append(text)
 
@@ -329,8 +331,19 @@ class Bars(pygame.sprite.Group):
         self.height = self.display_surface.get_height() * 11 / 64
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
 
-    def custom_draw(self, target, always_show=True):
-        if always_show:
+    def custom_draw(self, targets):
+        if len(targets.sprites()) > 1:
+            for target in targets:
+                if (target.in_combat or target.rect.collidepoint(Cursor.offset_mouse_pos())):
+                    break
+
+                else:
+                    target = False
+
+        else:
+            target = targets.sprites()[0]
+
+        if target:
             pygame.draw.rect(self.display_surface, BROWN, self.rect)
             pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
 
@@ -338,7 +351,7 @@ class Bars(pygame.sprite.Group):
                 *load_text(
                     target.name,
                     (self.coords.x + self.width / 2,
-                     self.coords.y + self.display_surface.get_height() * 3 / 128),
+                    self.coords.y + self.display_surface.get_height() * 3 / 128),
                     self.display_surface.get_height() / 32,
                     BLACK))
 
@@ -346,26 +359,8 @@ class Bars(pygame.sprite.Group):
                 sprite.draw(target)
                 self.display_surface.blit(sprite.image, sprite.coords)
 
-        else:
-            for enemy in target:
-                if enemy.in_combat or enemy.rect.collidepoint(Cursor.offset_mouse_pos()):
-                    pygame.draw.rect(self.display_surface, BROWN, self.rect)
-                    pygame.draw.rect(self.display_surface,DARK_BROWN, self.rect, 5)
-
-                    self.display_surface.blit(
-                        *load_text(
-                            enemy.name,
-                            (self.coords.x + self.width / 2,
-                                self.coords.y + self.display_surface.get_height() * 3 / 128),
-                            self.display_surface.get_height() / 32,
-                            BLACK))
-
-                    for sprite in self.sprites():
-                        sprite.draw(enemy)
-                        self.display_surface.blit(sprite.image, sprite.coords)
-
-                    break
-
+                    
+                
 
 class Cursor(pygame.sprite.Sprite):
     def __init__(self, group):
@@ -424,13 +419,13 @@ class Player(pygame.sprite.Sprite):
         self.name = 'Player'
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 300
-        self.attack_cooldown = 275
+        self.animation_cooldown = 350
+        self.attack_cooldown = 325
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
         self.level = 1
-        self.crit_chance = 0.05
+        self.crit_chance = 1
 
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -548,7 +543,6 @@ class Player(pygame.sprite.Sprite):
 
     def attack_enemy(self):
         global enemy_group
-        global PopUpText
 
         # checks if the player rect overlaps an enemy rect
         if pygame.sprite.spritecollide(self, enemy_group, False):
@@ -620,18 +614,14 @@ class Player(pygame.sprite.Sprite):
                                     if enemy.health['current'] <= 0:
                                         enemy.health['current'] = 0
                                         enemy.in_combat = False
+                                        enemy.animation_time = pygame.time.get_ticks()
+                                        enemy.cooldown = enemy.animation_cooldown
                                         enemy.kill()
                                         del enemy
 
                                         self.in_combat = False
                                         self.animation_time = pygame.time.get_ticks()
                                         self.cooldown = self.animation_cooldown
-
-                        elif self.health['current'] > 0:
-                            # player dies
-                            self.in_combat = False
-                            self.cooldown = self.animation_cooldown
-
                         break
 
     def animation(self):
@@ -679,10 +669,10 @@ class Player(pygame.sprite.Sprite):
         self.attack_enemy()
         self.animation()
 
+
 class GenericEnemy:
     def attack_enemy(self):
         global player
-        global PopUpText
 
         if self.in_combat:
             self.cooldown = self.attack_cooldown
@@ -714,7 +704,7 @@ class GenericEnemy:
                             pop_up_text.add_text(damage, player_coords, 35, BLOOD_RED)  
 
                         else:
-                            pop_up_text.add_text(damage, player_coords, 25, RED)
+                            pop_up_text.add_text(damage, player_coords, 30, RED)
 
                         player.health['current'] -= damage
                         
@@ -724,12 +714,14 @@ class GenericEnemy:
                     if player.health['current'] <= 0:
                         player.health['current'] = 0
                         player.in_combat = False
+                        player.animation_time = pygame.time.get_ticks()
+                        player.cooldown = player.animation_cooldown
 
                         self.in_combat = False
                         self.animation_time = pygame.time.get_ticks()
                         self.cooldown = self.animation_cooldown
 
-        elif self.health['current'] > 0:
+        if self.health['current'] < 0:
             # enemy dies
             self.in_combat = False
             self.cooldown = self.animation_cooldown
@@ -780,7 +772,7 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 400
-        self.attack_cooldown = 325
+        self.attack_cooldown = 350
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
@@ -792,7 +784,7 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.facing = random.choice(['left', 'right'])
         self.name = 'Ghost'
 
-        health = round(30 * (1.1**(self.level - 1)))
+        health = round(300 * (1.1**(self.level - 1)))
         self.health = {'current': health,
                        'total': health}
 
@@ -845,6 +837,7 @@ class Chest(pygame.sprite.Sprite):
 
     def collision(self):
         global player
+        
         collision_distance = pygame.math.Vector2((self.rect.width + player.rect.width) / 2,
                                                  (self.rect.height + player.rect.height) / 2)
 
@@ -898,7 +891,7 @@ def load_text(text, coords, text_size, color):
     return text, text_rect
 
 
-game_state = {'paused': True,
+game_state = {'paused': False,
               'runtime': True,
               'fullscreen': True}
 
@@ -932,7 +925,7 @@ enemy_speed_bar = SpeedBar((0, screen.get_height() * 31 / 128), enemy_bars)
 enemy_attack_bar = AttackBar((0, screen.get_height() * 36 / 128), enemy_bars)
 
 # player
-player = Player((0, 0), (75, 75), camera_group)
+player = Player((0, 0), (75, 75), (camera_group, player_group))
 pop_up_text = PopUpText()
 
 # ambience
@@ -992,8 +985,8 @@ while game_state['runtime']:
     camera_group.custom_draw(player, show_hitboxes=False)
     pop_up_text.custom_draw(player)
     cursor_group.draw(screen)
-    player_bars.custom_draw(player)
-    enemy_bars.custom_draw(enemy_group, always_show=False)
+    player_bars.custom_draw(player_group)
+    enemy_bars.custom_draw(enemy_group)
     hud_group.draw(screen)
 
     # updates
