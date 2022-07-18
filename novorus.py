@@ -425,7 +425,7 @@ class Player(pygame.sprite.Sprite):
 
         self.frame = 0
         self.level = 1
-        self.crit_chance = 1
+        self.crit_chance = 0.05
 
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -784,7 +784,7 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.facing = random.choice(['left', 'right'])
         self.name = 'Ghost'
 
-        health = round(300 * (1.1**(self.level - 1)))
+        health = round(30 * (1.1**(self.level - 1)))
         self.health = {'current': health,
                        'total': health}
 
