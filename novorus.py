@@ -21,8 +21,8 @@ tile_size = 100
 
 
 class Level:
-    def __init__(self):
-        global floor_level, tile_size, player
+    def __init__(self, tile_size):
+        self.tile_size = tile_size
 
         self.display_surface = pygame.display.get_surface()
         files = os.listdir('levels/demo')
@@ -30,19 +30,45 @@ class Level:
         for path in files:
             with open(os.path.join('levels/demo', path)) as file:
                 csv_file = csv.reader(file)
-                self.create_map(csv_file, path[0:-4])
+                self.create_tile_group(csv_file, path[0:-4])
 
     def create_tile_group(self, csv_file, type):
+        create_tile = {'terrain': self.add_terrain,
+                       'enemies': self.add_enemies,
+                       'chest': self.add_chests,
+                       'player': lambda x, y: None}
+
         for row_index, row in enumerate(csv_file):
-            for col_index, val in enumerate(row):
-                if val != -1:
-                    x = row_index * tile_size
-                    y = col_index * tile_size
+            for col_index, id in enumerate(row):
+                id = int(id)
+                if id != -1:
+                    x = col_index * self.tile_size
+                    y = row_index * self.tile_size
 
-                    if type == 'terrain':
-                        pass
+                    create_tile[type](id, (x, y))
 
 
+    def add_terrain(self, id, coords):
+        images = ['brick_top.png',
+                  'brick_middle.png',
+                  'brick_bottom.png',
+                  'brick_pile.png',
+                  'brick_side.png']
+
+        Ambience(
+            coords,
+            (self.tile_size, self.tile_size),
+            os.path.join('sprites/terrain', images[id]),
+            (camera_group, collision_group))
+
+    def add_enemies(self, id, coords):
+        Ghost(coords, (60, 60), 1, (camera_group, enemy_group))
+
+    def add_chests(self, id, coords):
+        Chest(
+            coords,
+            (self.tile_size * 0.6, self.tile_size * 0.6),
+            (camera_group, collision_group))
 
     def run():
         '''runs the level'''
@@ -781,8 +807,7 @@ class GenericEnemy:
 
 
 class Ghost(pygame.sprite.Sprite, GenericEnemy):
-    def __init__(self, coords: list, size: list, groups):
-        global floor_level
+    def __init__(self, coords: list, size: list, level:int, groups):
         super().__init__(groups)
         self.width, self.height = size
 
@@ -802,7 +827,7 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
-        self.level = floor_level
+        self.level = level
         self.exp = 10 * self.level
         self.crit_chance = 0.05
 
@@ -856,25 +881,14 @@ class Chest(pygame.sprite.Sprite):
                 (self.width, self.height)), }
 
         self.image = self.chest_sprites['closed']
-
         self.rect = self.image.get_rect(center=coords)
-
         self.opened = False
 
     def collision(self):
         global player
-        
-        collision_distance = pygame.math.Vector2((self.rect.width + player.rect.width) / 2,
-                                                 (self.rect.height + player.rect.height) / 2)
-
-        distance = pygame.math.Vector2(self.rect.centerx - player.rect.centerx,
-                                       self.rect.centery - player.rect.centery)
 
         # checks if the distance of the sprites are within collision distance
-        if (abs(distance.x) - 1 < collision_distance.x
-            and abs(distance.y) - 1 < collision_distance.y
-            and not self.opened):
-
+        if pygame.Rect.colliderect(self.rect, player.rect) and not self.opened:
             self.image = self.chest_sprites['opened']
             self.opened = True
 
@@ -893,9 +907,6 @@ class Ambience(pygame.sprite.Sprite):
 
         self.image = load_image(image, size)
         self.rect = self.image.get_rect(center=coords)
-
-        if random.randint(0, 1):
-            self.image = pygame.transform.flip(self.image, True, False)
 
 
 def load_image(image, size: list):
@@ -952,18 +963,11 @@ enemy_speed_bar = SpeedBar((0, screen.get_height() * 31 / 128), enemy_bars)
 enemy_attack_bar = AttackBar((0, screen.get_height() * 36 / 128), enemy_bars)
 
 # levels and map
-level = Level()
+level = Level(tile_size)
 
 # player
-player = Player((0, 0), (75, 75), (camera_group, player_group))
+player = Player((100, 100), (75, 75), (camera_group, player_group))
 pop_up_text = PopUpText()
-
-# ambience
-wall = Ambience(
-    (100, 100),
-    (100, 100),
-    os.path.join('sprites/walls', 'wall_middle.png'),
-    (camera_group, collision_group))
 
 used_coords = [(0, 0), (100, 100)]
 coords = None
@@ -986,21 +990,6 @@ for j in range(150):
         os.path.join('sprites/ambience', f'{obj}{variation}.png'),
         groups)
 
-# enemies
-for i in range(20):
-    while coords in used_coords or not coords:
-        coords = [round(random.randint(-1500, 1500), -2) for i in range(2)]
-
-    used_coords.append(coords)
-    ghost = Ghost(coords, (60, 60), (camera_group, enemy_group))
-
-# chests
-for i in range(5):
-    while coords in used_coords or not coords:
-        coords = [round(random.randint(-1500, 1500), -2) for i in range(2)]
-
-    used_coords.append(coords)
-    chest = Chest(coords, (60, 60), (camera_group, collision_group))
 
 while game_state['runtime']:
     # event handling
