@@ -1,8 +1,4 @@
-from colorama import Cursor
-import pygame
-import random
-import os
-import math
+import pygame, random, os, csv
 
 RED = (211, 47, 47)
 BLOOD_RED = (198, 40, 40)
@@ -20,6 +16,37 @@ BLACK = (50, 50, 50)
 BROWN = (131, 106, 83)
 PECAN = (115, 93, 71)
 DARK_BROWN = (104, 84, 66)
+
+tile_size = 100
+
+
+class Level:
+    def __init__(self):
+        global floor_level, tile_size, player
+
+        self.display_surface = pygame.display.get_surface()
+        files = os.listdir('levels/demo')
+
+        for path in files:
+            with open(os.path.join('levels/demo', path)) as file:
+                csv_file = csv.reader(file)
+                self.create_map(csv_file, path[0:-4])
+
+    def create_tile_group(self, csv_file, type):
+        for row_index, row in enumerate(csv_file):
+            for col_index, val in enumerate(row):
+                if val != -1:
+                    x = row_index * tile_size
+                    y = col_index * tile_size
+
+                    if type == 'terrain':
+                        pass
+
+
+
+    def run():
+        '''runs the level'''
+        pass
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -359,8 +386,6 @@ class Bars(pygame.sprite.Group):
                 sprite.draw(target)
                 self.display_surface.blit(sprite.image, sprite.coords)
 
-                    
-                
 
 class Cursor(pygame.sprite.Sprite):
     def __init__(self, group):
@@ -757,6 +782,7 @@ class GenericEnemy:
 
 class Ghost(pygame.sprite.Sprite, GenericEnemy):
     def __init__(self, coords: list, size: list, groups):
+        global floor_level
         super().__init__(groups)
         self.width, self.height = size
 
@@ -776,7 +802,7 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
-        self.level = random.randint(1, 2)
+        self.level = floor_level
         self.exp = 10 * self.level
         self.crit_chance = 0.05
 
@@ -822,11 +848,11 @@ class Chest(pygame.sprite.Sprite):
 
         self.chest_sprites = {
             'closed': load_image(
-                os.path.join('sprites', 'chest_closed.png'),
+                os.path.join('sprites/terrain', 'chest_closed.png'),
                 (self.width, self.height)),
 
             'opened': load_image(
-                os.path.join('sprites', 'chest_opened.png'),
+                os.path.join('sprites/terrain', 'chest_opened.png'),
                 (self.width, self.height)), }
 
         self.image = self.chest_sprites['closed']
@@ -889,8 +915,9 @@ def load_text(text, coords, text_size, color):
     text_rect = text.get_rect(center=coords)
     
     return text, text_rect
+     
 
-
+floor_level = 1
 game_state = {'paused': False,
               'runtime': True,
               'fullscreen': True}
@@ -923,6 +950,9 @@ player_attack_bar = AttackBar((0, screen.get_height() * 14 / 128), player_bars)
 enemy_health_bar = HealthBar((0, screen.get_height() * 26 / 128), enemy_bars)
 enemy_speed_bar = SpeedBar((0, screen.get_height() * 31 / 128), enemy_bars)
 enemy_attack_bar = AttackBar((0, screen.get_height() * 36 / 128), enemy_bars)
+
+# levels and map
+level = Level()
 
 # player
 player = Player((0, 0), (75, 75), (camera_group, player_group))
