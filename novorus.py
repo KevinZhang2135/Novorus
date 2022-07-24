@@ -36,7 +36,7 @@ class Level:
         create_tile = {'terrain': self.add_terrain,
                        'enemies': self.add_enemies,
                        'chest': self.add_chests,
-                       'player': lambda x, y: None}
+                       'player': self.set_player_coords}
 
         for row_index, row in enumerate(csv_file):
             for col_index, id in enumerate(row):
@@ -47,6 +47,10 @@ class Level:
 
                     create_tile[type](id, (x, y))
 
+    def set_player_coords(self, id, coords):
+        global player
+
+        player.rect.center = coords
 
     def add_terrain(self, id, coords):
         images = ['brick_top.png',
@@ -55,7 +59,7 @@ class Level:
                   'brick_pile.png',
                   'brick_side.png']
 
-        Ambience(
+        Decoration(
             coords,
             (self.tile_size, self.tile_size),
             os.path.join('sprites/terrain', images[id]),
@@ -419,7 +423,7 @@ class Cursor(pygame.sprite.Sprite):
 
         self.display_surface = pygame.display.get_surface()
         self.image = load_image(
-            os.path.join('sprites', 'cursor.png'),
+            os.path.join('sprites/menu', 'cursor.png'),
             (100, 100))
 
         self.rect = self.image.get_rect(center=(0, 0))
@@ -873,11 +877,11 @@ class Chest(pygame.sprite.Sprite):
 
         self.chest_sprites = {
             'closed': load_image(
-                os.path.join('sprites/terrain', 'chest_closed.png'),
+                os.path.join('sprites/chests', 'chest_closed.png'),
                 (self.width, self.height)),
 
             'opened': load_image(
-                os.path.join('sprites/terrain', 'chest_opened.png'),
+                os.path.join('sprites/chests', 'chest_opened.png'),
                 (self.width, self.height)), }
 
         self.image = self.chest_sprites['closed']
@@ -900,7 +904,7 @@ class Chest(pygame.sprite.Sprite):
         self.collision()
 
 
-class Ambience(pygame.sprite.Sprite):
+class Decoration(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, image: str, groups):
         super().__init__(groups)
         self.width, self.height = size
@@ -962,33 +966,18 @@ enemy_health_bar = HealthBar((0, screen.get_height() * 26 / 128), enemy_bars)
 enemy_speed_bar = SpeedBar((0, screen.get_height() * 31 / 128), enemy_bars)
 enemy_attack_bar = AttackBar((0, screen.get_height() * 36 / 128), enemy_bars)
 
+# player
+player = Player((0, 0), (75, 75), (camera_group, player_group))
+pop_up_text = PopUpText()
+
 # levels and map
 level = Level(tile_size)
-
-# player
-player = Player((100, 100), (75, 75), (camera_group, player_group))
-pop_up_text = PopUpText()
 
 used_coords = [(0, 0), (100, 100)]
 coords = None
 
 size = (60, 40, 125, 100)
 objects = ['rock', 'grass', 'tree']
-
-for j in range(150):
-    obj = random.choice(objects)
-    while coords in used_coords or not coords:
-        coords = [round(random.randint(-1500, 1500), -2) for i in range(2)]
-
-    used_coords.append(coords)
-    groups = [camera_group]
-    variation = random.randint(1, 3)
-
-    decor = Ambience(
-        coords,
-        [size[objects.index(obj)]] * 2,
-        os.path.join('sprites/ambience', f'{obj}{variation}.png'),
-        groups)
 
 
 while game_state['runtime']:
