@@ -33,7 +33,7 @@ class Level:
                 self.create_tile_group(csv_file, path[0:-4])
 
     def create_tile_group(self, csv_file, type):
-        create_tile = {'terrain': self.add_terrain,
+        create_tile = {'walls': self.add_walls,
                        'enemies': self.add_enemies,
                        'chest': self.add_chests,
                        'player': self.set_player_coords}
@@ -52,7 +52,7 @@ class Level:
 
         player.rect.center = coords
 
-    def add_terrain(self, id, coords):
+    def add_walls(self, id, coords):
         images = ['brick_top.png',
                   'brick_middle.png',
                   'brick_bottom.png',
@@ -62,7 +62,7 @@ class Level:
         Decoration(
             coords,
             (self.tile_size, self.tile_size),
-            os.path.join('sprites/terrain', images[id]),
+            os.path.join('sprites/walls', images[id]),
             (camera_group, collision_group))
 
     def add_enemies(self, id, coords):
@@ -454,7 +454,7 @@ class Cursor(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, groups):
+    def __init__(self, coords: list, size:list, groups):
         super().__init__(groups)
         self.width, self.height = size
 
@@ -566,6 +566,8 @@ class Player(pygame.sprite.Sprite):
         global collision_group
 
         for sprite in collision_group:
+            margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
+
             collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
                                                      (self.rect.height + sprite.rect.height) / 2)
 
@@ -573,29 +575,34 @@ class Player(pygame.sprite.Sprite):
                                            self.rect.centery - sprite.rect.centery)
 
             # checks if the distance of the sprites are within collision distance
-            if (abs(distance.x) + self.width / 6 < collision_distance.x
-                and abs(distance.y) + self.height / 6 < collision_distance.y):
+            if (abs(distance.x) + margin.x <= collision_distance.x
+                and abs(distance.y) + margin.y <= collision_distance.y):
 
                 # horizontal collision
-                if abs(distance.x) > abs(distance.y):
+                if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
                     # left collision
-                    if distance.x > 0:
-                        self.rect.left = sprite.rect.right - self.width / 6
+                    if distance.x > 0 and self.velocity.x < 0:
+                        self.rect.left = sprite.rect.right - margin.x
 
                     # right collision
-                    if distance.x < 0:
-                        self.rect.right = sprite.rect.left + self.width / 6
+                    elif distance.x < 0 and self.velocity.x > 0:
+                        self.rect.right = sprite.rect.left + margin.x
+
+                    self.velocity.x = 0
 
                 # vertical collision
-                elif abs(distance.y) > abs(distance.x):
+                if abs(distance.y) + margin.y > abs(distance.x) + margin.x:
                     # bottom collision
-                    if distance.y < 0:
-                        self.rect.bottom = sprite.rect.top + self.height / 6
+                    if distance.y < 0 and self.velocity.y > 0:
+                        self.rect.bottom = sprite.rect.top + margin.y
 
                     # top collision
-                    if distance.y > 0:
-                        self.rect.top = sprite.rect.bottom - self.height / 6
+                    elif distance.y > 0 and self.velocity.y < 0:
+                        self.rect.top = sprite.rect.bottom - margin.y
 
+                    self.velocity.y = 0
+
+        
     def attack_enemy(self):
         global enemy_group
 
@@ -717,6 +724,7 @@ class Player(pygame.sprite.Sprite):
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
+
     def update(self):
         '''Handles events'''
         self.movement()
@@ -811,7 +819,7 @@ class GenericEnemy:
 
 
 class Ghost(pygame.sprite.Sprite, GenericEnemy):
-    def __init__(self, coords: list, size: list, level:int, groups):
+    def __init__(self, coords: list, size:list, level:int, groups):
         super().__init__(groups)
         self.width, self.height = size
 
@@ -826,7 +834,7 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.attacking = False
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 400
+        self.animation_cooldown = random.randint(390, 410)
         self.attack_cooldown = 350
         self.cooldown = self.animation_cooldown
 
@@ -990,7 +998,7 @@ while game_state['runtime']:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=False)
+    camera_group.custom_draw(player, show_hitboxes=True)
     pop_up_text.custom_draw(player)
     cursor_group.draw(screen)
     player_bars.custom_draw(player_group)
