@@ -1,4 +1,4 @@
-import pygame, random, os, csv
+import pygame, random, os, csv, math
 
 RED = (211, 47, 47)
 BLOOD_RED = (198, 40, 40)
@@ -17,26 +17,27 @@ BROWN = (131, 106, 83)
 PECAN = (115, 93, 71)
 DARK_BROWN = (104, 84, 66)
 
-tile_size = 100
-
-
 class Level:
-    def __init__(self, tile_size):
+    def __init__(self, floor_level, tile_size):
         self.tile_size = tile_size
 
         self.display_surface = pygame.display.get_surface()
-        files = os.listdir('levels/demo')
+        files = os.listdir(f'levels/{floor_level}')
 
         for path in files:
-            with open(os.path.join('levels/demo', path)) as file:
+            with open(os.path.join(f'levels/{floor_level}', path)) as file:
                 csv_file = csv.reader(file)
                 self.create_tile_group(csv_file, path[0:-4])
 
     def create_tile_group(self, csv_file, type):
-        create_tile = {'walls': self.add_walls,
+        create_tile = {'player': self.set_player_coords,
+                       'walls': self.add_walls,
                        'enemies': self.add_enemies,
                        'chest': self.add_chests,
-                       'player': self.set_player_coords}
+                       'decor': self.add_decor,
+                       'exit': self.add_exit}
+
+        decoration_types = ['grass', 'rock', 'tree']
 
         for row_index, row in enumerate(csv_file):
             for col_index, id in enumerate(row):
@@ -45,7 +46,11 @@ class Level:
                     x = col_index * self.tile_size
                     y = row_index * self.tile_size
 
-                    create_tile[type](id, (x, y))
+                    if type in decoration_types:
+                        create_tile['decor'](id, type, (x, y))
+
+                    else:
+                        create_tile[type](id, (x, y))
 
     def set_player_coords(self, id, coords):
         global player
@@ -59,7 +64,7 @@ class Level:
                   'brick_pile.png',
                   'brick_side.png']
 
-        Decoration(
+        wall = Sprite(
             coords,
             (self.tile_size, self.tile_size),
             os.path.join('sprites/walls', images[id]),
@@ -69,11 +74,42 @@ class Level:
         Ghost(coords, (60, 60), 1, (camera_group, enemy_group))
 
     def add_chests(self, id, coords):
-        Chest(
+        chest = Chest(
             coords,
             (self.tile_size * 0.6, self.tile_size * 0.6),
             (camera_group, collision_group))
 
+    def add_decor(self, id, type, coords):
+        images =  {'grass': ['grass1.png',
+                             'grass2.png',
+                             'grass3.png'],
+
+                   'rock': ['rock1.png',
+                            'rock2.png',
+                            'rock3.png',
+                            'rock4.png'],
+                        
+                    'tree': ['tree1.png',
+                             'tree2.png',
+                             'tree3.png']}
+
+        sprite_size = {'grass': 0.3,
+                       'rock': 0.6,
+                       'tree': 1.5}
+
+        size = self.tile_size * 0.8 * randomize(sprite_size[type] * 100, 0.1) / 100
+        decor = Sprite(
+            coords,
+            [size] * 2,
+            os.path.join(f'sprites/decoration/{type}', images[type][id]),
+            camera_group)
+
+        if random.randint(0, 1):
+            decor.image = pygame.transform.flip(decor.image, True, False)
+
+    def add_exit(self, id, coords):
+        pass
+        
     def run():
         '''runs the level'''
         pass
@@ -389,39 +425,41 @@ class Bars(pygame.sprite.Group):
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
 
     def custom_draw(self, targets):
-        if len(targets.sprites()) > 1:
-            for target in targets:
-                if (target.in_combat or target.rect.collidepoint(Cursor.offset_mouse_pos())):
-                    break
+        if len(targets.sprites()) > 0:
+            if len(targets.sprites()) > 1:
+                for target in targets:
+                    if (target.in_combat or target.rect.collidepoint(Cursor.offset_mouse_pos())):
+                        break
 
-                else:
-                    target = False
+                    else:
+                        target = False
 
-        else:
-            target = targets.sprites()[0]
+            else:
+                target = targets.sprites()[0]
 
-        if target:
-            pygame.draw.rect(self.display_surface, BROWN, self.rect)
-            pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
+            if target:
+                pygame.draw.rect(self.display_surface, BROWN, self.rect)
+                pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
 
-            self.display_surface.blit(
-                *load_text(
-                    target.name,
-                    (self.coords.x + self.width / 2,
-                    self.coords.y + self.display_surface.get_height() * 3 / 128),
-                    self.display_surface.get_height() / 32,
-                    BLACK))
+                self.display_surface.blit(
+                    *load_text(
+                        target.name,
+                        (self.coords.x + self.width / 2,
+                        self.coords.y + self.display_surface.get_height() * 3 / 128),
+                        self.display_surface.get_height() / 32,
+                        BLACK))
 
-            for sprite in self.sprites():
-                sprite.draw(target)
-                self.display_surface.blit(sprite.image, sprite.coords)
+                for sprite in self.sprites():
+                    sprite.draw(target)
+                    self.display_surface.blit(sprite.image, sprite.coords)
 
 
 class Cursor(pygame.sprite.Sprite):
-    def __init__(self, group):
+    def __init__(self, tile_size, group):
         super().__init__(group)
 
         self.display_surface = pygame.display.get_surface()
+        self.tile_size = tile_size
         self.image = load_image(
             os.path.join('sprites/menu', 'cursor.png'),
             (100, 100))
@@ -432,10 +470,10 @@ class Cursor(pygame.sprite.Sprite):
         global player
 
         coords = self.offset_mouse_pos()
-        coords[0] = round(coords[0] / 100) * 100
+        coords[0] = round(coords[0] / tile_size) * tile_size
         coords[0] -= player.rect.centerx - self.display_surface.get_width() / 2
 
-        coords[1] = round(coords[1] / 100) * 100
+        coords[1] = round(coords[1] / tile_size) * tile_size
         coords[1] -= player.rect.centery - self.display_surface.get_height() / 2
 
         self.rect.center = coords
@@ -475,7 +513,7 @@ class Player(pygame.sprite.Sprite):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 350
-        self.attack_cooldown = 325
+        self.attack_cooldown = 275
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
@@ -655,9 +693,7 @@ class Player(pygame.sprite.Sprite):
 
                                     if dodge_chance > enemy.speed['current']:
                                         # randomizes damage between 0.9 and 1.1
-                                        damage = random.randint(
-                                            round(self.attack['current'] * 0.9),
-                                            round(self.attack['current'] * 1.1))
+                                        damage = randomize(self.attack['current'], 0.1)
 
                                         # doubles damage if crit
                                         crit = random.randint(0, 100) / 100 <= self.crit_chance
@@ -756,9 +792,7 @@ class GenericEnemy:
 
                     if dodge_chance > player.speed['current']:
                         # randomizes damage between 0.9 and 1.1
-                        damage = random.randint(
-                            round(self.attack['current'] * 0.9),
-                            round(self.attack['current'] * 1.1))
+                        damage = randomize(self.attack['current'], 0.1)
 
                         # doubles damage if crit
                         crit = random.randint(0, 100) / 100 <= self.crit_chance
@@ -834,8 +868,8 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.attacking = False
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = random.randint(390, 410)
-        self.attack_cooldown = 350
+        self.animation_cooldown = randomize(400, 0.2)
+        self.attack_cooldown = 300
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
@@ -885,11 +919,11 @@ class Chest(pygame.sprite.Sprite):
 
         self.chest_sprites = {
             'closed': load_image(
-                os.path.join('sprites/chests', 'chest_closed.png'),
+                os.path.join('sprites/chest', 'chest_closed.png'),
                 (self.width, self.height)),
 
             'opened': load_image(
-                os.path.join('sprites/chests', 'chest_opened.png'),
+                os.path.join('sprites/chest', 'chest_opened.png'),
                 (self.width, self.height)), }
 
         self.image = self.chest_sprites['closed']
@@ -912,7 +946,11 @@ class Chest(pygame.sprite.Sprite):
         self.collision()
 
 
-class Decoration(pygame.sprite.Sprite):
+class LevelExit:
+    pass
+
+
+class Sprite(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, image: str, groups):
         super().__init__(groups)
         self.width, self.height = size
@@ -938,8 +976,14 @@ def load_text(text, coords, text_size, color):
     text_rect = text.get_rect(center=coords)
     
     return text, text_rect
-     
 
+
+def randomize(value:int, offset:float):
+    return random.randint(
+        round(value * (1 - offset)),
+        round(value * (1 + offset)))
+
+tile_size = 100
 floor_level = 1
 game_state = {'paused': False,
               'runtime': True,
@@ -963,7 +1007,7 @@ player_bars = Bars((0, 0))
 enemy_bars = Bars((0, screen.get_height() * 11 / 64))
 
 # hud
-cursor = Cursor(cursor_group)
+cursor = Cursor(tile_size, cursor_group)
 menu = Menu(hud_group)
 
 player_health_bar = HealthBar((0, screen.get_height() * 4 / 128), player_bars)
@@ -979,7 +1023,7 @@ player = Player((0, 0), (75, 75), (camera_group, player_group))
 pop_up_text = PopUpText()
 
 # levels and map
-level = Level(tile_size)
+level = Level(floor_level, tile_size)
 
 used_coords = [(0, 0), (100, 100)]
 coords = None
