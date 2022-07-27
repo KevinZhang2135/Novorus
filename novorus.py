@@ -20,14 +20,35 @@ DARK_BROWN = (104, 84, 66)
 class Level:
     def __init__(self, floor_level, tile_size):
         self.tile_size = tile_size
+        self._floor_level = floor_level
 
         self.display_surface = pygame.display.get_surface()
-        files = os.listdir(f'levels/{floor_level}')
+        self.read_csv_level()
 
+    @property
+    def floor_level(self):
+       return self._floor_level
+
+    @floor_level.setter
+    def floor_level(self, value):
+        self._floor_level = 1#value
+        self.clear_level()
+        self.read_csv_level()
+
+    def read_csv_level(self):
+        files = os.listdir(f'levels/{self._floor_level}')
         for path in files:
-            with open(os.path.join(f'levels/{floor_level}', path)) as file:
+            with open(os.path.join(f'levels/{self._floor_level}', path)) as file:
                 csv_file = csv.reader(file)
                 self.create_tile_group(csv_file, path[0:-4])
+
+    def clear_level(self):
+        global camera_group, player_group
+
+        for sprite in camera_group.sprites():
+            if sprite not in player_group:
+                sprite.kill()
+                del sprite
 
     def create_tile_group(self, csv_file, type):
         create_tile = {'player': self.set_player_coords,
@@ -58,6 +79,8 @@ class Level:
         player.rect.center = coords
 
     def add_walls(self, id, coords):
+        global camera_group, collision_group
+
         images = ['brick_top.png',
                   'brick_middle.png',
                   'brick_bottom.png',
@@ -71,15 +94,21 @@ class Level:
             (camera_group, collision_group))
 
     def add_enemies(self, id, coords):
+        global camera_group, enemy_group
+
         Ghost(coords, (60, 60), 1, (camera_group, enemy_group))
 
     def add_chests(self, id, coords):
+        global camera_group, collision_group
+
         chest = Chest(
             coords,
             (self.tile_size * 0.6, self.tile_size * 0.6),
             (camera_group, collision_group))
 
     def add_decor(self, id, type, coords):
+        global camera_group
+
         images =  {'grass': ['grass1.png',
                              'grass2.png',
                              'grass3.png'],
@@ -97,7 +126,7 @@ class Level:
                        'rock': 0.6,
                        'tree': 1.5}
 
-        size = self.tile_size * 0.8 * randomize(sprite_size[type] * 100, 0.1) / 100
+        size = round(self.tile_size * 0.8 * randomize(sprite_size[type] * 100, 0.1) / 100)
         decor = Sprite(
             coords,
             [size] * 2,
@@ -108,12 +137,10 @@ class Level:
             decor.image = pygame.transform.flip(decor.image, True, False)
 
     def add_exit(self, id, coords):
-        pass
-        
-    def run():
-        '''runs the level'''
-        pass
+        global camera_group
 
+        exit = LevelExit(coords, [round(self.tile_size * 0.8)] * 2, camera_group)
+        
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -640,7 +667,6 @@ class Player(pygame.sprite.Sprite):
 
                     self.velocity.y = 0
 
-        
     def attack_enemy(self):
         global enemy_group
 
@@ -759,7 +785,6 @@ class Player(pygame.sprite.Sprite):
         # reflect image if facing left
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
-
 
     def update(self):
         '''Handles events'''
@@ -946,8 +971,24 @@ class Chest(pygame.sprite.Sprite):
         self.collision()
 
 
-class LevelExit:
-    pass
+class LevelExit(pygame.sprite.Sprite):
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(groups)
+        self.width, self.height = size
+
+        self.image = load_image(
+                os.path.join('sprites/exit', 'dirt_hole.png'),
+                size)
+
+        self.rect = self.image.get_rect(center=coords)
+
+    def update(self):
+        global player_group, level
+
+        if pygame.sprite.spritecollide(self, player_group, False):
+            # checks if the player mask overlaps an enemy mask
+            if pygame.sprite.spritecollide(self, player_group, False, pygame.sprite.collide_mask):
+                level.floor_level += 1
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -984,7 +1025,7 @@ def randomize(value:int, offset:float):
         round(value * (1 + offset)))
 
 tile_size = 100
-floor_level = 1
+starting_floor_level = 1
 game_state = {'paused': False,
               'runtime': True,
               'fullscreen': True}
@@ -1023,14 +1064,7 @@ player = Player((0, 0), (75, 75), (camera_group, player_group))
 pop_up_text = PopUpText()
 
 # levels and map
-level = Level(floor_level, tile_size)
-
-used_coords = [(0, 0), (100, 100)]
-coords = None
-
-size = (60, 40, 125, 100)
-objects = ['rock', 'grass', 'tree']
-
+level = Level(starting_floor_level, tile_size)
 
 while game_state['runtime']:
     # event handling
