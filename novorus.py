@@ -2,7 +2,6 @@ import pygame
 import random
 import os
 import csv
-import math
 
 RED = (211, 47, 47)
 BLOOD_RED = (198, 40, 40)
@@ -10,6 +9,7 @@ BLOOD_RED = (198, 40, 40)
 ORANGE = (255, 174, 66)
 TANGERINE = (212, 103, 0)
 
+MELLOW_YELLOW = (255, 229, 134)
 YELLOW = (255, 231, 45)
 GOLD = (255, 219, 14)
 
@@ -101,9 +101,9 @@ class Level:
             (camera_group, collision_group))
 
     def add_enemies(self, id, coords):
-        global camera_group, enemy_group
+        global camera_group, enemy_group, light_group
 
-        Ghost(coords, (60, 60), 1, (camera_group, enemy_group))
+        Ghost(coords, (60, 60), 1, (camera_group, enemy_group, light_group))
 
     def add_chests(self, id, coords):
         global camera_group, collision_group
@@ -185,6 +185,49 @@ class CameraGroup(pygame.sprite.Group):
                     (255, 0, 0),
                     hitbox,
                     1)
+
+
+class LightSources(pygame.sprite.Group):
+    def __init__(self, resolution):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+        self.resolution = resolution
+
+        self.light_size = pygame.math.Vector2(500, 500)
+        self.light = load_image(
+            os.path.join('sprites/light', 'soft_circle.png'),
+            self.light_size)
+
+        self.light = color_image(self.light, MELLOW_YELLOW)
+        self.filter = pygame.surface.Surface(self.resolution)
+
+        # light offset
+        self.offset = pygame.math.Vector2()
+        self.half_width = self.display_surface.get_width() / 2
+        self.half_height = self.display_surface.get_height() / 2
+
+    def offset_lights(self, target):
+        self.offset.x = target.rect.centerx - self.half_width
+        self.offset.y = target.rect.centery - self.half_height
+
+    def render_lighting(self, player):
+        self.offset_lights(player)
+        self.filter.fill(LIGHT_GREY)
+        
+        for sprite in self.sprites():
+            
+            offset_pos = sprite.rect.topleft \
+                         - self.offset \
+                         + list(map(lambda x: x / 2, sprite.rect.size)) \
+                         - self.light_size / 2
+                         
+            
+            self.filter.blit(self.light, offset_pos)
+
+        self.display_surface.blit(
+            self.filter, 
+            (0, 0), 
+            special_flags=pygame.BLEND_RGBA_MULT)
 
 
 class Menu(pygame.sprite.Sprite):
@@ -511,8 +554,7 @@ class Cursor(pygame.sprite.Sprite):
         coords[0] -= player.rect.centerx - self.display_surface.get_width() / 2
 
         coords[1] = round(coords[1] / tile_size) * tile_size
-        coords[1] -= player.rect.centery - \
-            self.display_surface.get_height() / 2
+        coords[1] -= player.rect.centery - self.display_surface.get_height() / 2
 
         self.rect.center = coords
 
@@ -991,27 +1033,6 @@ class Chest(pygame.sprite.Sprite):
         self.collision()
 
 
-class LightSources(pygame.sprite.Group):
-    def __init__(self, surface, resolution):
-        self.display_surface = surface
-        self.resolution = resolution
-
-        self.image = load_image(
-            os.path.join('sprites/light', 'lighting.png'),
-            (500, 500))
-
-        self.image = color_image(self.image, WHITE)
-
-    def draw(self):
-        filter = pygame.surface.Surface(self.resolution)
-        filter.fill(LIGHT_GREY)
-        filter.blit(self.image, pygame.mouse.get_pos())
-        self.display_surface.blit(
-            filter, 
-            (0, 0), 
-            special_flags=pygame.BLEND_RGBA_MULT)
-
-
 class LevelExit(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, groups):
         super().__init__(groups)
@@ -1098,7 +1119,7 @@ cursor_group = pygame.sprite.GroupSingle()
 hud_group = CameraGroup()
 player_bars = Bars((0, 0))
 enemy_bars = Bars((0, screen.get_height() * 11 / 64))
-light_group = LightSources(screen, resolution)
+light_group = LightSources(resolution)
 
 # hud
 cursor = Cursor(tile_size, cursor_group)
@@ -1133,7 +1154,7 @@ while game_state['runtime']:
     pop_up_text.custom_draw(player)
     cursor_group.draw(screen)
 
-    light_group.draw()
+    light_group.render_lighting(player)
 
     player_bars.custom_draw(player_group)
     enemy_bars.custom_draw(enemy_group)
