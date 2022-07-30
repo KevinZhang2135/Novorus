@@ -62,10 +62,12 @@ class Level:
                        'walls': self.add_walls,
                        'enemies': self.add_enemies,
                        'chest': self.add_chests,
-                       'decor': self.add_decor,
+                       'static_decor': self.add_static_decor,
+                       'animated_decor': self.add_animated_decor,
                        'exit': self.add_exit}
 
-        decoration_types = ['grass', 'rock', 'tree']
+        static_decoration = ['grass', 'rock', 'tree']
+        animated_decoration = ['torch',]
 
         for row_index, row in enumerate(csv_file):
             for col_index, id in enumerate(row):
@@ -74,8 +76,11 @@ class Level:
                     x = col_index * self.tile_size
                     y = row_index * self.tile_size
 
-                    if type in decoration_types:
-                        create_tile['decor'](id, type, (x, y))
+                    if type in static_decoration:
+                        create_tile['static_decor'](id, type, (x, y))
+
+                    elif type in animated_decoration:
+                        create_tile['animated_decor'](id, type, (x, y))
 
                     else:
                         create_tile[type](id, (x, y))
@@ -103,7 +108,7 @@ class Level:
     def add_enemies(self, id, coords):
         global camera_group, enemy_group, light_group
 
-        Ghost(coords, (60, 60), 1, (camera_group, enemy_group, light_group))
+        Ghost(coords, (60, 60), 1, (camera_group, enemy_group))
 
     def add_chests(self, id, coords):
         global camera_group, collision_group
@@ -113,7 +118,7 @@ class Level:
             (self.tile_size * 0.6, self.tile_size * 0.6),
             (camera_group, collision_group))
 
-    def add_decor(self, id, type, coords):
+    def add_static_decor(self, id, type, coords):
         global camera_group
 
         images = {'grass': ['grass1.png',
@@ -133,8 +138,11 @@ class Level:
                        'rock': 0.6,
                        'tree': 1.5}
 
-        size = round(self.tile_size * 0.8 *
-                     randomize(sprite_size[type] * 100, 0.1) / 100)
+        size = round(self.tile_size 
+                     * 0.8
+                     * randomize(sprite_size[type] * 100, 0.1)
+                     / 100)
+        
         decor = StaticTile(
             coords,
             [size] * 2,
@@ -143,6 +151,33 @@ class Level:
 
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
+
+    def add_animated_decor(self, id, type, coords):
+        global camera_group, light_group
+
+        sprite_size = {'torch': 0.7}
+
+        size = round(self.tile_size 
+                     * 0.8
+                     * randomize(sprite_size[type] * 100, 0.1)
+                     / 100)
+
+        animation_sprites = []
+        num_of_frames = len(os.listdir(f'sprites/decoration/{type}'))
+        for i in range(num_of_frames):
+            image = load_image(
+                os.path.join(
+                    f'sprites/decoration/{type}', f'{type}{i + 1}.png'),
+                [size] * 2)
+
+            animation_sprites.append(image)
+
+        decor = AnimatedTile(
+            coords,
+            [size] * 2,
+            animation_sprites,
+            (camera_group, light_group))
+        
 
     def add_exit(self, id, coords):
         global camera_group
@@ -215,12 +250,10 @@ class LightSources(pygame.sprite.Group):
         self.filter.fill(LIGHT_GREY)
         
         for sprite in self.sprites():
-            
             offset_pos = sprite.rect.topleft \
                          - self.offset \
                          + list(map(lambda x: x / 2, sprite.rect.size)) \
                          - self.light_size / 2
-                         
             
             self.filter.blit(self.light, offset_pos)
 
@@ -575,16 +608,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = load_image(
-            os.path.join('sprites/player/idle', 'knight_idle1.png'),
-            (self.width, self.height))
-
-        self.rect = self.image.get_rect(center=coords)
-        self.mask = pygame.mask.from_surface(self.image)
-
         self.in_combat = False
         self.attacking = False
-        self.exp = [0, 10]
 
         self.action = 'idle'
         self.facing = 'right'
@@ -634,6 +659,11 @@ class Player(pygame.sprite.Sprite):
                     (self.width, self.height))
 
                 self.animation_types[type].append(image)
+
+        self.image = self.animation_types['idle'][self.frame]
+
+        self.rect = self.image.get_rect(center=coords)
+        self.mask = pygame.mask.from_surface(self.image)
 
     def set_stats(self):
         stats = {'health': self.health,
@@ -943,13 +973,6 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = load_image(
-            os.path.join('sprites/ghost/idle', 'ghost_idle1.png'),
-            (self.width, self.height))
-
-        self.rect = self.image.get_rect(center=coords)
-        self.mask = pygame.mask.from_surface(self.image)
-
         self.in_combat = False
         self.attacking = False
 
@@ -960,7 +983,6 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
 
         self.frame = 0
         self.level = level
-        self.exp = 10 * self.level
         self.crit_chance = 0.05
 
         self.action = 'idle'
@@ -992,6 +1014,10 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
                     (self.width, self.height))
 
                 self.animation_types[type].append(image)
+
+        self.image = self.animation_types['idle'][self.frame]
+        self.rect = self.image.get_rect(center=coords)
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         '''Handles events'''
@@ -1062,6 +1088,37 @@ class StaticTile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=coords)
 
 
+class AnimatedTile(pygame.sprite.Sprite):
+    def __init__(self, coords: list, size: list, images: str, groups):
+        super().__init__(groups)
+        self.width, self.height = size
+
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldown = 250
+        self.frame = 0
+
+        self.animation_types = images
+        self.image = self.animation_types[self.frame]
+        self.rect = self.image.get_rect(center=coords)
+
+    def animation(self):
+        '''Handles animation'''
+        # loops frames
+        if self.frame >= len(self.animation_types):
+            self.frame = 0
+
+        # set image
+        self.image = self.animation_types[self.frame]
+
+        # determines whether the animation cooldown is over
+        if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+            self.animation_time = pygame.time.get_ticks()
+            self.frame += 1
+
+    def update(self):
+        self.animation()
+
+
 def load_image(image, size: list):
     '''Loads an image according to the input'''
     image = pygame.image.load(image).convert_alpha()
@@ -1091,7 +1148,7 @@ def color_image(image, color):
     # zeros out rgb and preserves original transparency
     image.fill((0, 0, 0, 255), None, special_flags=pygame.BLEND_RGBA_MULT)
     # adds in new rgb values
-    image.fill(color + (0,), None, pygame.BLEND_RGBA_ADD)
+    image.fill(color + (0,), None, pygame.BLEND_RGBA_ADD)\
 
     return image
 
