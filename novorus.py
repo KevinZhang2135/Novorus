@@ -38,7 +38,7 @@ class Level:
 
     @floor_level.setter
     def floor_level(self, value):
-        self._floor_level = 1  # value
+        self._floor_level = value
         self.clear_level()
         self.read_csv_level()
 
@@ -59,7 +59,7 @@ class Level:
 
     def create_tile_group(self, csv_file, type):
         create_tile = {'player': self.set_player_coords,
-                       'walls': self.add_walls,
+                       'wall': self.add_walls,
                        'enemies': self.add_enemies,
                        'chest': self.add_chests,
                        'static_decor': self.add_static_decor,
@@ -93,11 +93,11 @@ class Level:
     def add_walls(self, id, coords):
         global camera_group, collision_group
 
-        images = ['brick_top.png',
-                  'brick_middle.png',
-                  'brick_bottom.png',
-                  'brick_pile.png',
-                  'brick_side.png']
+        images = ['grey_bricks/brick_top.png',
+                  'grey_bricks/brick_middle.png',
+                  'grey_bricks/brick_bottom.png',
+                  'grey_bricks/brick_pile.png',
+                  'grey_bricks/brick_side.png']
 
         wall = StaticTile(
             coords,
@@ -108,7 +108,9 @@ class Level:
     def add_enemies(self, id, coords):
         global camera_group, enemy_group, light_group
 
-        Ghost(coords, (60, 60), 1, (camera_group, enemy_group))
+        enemies = [Ghost,
+                   Mimic]
+        enemies[id](coords, (60, 60), (camera_group, enemy_group))
 
     def add_chests(self, id, coords):
         global camera_group, collision_group
@@ -156,7 +158,6 @@ class Level:
         global camera_group, light_group
 
         sprite_size = {'torch': 0.7}
-
         size = round(self.tile_size 
                      * 0.8
                      * randomize(sprite_size[type] * 100, 0.1)
@@ -177,7 +178,9 @@ class Level:
             [size] * 2,
             animation_sprites,
             (camera_group, light_group))
-        
+
+        if type == 'torch':
+            decor.rect.centery += 50
 
     def add_exit(self, id, coords):
         global camera_group
@@ -549,7 +552,7 @@ class Bars(pygame.sprite.Group):
             else:
                 target = targets.sprites()[0]
 
-            if target:
+            if target and target.show_stats:
                 pygame.draw.rect(self.display_surface, BROWN, self.rect)
                 pygame.draw.rect(self.display_surface,
                                  DARK_BROWN, self.rect, 5)
@@ -610,6 +613,7 @@ class Player(pygame.sprite.Sprite):
 
         self.in_combat = False
         self.attacking = False
+        self.show_stats = True
 
         self.action = 'idle'
         self.facing = 'right'
@@ -764,6 +768,7 @@ class Player(pygame.sprite.Sprite):
                             self.animation_time = pygame.time.get_ticks()
                             self.frame = 0
 
+                            enemy.show_stats = True
                             enemy.in_combat = True
                             enemy.animation_time = pygame.time.get_ticks()
                             enemy.frame = 0
@@ -803,7 +808,7 @@ class Player(pygame.sprite.Sprite):
                                     if dodge_chance > enemy.speed['current']:
                                         # randomizes damage between 0.9 and 1.1
                                         damage = randomize(
-                                            self.attack['current'], 0.1)
+                                            self.attack['current'], 0.15)
 
                                         # doubles damage if crit
                                         crit = random.randint(
@@ -906,7 +911,7 @@ class GenericEnemy:
 
                     if dodge_chance > player.speed['current']:
                         # randomizes damage between 0.9 and 1.1
-                        damage = randomize(self.attack['current'], 0.1)
+                        damage = randomize(self.attack['current'], 0.15)
 
                         # doubles damage if crit
                         crit = random.randint(0, 100) / 100 <= self.crit_chance
@@ -969,12 +974,13 @@ class GenericEnemy:
 
 
 class Ghost(pygame.sprite.Sprite, GenericEnemy):
-    def __init__(self, coords: list, size: list, level: int, groups):
+    def __init__(self, coords: list, size: list, groups):
         super().__init__(groups)
         self.width, self.height = size
 
         self.in_combat = False
         self.attacking = False
+        self.show_stats = True
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = randomize(400, 0.2)
@@ -982,35 +988,85 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.cooldown = self.animation_cooldown
 
         self.frame = 0
-        self.level = level
         self.crit_chance = 0.05
 
         self.action = 'idle'
         self.facing = random.choice(['left', 'right'])
         self.name = 'Ghost'
 
-        health = round(30 * (1.1**(self.level - 1)))
-        self.health = {'current': health,
-                       'total': health}
+        self.health = {'current': 30,
+                       'total': 30}
 
-        attack = round(10 * (1.1**(self.level - 1)))
-        self.attack = {'current': attack,
-                       'total': attack}
+        self.attack = {'current': 10,
+                       'total': 10}
 
-        speed = round(6 * (1.1**(self.level - 1)))
-        self.speed = {'current': speed,
-                      'total': speed}
+        self.speed = {'current': 6,
+                      'total': 6}
 
         self.animation_types = {'idle': [],
                                 'attack': []}
 
         for type in self.animation_types:
-            num_of_frames = len(os.listdir(f'sprites/ghost/{type}'))
+            num_of_frames = len(os.listdir(f'sprites/enemies/ghost/{type}'))
             for i in range(num_of_frames):
                 image = load_image(
                     os.path.join(
-                        f'sprites/ghost/{type}',
+                        f'sprites/enemies/ghost/{type}',
                         f'ghost_{type}{i + 1}.png'),
+                    (self.width, self.height))
+
+                self.animation_types[type].append(image)
+
+        self.image = self.animation_types['idle'][self.frame]
+        self.rect = self.image.get_rect(center=coords)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self):
+        '''Handles events'''
+        self.attack_enemy()
+        self.animation()
+
+
+class Mimic(pygame.sprite.Sprite, GenericEnemy):
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(groups)
+        self.width, self.height = size
+
+        self.in_combat = False
+        self.attacking = False
+        self.show_stats = False
+
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldown = 1000
+        self.attack_cooldown = 300
+        self.cooldown = self.animation_cooldown
+
+        self.frame = 0
+        self.crit_chance = 0.05
+
+        self.action = 'idle'
+        self.facing = random.choice(['left', 'right'])
+        self.name = 'Mimic'
+
+        self.health = {'current': 100,
+                       'total': 100}
+
+        self.attack = {'current': 25,
+                       'total': 25}
+
+        self.speed = {'current': 10,
+                      'total': 10}
+
+        self.animation_types = {'idle': [],
+                                'attack': []}
+
+        for type in self.animation_types:
+            num_of_frames = len(os.listdir(f'sprites/enemies/mimic/{type}'))
+            for i in range(num_of_frames):
+                image = load_image(
+                    os.path.join(
+                        f'sprites/enemies/mimic/{type}',
+                        f'mimic_{type}{i + 1}.png'),
                     (self.width, self.height))
 
                 self.animation_types[type].append(image)
@@ -1207,7 +1263,7 @@ while game_state['runtime']:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=False)
+    camera_group.custom_draw(player, show_hitboxes=True)
     pop_up_text.custom_draw(player)
     cursor_group.draw(screen)
 
