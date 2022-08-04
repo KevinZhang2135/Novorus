@@ -144,12 +144,15 @@ class Level:
                      * 0.8
                      * randomize(sprite_size[type] * 100, 0.1)
                      / 100)
-        
+
         decor = StaticTile(
             coords,
             [size] * 2,
             os.path.join(f'sprites/decoration/{type}', images[type][id]),
             camera_group)
+
+        decor.rect.centerx += random.randint(-25, 25)
+        decor.rect.centery += random.randint(-25, 25)
 
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
@@ -647,7 +650,7 @@ class Player(pygame.sprite.Sprite):
         self.frame = 0
         self.crit_chance = 0.05
 
-        self.exp = 1000
+        self.exp = 0
         self.exp_levels = [i for i in range(100, 10000, 100)]
         self.level = 1
         while self.exp > self.exp_levels[self.level - 1]:
@@ -1022,7 +1025,7 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
 
         self.frame = 0
         self.crit_chance = 0.05
-        self.exp = 10
+        self.exp = 15
         self.level = level
 
         self.action = 'idle'
@@ -1144,6 +1147,7 @@ class Chest(pygame.sprite.Sprite):
             self.image = self.chest_sprites['opened']
             self.opened = True
 
+            player.exp += 10
             player.bonuses['health'] += 0.05
             player.bonuses['speed'] += 0.1
             player.bonuses['attack'] += 0.05
