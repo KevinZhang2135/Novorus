@@ -47,7 +47,7 @@ class Level:
         for path in files:
             with open(os.path.join(f'levels/{self._floor_level}', path)) as file:
                 csv_file = csv.reader(file)
-                self.create_tile_group(csv_file, path[0:-4])
+                self.create_tile_group(csv_file, path[:-4])
 
     def clear_level(self):
         global camera_group, player_group
@@ -66,24 +66,13 @@ class Level:
                        'animated_decor': self.add_animated_decor,
                        'exit': self.add_exit}
 
-        static_decoration = ['grass', 'rock', 'tree']
-        animated_decoration = ['torch',]
-
         for row_index, row in enumerate(csv_file):
             for col_index, id in enumerate(row):
                 id = int(id)
                 if id != -1:
                     x = col_index * self.tile_size
                     y = row_index * self.tile_size
-
-                    if type in static_decoration:
-                        create_tile['static_decor'](id, type, (x, y))
-
-                    elif type in animated_decoration:
-                        create_tile['animated_decor'](id, type, (x, y))
-
-                    else:
-                        create_tile[type](id, (x, y))
+                    create_tile[type](id, (x, y))
 
     def set_player_coords(self, id, coords):
         global player
@@ -112,9 +101,11 @@ class Level:
                    Mimic,
                    Sunflower]
 
-        sprite_size = [50, 60, 40]
+        sprite_size = [50, 60, 30]
 
-        enemies[id](coords, [sprite_size[id]] * 2, self.floor_level, (camera_group, enemy_group))
+        enemy = enemies[id](coords, [sprite_size[id]] * 2, self.floor_level, (camera_group, enemy_group))
+        enemy.rect.centerx += random.randint(-25, 25)
+        enemy.rect.centery += random.randint(-25, 25)
 
     def add_chests(self, id, coords):
         global camera_group, collision_group
@@ -124,32 +115,48 @@ class Level:
             (60, 60),
             (camera_group, collision_group))
 
-    def add_static_decor(self, id, type, coords):
+    def add_static_decor(self, id, coords):
         global camera_group
 
-        images = {'grass': ['grass1.png',
-                            'grass2.png',
-                            'grass3.png'],
+        images = [{'file': 'grass/grass1.png',
+                   'size': 30},
 
-                  'rock': ['rock1.png',
-                           'rock2.png',
-                           'rock3.png',
-                           'rock4.png'],
+                  {'file': 'grass/grass2.png',
+                   'size': 30},
 
-                  'tree': ['tree1.png',
-                           'tree2.png',
-                           'tree3.png']}
+                  {'file': 'grass/grass3.png',
+                   'size': 30},
 
-        sprite_size = {'grass': 30,
-                       'rock': 50,
-                       'tree': 120}
+                  {'file': 'rock/rock1.png',
+                   'size': 50},
 
-        size = round(randomize(sprite_size[type], 0.1))
+                  {'file': 'rock/rock2.png',
+                   'size': 40},
+
+                  {'file': 'rock/rock3.png',
+                   'size': 50},
+                             
+                  {'file': 'rock/rock4.png',
+                   'size': 50},
+
+                  {'file': 'tree/tree1.png',
+                   'size': 120},
+
+                  {'file': 'tree/tree2.png',
+                   'size': 120},
+
+                  {'file': 'tree/tree3.png',
+                   'size': 120},
+                             
+                  {'file': 'tree/tree4.png',
+                   'size': 30}]
+
+        size = round(randomize(images[id]['size'], 0.1))
 
         decor = StaticTile(
             coords,
             [size] * 2,
-            os.path.join(f'sprites/decoration/{type}', images[type][id]),
+            os.path.join(f'sprites/decoration/static', images[id]['file']),
             camera_group)
 
         decor.rect.centerx += random.randint(-25, 25)
@@ -158,21 +165,24 @@ class Level:
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
 
-    def add_animated_decor(self, id, type, coords):
+    def add_animated_decor(self, id, coords):
         global camera_group, light_group
 
-        sprite_size = {'torch': 0.7}
-        size = round(self.tile_size 
-                     * 0.8
-                     * randomize(sprite_size[type] * 100, 0.1)
-                     / 100)
+        images = [{'file': 'torch',
+                   'size': 50},
+                   ]
+        
+        folder = images[id]['file']
+        size = round(randomize(images[id]['size'], 0.1))
 
         animation_sprites = []
-        num_of_frames = len(os.listdir(f'sprites/decoration/{type}'))
+        num_of_frames = len(
+            os.listdir(f'sprites/decoration/animated/{folder}'))
+
         for i in range(num_of_frames):
             image = load_image(
                 os.path.join(
-                    f'sprites/decoration/{type}', f'{type}{i + 1}.png'),
+                    f'sprites/decoration/animated/{folder}', f'{folder}{i + 1}.png'),
                 [size] * 2)
 
             animation_sprites.append(image)
@@ -183,9 +193,10 @@ class Level:
             animation_sprites,
             (camera_group, light_group))
 
-        if type == 'torch':
+        if folder == 'torch':
             decor.rect.centerx += random.randint(-1, 1) * 25
-            decor.rect.centery += 28
+            decor.rect.centery += 25
+            decor.rect.height += 5
 
     def add_exit(self, id, coords):
         global camera_group
@@ -1142,7 +1153,7 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
         self.show_stats = False
 
         self.frame = 0
-        self.crit_chance = 0.10
+        self.crit_chance = 0.15
         self.exp = 50
         self.exp_levels = False
         self.level = level
@@ -1157,7 +1168,7 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
         self.attack = {'current': round(10 * (1.05**(self.level - 1)))}
         self.attack['total'] = self.attack['current']
 
-        self.speed = {'current': round(10 * (1.025**(self.level - 1)))}
+        self.speed = {'current': 0}
         self.speed['total'] = self.speed['current']
 
         self.animation_types = {'idle': [],
@@ -1391,7 +1402,7 @@ while game_state['runtime']:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=False)
+    camera_group.custom_draw(player, show_hitboxes=True)
     pop_up_text.custom_draw(player)
     cursor_group.draw(screen)
 
