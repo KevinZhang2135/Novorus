@@ -30,6 +30,15 @@ class Level:
         self._floor_level = floor_level
 
         self.display_surface = pygame.display.get_surface()
+
+        self.level_updated = False
+        self.transitioning = False
+        self.level_transition_rect = pygame.Rect(
+            -self.display_surface.get_width(),
+            0,
+            self.display_surface.get_width(),
+            self.display_surface.get_height())
+
         self.read_csv_level()
 
     @property
@@ -38,9 +47,9 @@ class Level:
 
     @floor_level.setter
     def floor_level(self, value):
-        self._floor_level = value
-        self.clear_level()
-        self.read_csv_level()
+        self._floor_level = 1#value
+
+        self.transitioning = True
 
     def read_csv_level(self):
         files = os.listdir(f'levels/{self._floor_level}')
@@ -203,6 +212,35 @@ class Level:
 
         exit = LevelExit(
             coords, [round(self.tile_size * 0.8)] * 2, camera_group)
+
+    def draw(self):
+        if self.transitioning:
+            pygame.draw.rect(
+                self.display_surface, 
+                BLACK,
+                self.level_transition_rect)
+
+    def update(self):
+        global player
+
+        if self.transitioning:
+            self.level_transition_rect.x += 100
+            if (self.level_transition_rect.x > 0
+                and not self.level_updated):
+                self.level_updated = True
+
+                self.clear_level()
+                self.read_csv_level()
+
+                player.velocity.x = 0
+                player.velocity.y = 0
+
+            if self.level_transition_rect.x > self.display_surface.get_width():
+                self.level_transition_rect.x = -self.display_surface.get_width()
+
+                self.transitioning = False
+                self.level_updated = False
+                
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -1402,7 +1440,7 @@ while game_state['runtime']:
     screen.fill((130, 200, 90))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=True)
+    camera_group.custom_draw(player, show_hitboxes=False)
     pop_up_text.custom_draw(player)
     cursor_group.draw(screen)
 
@@ -1411,13 +1449,15 @@ while game_state['runtime']:
     player_bars.custom_draw(player_group)
     enemy_bars.custom_draw(enemy_group)
     hud_group.draw(screen)
+    level.draw()
 
     # updates
-    if not game_state['paused']:
+    if not game_state['paused'] and not level.transitioning:
         camera_group.update()
 
     cursor_group.update()
     hud_group.update()
+    level.update()
 
     # updates screen
     pygame.display.update()
