@@ -23,7 +23,6 @@ BROWN = (131, 106, 83)
 PECAN = (115, 93, 71)
 DARK_BROWN = (104, 84, 66)
 
-
 class Level:
     def __init__(self, floor_level, tile_size):
         self.tile_size = tile_size
@@ -47,7 +46,7 @@ class Level:
 
     @floor_level.setter
     def floor_level(self, value):
-        self._floor_level = 1#value
+        self._floor_level = value
 
         self.transitioning = True
 
@@ -91,16 +90,16 @@ class Level:
     def add_walls(self, id, coords):
         global camera_group, collision_group
 
-        images = ['grey_bricks/brick_top.png',
-                  'grey_bricks/brick_middle.png',
-                  'grey_bricks/brick_bottom.png',
-                  'grey_bricks/brick_pile.png',
-                  'grey_bricks/brick_side.png']
+        images = ['brick_top.png',
+                  'brick_middle.png',
+                  'brick_bottom.png',
+                  'brick_pile.png',
+                  'brick_side.png']
 
         wall = StaticTile(
             coords,
             (100, 100),
-            os.path.join('sprites/walls', images[id]),
+            images[id],
             (camera_group, collision_group))
 
     def add_enemies(self, id, coords):
@@ -125,47 +124,46 @@ class Level:
             (camera_group, collision_group))
 
     def add_static_decor(self, id, coords):
-        global camera_group
+        global camera_group, images
 
-        images = [{'file': 'grass/grass1.png',
-                   'size': 30},
+        sprites = [{'file': 'grass1.png',
+                    'size': 30},
 
-                  {'file': 'grass/grass2.png',
-                   'size': 30},
+                   {'file': 'grass2.png',
+                    'size': 30},
 
-                  {'file': 'grass/grass3.png',
-                   'size': 30},
+                   {'file': 'grass3.png',
+                    'size': 30},
 
-                  {'file': 'rock/rock1.png',
+                   {'file': 'rock1.png',
                    'size': 50},
 
-                  {'file': 'rock/rock2.png',
+                   {'file': 'rock2.png',
                    'size': 40},
 
-                  {'file': 'rock/rock3.png',
+                   {'file': 'rock3.png',
                    'size': 50},
                              
-                  {'file': 'rock/rock4.png',
+                   {'file': 'rock4.png',
                    'size': 50},
 
-                  {'file': 'tree/tree1.png',
+                   {'file': 'tree1.png',
                    'size': 120},
 
-                  {'file': 'tree/tree2.png',
+                   {'file': 'tree2.png',
                    'size': 120},
 
-                  {'file': 'tree/tree3.png',
+                   {'file': 'tree3.png',
                    'size': 120},
                              
-                  {'file': 'tree/tree4.png',
+                   {'file': 'tree4.png',
                    'size': 30}]
 
-        size = round(randomize(images[id]['size'], 0.1))
-
+        size = round(randomize(sprites[id]['size'], 0.1))
         decor = StaticTile(
             coords,
             [size] * 2,
-            os.path.join(f'sprites/decoration/static', images[id]['file']),
+            sprites[id]['file'],
             camera_group)
 
         decor.rect.centerx += random.randint(-25, 25)
@@ -175,24 +173,22 @@ class Level:
             decor.image = pygame.transform.flip(decor.image, True, False)
 
     def add_animated_decor(self, id, coords):
-        global camera_group, light_group
+        global camera_group, light_group, images
 
-        images = [{'file': 'torch',
+        sprites = [{'file': 'torch',
                    'size': 50},
                    ]
         
-        folder = images[id]['file']
-        size = round(randomize(images[id]['size'], 0.1))
+        folder = sprites[id]['file']
+        size = round(randomize(sprites[id]['size'], 0.1))
 
         animation_sprites = []
         num_of_frames = len(
             os.listdir(f'sprites/decoration/animated/{folder}'))
 
         for i in range(num_of_frames):
-            image = load_image(
-                os.path.join(
-                    f'sprites/decoration/animated/{folder}', f'{folder}{i + 1}.png'),
-                [size] * 2)
+            image = IMAGES[f'{folder}{i + 1}.png']
+            image = pygame.transform.scale(image, [size] * 2)
 
             animation_sprites.append(image)
 
@@ -240,7 +236,6 @@ class Level:
 
                 self.transitioning = False
                 self.level_updated = False
-                
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -286,9 +281,8 @@ class LightSources(pygame.sprite.Group):
         self.resolution = resolution
 
         self.light_size = pygame.math.Vector2(500, 500)
-        self.light = load_image(
-            os.path.join('sprites/light', 'soft_circle.png'),
-            self.light_size)
+        self.light = IMAGES['soft_circle.png']
+        self.light = pygame.transform.scale(self.light, self.light_size)
 
         self.light = color_image(self.light, MELLOW_YELLOW)
         self.filter = pygame.surface.Surface(self.resolution)
@@ -334,15 +328,12 @@ class Menu(pygame.sprite.Sprite):
         self.width, self.height = 100, 100
         menu_width = 350
 
-        self.menu_sprites = {
-            'menu': load_image(
-                os.path.join('sprites/menu', 'menu.png'),
-                (self.width, self.height)),
+        self.menu_sprites = {}
+        self.menu_sprites['menu'] = IMAGES['menu.png']
+        self.menu_sprites['menu'] = pygame.transform.scale(self.menu_sprites['menu'], (self.width, self.height))
 
-            'paused': load_image(
-                os.path.join('sprites/menu', 'paused.png'),
-                (self.width, self.height))}
-
+        self.menu_sprites['paused'] = IMAGES['paused.png']
+        self.menu_sprites['paused'] = pygame.transform.scale(self.menu_sprites['paused'], (self.width, self.height))
         self.image = self.menu_sprites['menu']
 
         self.rect = self.image.get_rect(
@@ -483,9 +474,8 @@ class HealthBar(pygame.sprite.Sprite):
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
-        self.image = load_image(
-            os.path.join('sprites/menu', 'heart.png'),
-            (self.width, self.height))
+        self.image = IMAGES['heart.png']
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=self.coords)
         self.bar = pygame.Rect(
@@ -526,9 +516,8 @@ class SpeedBar(pygame.sprite.Sprite):
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
-        self.image = load_image(
-            os.path.join('sprites/menu', 'lightning.png'),
-            (self.width, self.height))
+        self.image = IMAGES['lightning.png']
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=self.coords)
         self.bar = pygame.Rect(
@@ -560,9 +549,8 @@ class AttackBar(pygame.sprite.Sprite):
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
-        self.image = load_image(
-            os.path.join('sprites/menu', 'sword.png'),
-            (self.width, self.height))
+        self.image = IMAGES['sword.png']
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=self.coords)
         self.bar = pygame.Rect(
@@ -655,12 +643,11 @@ class Bars(pygame.sprite.Group):
 class Cursor(pygame.sprite.Sprite):
     def __init__(self, tile_size, group):
         super().__init__(group)
-
         self.display_surface = pygame.display.get_surface()
         self.tile_size = tile_size
-        self.image = load_image(
-            os.path.join('sprites/menu', 'cursor.png'),
-            (100, 100))
+
+        self.image = IMAGES['cursor.png']
+        self.image = pygame.transform.scale(self.image, (100, 100))
 
         self.rect = self.image.get_rect(center=(0, 0))
 
@@ -739,10 +726,8 @@ class Player(pygame.sprite.Sprite):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'sprites/player/{type}'))
             for i in range(num_of_frames):
-                image = load_image(
-                    os.path.join(
-                        f'sprites/player/{type}', f'knight_{type}{i + 1}.png'),
-                    (self.width, self.height))
+                image = IMAGES[f'knight_{type}{i + 1}.png']
+                image = pygame.transform.scale(image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -1101,11 +1086,8 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'sprites/enemies/ghost/{type}'))
             for i in range(num_of_frames):
-                image = load_image(
-                    os.path.join(
-                        f'sprites/enemies/ghost/{type}',
-                        f'ghost_{type}{i + 1}.png'),
-                    (self.width, self.height))
+                image = IMAGES[f'ghost_{type}{i + 1}.png']
+                image = pygame.transform.scale(image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -1158,11 +1140,8 @@ class Mimic(pygame.sprite.Sprite, GenericEnemy):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'sprites/enemies/mimic/{type}'))
             for i in range(num_of_frames):
-                image = load_image(
-                    os.path.join(
-                        f'sprites/enemies/mimic/{type}',
-                        f'mimic_{type}{i + 1}.png'),
-                    (self.width, self.height))
+                image = IMAGES[f'mimic_{type}{i + 1}.png']
+                image = pygame.transform.scale(image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -1215,11 +1194,8 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'sprites/enemies/sunflower/{type}'))
             for i in range(num_of_frames):
-                image = load_image(
-                    os.path.join(
-                        f'sprites/enemies/sunflower/{type}',
-                        f'sunflower_{type}{i + 1}.png'),
-                    (self.width, self.height))
+                image = IMAGES[f'sunflower_{type}{i + 1}.png']
+                image = pygame.transform.scale(image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -1244,16 +1220,14 @@ class Chest(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.chest_sprites = {
-            'closed': load_image(
-                os.path.join('sprites/chest', 'chest_closed.png'),
-                (self.width, self.height)),
+        self.chest_sprites = {}
+        self.chest_sprites['closed'] = IMAGES['chest_closed.png']
+        self.chest_sprites['closed'] = pygame.transform.scale(self.chest_sprites['closed'], (self.width, self.height))
 
-            'opened': load_image(
-                os.path.join('sprites/chest', 'chest_opened.png'),
-                (self.width, self.height)), }
-
+        self.chest_sprites['opened'] = IMAGES['chest_opened.png']
+        self.chest_sprites['opened'] = pygame.transform.scale(self.chest_sprites['opened'], (self.width, self.height))
         self.image = self.chest_sprites['closed']
+
         self.rect = self.image.get_rect(center=coords)
         self.opened = False
 
@@ -1280,9 +1254,8 @@ class LevelExit(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = load_image(
-            os.path.join('sprites/exit', 'dirt_hole.png'),
-            size)
+        self.image = IMAGES['dirt_hole.png']
+        self.image = pygame.transform.scale(self.image, size)
 
         self.rect = self.image.get_rect(center=coords)
 
@@ -1300,7 +1273,8 @@ class StaticTile(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = load_image(image, size)
+        self.image = IMAGES[image]
+        self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
 
 
@@ -1317,7 +1291,6 @@ class AnimatedTile(pygame.sprite.Sprite):
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1200 / len(self.animation_types)
         
-
     def animation(self):
         '''Handles animation'''
         # loops frames
@@ -1334,14 +1307,6 @@ class AnimatedTile(pygame.sprite.Sprite):
 
     def update(self):
         self.animation()
-
-
-def load_image(image, size: list):
-    '''Loads an image according to the input'''
-    image = pygame.image.load(image).convert_alpha()
-    image = pygame.transform.scale(image, [round(i) for i in size])
-
-    return image
 
 
 def load_text(text, coords, text_size, color):
@@ -1370,6 +1335,15 @@ def color_image(image, color):
     return image
 
 
+def dir_as_dict(root):
+    dict = {}
+    for (path, dirs, files) in os.walk(root, topdown=True):
+        for file in files:
+            dict[file] = path
+
+    return dict
+
+
 tile_size = 100
 starting_floor_level = 1
 game_state = {'paused': False,
@@ -1385,6 +1359,12 @@ resolution = (1920, 1080)
 screen = pygame.display.set_mode(resolution)  # , pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 
+# gets images
+IMAGES = dir_as_dict('sprites')
+for file, path in IMAGES.items():
+    IMAGES[file] = pygame.image.load(os.path.join(path, file)).convert_alpha()
+
+# sprite groups
 camera_group = CameraGroup()
 collision_group = pygame.sprite.Group()
 player_group = pygame.sprite.GroupSingle()
