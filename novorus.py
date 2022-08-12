@@ -3,6 +3,7 @@ import random
 import os
 import csv
 
+# colors
 RED = (211, 47, 47)
 BLOOD_RED = (198, 40, 40)
 
@@ -23,11 +24,11 @@ BROWN = (131, 106, 83)
 PECAN = (115, 93, 71)
 DARK_BROWN = (104, 84, 66)
 
+
 class Level:
     def __init__(self, floor_level, tile_size):
         self.tile_size = tile_size
         self._floor_level = floor_level
-
         self.display_surface = pygame.display.get_surface()
 
         self.level_updated = False
@@ -111,7 +112,8 @@ class Level:
 
         sprite_size = [50, 60, 30]
 
-        enemy = enemies[id](coords, [sprite_size[id]] * 2, self.floor_level, (camera_group, enemy_group))
+        enemy = enemies[id](coords, [sprite_size[id]] * 2,
+                            self.floor_level, (camera_group, enemy_group))
         enemy.rect.centerx += random.randint(-25, 25)
         enemy.rect.centery += random.randint(-25, 25)
 
@@ -136,28 +138,28 @@ class Level:
                     'size': 30},
 
                    {'file': 'rock1.png',
-                   'size': 50},
+                    'size': 50},
 
                    {'file': 'rock2.png',
-                   'size': 40},
+                    'size': 40},
 
                    {'file': 'rock3.png',
-                   'size': 50},
-                             
+                    'size': 50},
+
                    {'file': 'rock4.png',
-                   'size': 50},
+                    'size': 50},
 
                    {'file': 'tree1.png',
-                   'size': 120},
+                    'size': 120},
 
                    {'file': 'tree2.png',
-                   'size': 120},
+                    'size': 120},
 
                    {'file': 'tree3.png',
-                   'size': 120},
-                             
+                    'size': 120},
+
                    {'file': 'tree4.png',
-                   'size': 30}]
+                    'size': 30}]
 
         size = round(randomize(sprites[id]['size'], 0.1))
         decor = StaticTile(
@@ -176,26 +178,16 @@ class Level:
         global camera_group, light_group, images
 
         sprites = [{'file': 'torch',
-                   'size': 50},
+                    'size': 50},
                    ]
-        
+
         folder = sprites[id]['file']
         size = round(randomize(sprites[id]['size'], 0.1))
-
-        animation_sprites = []
-        num_of_frames = len(
-            os.listdir(f'sprites/decoration/animated/{folder}'))
-
-        for i in range(num_of_frames):
-            image = IMAGES[f'{folder}{i + 1}.png']
-            image = pygame.transform.scale(image, [size] * 2)
-
-            animation_sprites.append(image)
 
         decor = AnimatedTile(
             coords,
             [size] * 2,
-            animation_sprites,
+            folder,
             (camera_group, light_group))
 
         if folder == 'torch':
@@ -212,7 +204,7 @@ class Level:
     def draw(self):
         if self.transitioning:
             pygame.draw.rect(
-                self.display_surface, 
+                self.display_surface,
                 BLACK,
                 self.level_transition_rect)
 
@@ -222,7 +214,7 @@ class Level:
         if self.transitioning:
             self.level_transition_rect.x += 100
             if (self.level_transition_rect.x > 0
-                and not self.level_updated):
+                    and not self.level_updated):
                 self.level_updated = True
 
                 self.clear_level()
@@ -298,25 +290,25 @@ class LightSources(pygame.sprite.Group):
 
     def render_lighting(self, player):
         global level
-    
+
         self.offset_lights(player)
         if level.floor_level > 1:
             self.filter.fill(DARK_GREY)
 
         else:
             self.filter.fill(LIGHT_GREY)
-        
+
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft \
-                         - self.offset \
-                         + list(map(lambda x: x / 2, sprite.rect.size)) \
-                         - self.light_size / 2
-            
+                - self.offset \
+                + list(map(lambda x: x / 2, sprite.rect.size)) \
+                - self.light_size / 2
+
             self.filter.blit(self.light, offset_pos)
 
         self.display_surface.blit(
-            self.filter, 
-            (0, 0), 
+            self.filter,
+            (0, 0),
             special_flags=pygame.BLEND_RGBA_MULT)
 
 
@@ -330,10 +322,12 @@ class Menu(pygame.sprite.Sprite):
 
         self.menu_sprites = {}
         self.menu_sprites['menu'] = IMAGES['menu.png']
-        self.menu_sprites['menu'] = pygame.transform.scale(self.menu_sprites['menu'], (self.width, self.height))
+        self.menu_sprites['menu'] = pygame.transform.scale(
+            self.menu_sprites['menu'], (self.width, self.height))
 
         self.menu_sprites['paused'] = IMAGES['paused.png']
-        self.menu_sprites['paused'] = pygame.transform.scale(self.menu_sprites['paused'], (self.width, self.height))
+        self.menu_sprites['paused'] = pygame.transform.scale(
+            self.menu_sprites['paused'], (self.width, self.height))
         self.image = self.menu_sprites['menu']
 
         self.rect = self.image.get_rect(
@@ -475,7 +469,8 @@ class HealthBar(pygame.sprite.Sprite):
         self.bar_height = 15
 
         self.image = IMAGES['heart.png']
-        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        self.image = pygame.transform.scale(
+            self.image, (self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=self.coords)
         self.bar = pygame.Rect(
@@ -517,7 +512,8 @@ class SpeedBar(pygame.sprite.Sprite):
         self.bar_height = 15
 
         self.image = IMAGES['lightning.png']
-        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        self.image = pygame.transform.scale(
+            self.image, (self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=self.coords)
         self.bar = pygame.Rect(
@@ -550,7 +546,8 @@ class AttackBar(pygame.sprite.Sprite):
         self.bar_height = 15
 
         self.image = IMAGES['sword.png']
-        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        self.image = pygame.transform.scale(
+            self.image, (self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=self.coords)
         self.bar = pygame.Rect(
@@ -583,8 +580,8 @@ class Bars(pygame.sprite.Group):
 
         self.exp_width = self.width * 0.5
         self.exp_height = self.height * 0.167
-        self.exp_rect = pygame.Rect(self.coords, (self.exp_width, self.exp_height))
-
+        self.exp_rect = pygame.Rect(
+            self.coords, (self.exp_width, self.exp_height))
 
     def custom_draw(self, targets):
         if len(targets.sprites()) > 0:
@@ -602,8 +599,9 @@ class Bars(pygame.sprite.Group):
             # draws the card of the target's health, speed, and attack
             if target and target.show_stats:
                 pygame.draw.rect(self.display_surface, BROWN, self.rect)
-                pygame.draw.rect(self.display_surface, DARK_BROWN, self.rect, 5)
-                
+                pygame.draw.rect(self.display_surface,
+                                 DARK_BROWN, self.rect, 5)
+
                 name_text, name_text_rect = load_text(
                     f'{target.name} lvl {target.level}',
                     (self.coords.x + self.width / 2,
@@ -635,8 +633,10 @@ class Bars(pygame.sprite.Group):
                     self.exp_rect.width = exp_text_rect.width + 20
                     self.exp_rect.topleft = pygame.mouse.get_pos()
 
-                    pygame.draw.rect(self.display_surface, BROWN, self.exp_rect)
-                    pygame.draw.rect(self.display_surface, DARK_BROWN, self.exp_rect, 3)
+                    pygame.draw.rect(self.display_surface,
+                                     BROWN, self.exp_rect)
+                    pygame.draw.rect(self.display_surface,
+                                     DARK_BROWN, self.exp_rect, 3)
                     self.display_surface.blit(exp_text, exp_text_rect)
 
 
@@ -659,7 +659,8 @@ class Cursor(pygame.sprite.Sprite):
         coords[0] -= player.rect.centerx - self.display_surface.get_width() / 2
 
         coords[1] = round(coords[1] / tile_size) * tile_size
-        coords[1] -= player.rect.centery - self.display_surface.get_height() / 2
+        coords[1] -= player.rect.centery - \
+            self.display_surface.get_height() / 2
 
         self.rect.center = coords
 
@@ -688,18 +689,17 @@ class Player(pygame.sprite.Sprite):
         self.facing = 'right'
         self.name = 'Player'
 
-        self.frame = 0
-        self.crit_chance = 0.05
+        # movement
+        self.acceleration = pygame.math.Vector2(0, 0)
+        self.velocity = pygame.math.Vector2(0, 0)
+        self.max_velocity = 7
 
+        # stats
         self.exp = 0
         self.exp_levels = [i for i in range(100, 10000, 100)]
         self.level = 1
         while self.exp > self.exp_levels[self.level - 1]:
             self.level += 1
-
-        self.acceleration = pygame.math.Vector2(0, 0)
-        self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 7
 
         self.bonuses = {'health': 0,
                         'speed': 0,
@@ -717,8 +717,16 @@ class Player(pygame.sprite.Sprite):
                        'total': 20,
                        'base': 20}
 
+        self.crit_chance = {'current': 0.05,
+                            'base': 0.05}
+
+        self.dodge_chance = {'current': 0.01,
+                             'base': 0.01}
+
         self.set_stats()
 
+        # sprites
+        self.frame = 0
         self.animation_types = {'idle': [],
                                 'run': [],
                                 'attack': []}
@@ -727,7 +735,8 @@ class Player(pygame.sprite.Sprite):
             num_of_frames = len(os.listdir(f'sprites/player/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'knight_{type}{i + 1}.png']
-                image = pygame.transform.scale(image, (self.width, self.height))
+                image = pygame.transform.scale(
+                    image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -736,8 +745,8 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1600 / len(self.animation_types['idle']) 
-        self.attack_cooldown = 1200 / len(self.animation_types['attack']) 
+        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
 
     def set_stats(self):
@@ -753,6 +762,14 @@ class Player(pygame.sprite.Sprite):
                                          * (1.05**(self.level - 1)))
 
             stats[type]['current'] = round(ratio * stats[type]['total'])
+
+            self.crit_chance['current'] = round(self.crit_chance['base'] + self.speed['current'] / 500, 2)
+            if self.crit_chance['current'] > 0.5:
+                self.crit_chance['current'] = 0.5
+
+            self.dodge_chance['current'] = round(self.dodge_chance['base'] + self.speed['current'] / 750, 2)
+            if self.dodge_chance['current'] > 0.33:
+                self.dodge_chance['current'] = 0.33
 
     def movement(self):
         '''Handles movement'''
@@ -798,7 +815,7 @@ class Player(pygame.sprite.Sprite):
 
             # checks if the distance of the sprites are within collision distance
             if (abs(distance.x) + margin.x <= collision_distance.x
-                and abs(distance.y) + margin.y <= collision_distance.y):
+                    and abs(distance.y) + margin.y <= collision_distance.y):
 
                 # horizontal collision
                 if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
@@ -865,25 +882,20 @@ class Player(pygame.sprite.Sprite):
                             if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
                                 # only deal damage when attack cooldown ends
                                 if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                                    dodge_chance = random.randint(
-                                        0,
-                                        5 * (enemy.speed['current'] + self.speed['current']))
-
                                     enemy_coords = [
                                         random.randint(
-                                            round(
-                                                (enemy.rect.left + enemy.rect.centerx) / 2),
+                                            round((enemy.rect.left + enemy.rect.centerx) / 2),
                                             round((enemy.rect.right + enemy.rect.centerx) / 2)),
                                         enemy.rect.top]
 
-                                    if dodge_chance > enemy.speed['current']:
+                                    dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
+                                    if not dodge:
                                         # randomizes damage between 0.9 and 1.1
                                         damage = randomize(
                                             self.attack['current'], 0.15)
 
                                         # doubles damage if crit
-                                        crit = random.randint(
-                                            0, 100) / 100 <= self.crit_chance
+                                        crit = self.crit_chance['current'] >= random.randint(0, 100) / 100
                                         if crit:
                                             damage *= 2
                                             pop_up_text.add_text(
@@ -979,21 +991,19 @@ class GenericEnemy:
             # only deal damage when animation ends
             if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
                 if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                    dodge_chance = random.randint(
-                        0, 5 * (player.speed['current'] + self.speed['current']))
-
                     player_coords = [
                         random.randint(
                             round((player.rect.left + player.rect.centerx) / 2),
                             round((player.rect.right + player.rect.centerx) / 2)),
                         player.rect.top]
 
-                    if dodge_chance > player.speed['current']:
+                    dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
+                    if not dodge:
                         # randomizes damage between 0.9 and 1.1
                         damage = randomize(self.attack['current'], 0.15)
 
                         # doubles damage if crit
-                        crit = random.randint(0, 100) / 100 <= self.crit_chance
+                        crit = self.crit_chance['current'] >= random.randint(0, 100) / 100
                         if crit:
                             damage *= 2
                             pop_up_text.add_text(
@@ -1061,15 +1071,14 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.attacking = False
         self.show_stats = True
 
-        self.frame = 0
-        self.crit_chance = 0.05
-        self.exp = 15
-        self.exp_levels = False
-        self.level = level
-
         self.action = 'idle'
         self.facing = random.choice(['left', 'right'])
         self.name = 'Ghost'
+
+        # stats
+        self.exp = 15
+        self.exp_levels = False
+        self.level = level
 
         self.health = {'current': round(30 * (1.1**(self.level - 1)))}
         self.health['total'] = self.health['current']
@@ -1080,6 +1089,22 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.speed = {'current': round(6 * (1.1**(self.level - 1)))}
         self.speed['total'] = self.speed['current']
 
+        self.crit_chance = {'current': 0.05,
+                            'base': 0.05}
+
+        self.dodge_chance = {'current': 0.1,
+                             'base': 0.1}
+
+        self.crit_chance['current'] = round(self.crit_chance['base'] + self.speed['current'] / 500, 2)
+        if self.crit_chance['current'] > 0.5:
+            self.crit_chance['current'] = 0.5
+
+        self.dodge_chance['current'] = round(self.dodge_chance['base'] + self.speed['current'] / 750, 2)
+        if self.dodge_chance['current'] > 0.33:
+            self.dodge_chance['current'] = 0.33
+
+        # sprites
+        self.frame = 0
         self.animation_types = {'idle': [],
                                 'attack': []}
 
@@ -1087,7 +1112,8 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
             num_of_frames = len(os.listdir(f'sprites/enemies/ghost/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'ghost_{type}{i + 1}.png']
-                image = pygame.transform.scale(image, (self.width, self.height))
+                image = pygame.transform.scale(
+                    image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -1096,8 +1122,8 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1600 / len(self.animation_types['idle']) 
-        self.attack_cooldown = 1200 / len(self.animation_types['attack']) 
+        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
 
     def update(self):
@@ -1115,15 +1141,14 @@ class Mimic(pygame.sprite.Sprite, GenericEnemy):
         self.attacking = False
         self.show_stats = False
 
-        self.frame = 0
-        self.crit_chance = 0.02
-        self.exp = 50
-        self.exp_levels = False
-        self.level = level
-
         self.action = 'idle'
         self.facing = random.choice(['left', 'right'])
         self.name = 'Mimic'
+
+        # stats
+        self.exp = 50
+        self.exp_levels = False
+        self.level = level
 
         self.health = {'current': round(100 * (1.2**(self.level - 1)))}
         self.health['total'] = self.health['current']
@@ -1134,6 +1159,22 @@ class Mimic(pygame.sprite.Sprite, GenericEnemy):
         self.speed = {'current': round(7 * (1.05**(self.level - 1)))}
         self.speed['total'] = self.speed['current']
 
+        self.crit_chance = {'current': 0.15,
+                            'base': 0.15}
+
+        self.dodge_chance = {'current': 0,
+                             'base': 0}
+
+        self.crit_chance['current'] = round(self.crit_chance['base'] + self.speed['current'] / 500, 2)
+        if self.crit_chance['current'] > 0.5:
+            self.crit_chance['current'] = 0.5
+
+        self.dodge_chance['current'] = round(self.dodge_chance['base'] + self.speed['current'] / 750, 2)
+        if self.dodge_chance['current'] > 0.33:
+            self.dodge_chance['current'] = 0.33
+
+        # sprites
+        self.frame = 0
         self.animation_types = {'idle': [],
                                 'attack': []}
 
@@ -1141,7 +1182,8 @@ class Mimic(pygame.sprite.Sprite, GenericEnemy):
             num_of_frames = len(os.listdir(f'sprites/enemies/mimic/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'mimic_{type}{i + 1}.png']
-                image = pygame.transform.scale(image, (self.width, self.height))
+                image = pygame.transform.scale(
+                    image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -1150,8 +1192,8 @@ class Mimic(pygame.sprite.Sprite, GenericEnemy):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1600 / len(self.animation_types['idle']) 
-        self.attack_cooldown = 1200 / len(self.animation_types['attack']) 
+        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
 
     def update(self):
@@ -1169,33 +1211,50 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
         self.attacking = False
         self.show_stats = False
 
-        self.frame = 0
-        self.crit_chance = 0.15
-        self.exp = 50
-        self.exp_levels = False
-        self.level = level
-
         self.action = 'idle'
         self.facing = random.choice(['left', 'right'])
         self.name = 'Sunflower'
 
+        # stats
+        self.exp = 5
+        self.exp_levels = False
+        self.level = level
+
         self.health = {'current': round(25 * (1.05**(self.level - 1)))}
         self.health['total'] = self.health['current']
 
-        self.attack = {'current': round(10 * (1.05**(self.level - 1)))}
+        self.attack = {'current': round(8 * (1.05**(self.level - 1)))}
         self.attack['total'] = self.attack['current']
 
         self.speed = {'current': 0}
         self.speed['total'] = self.speed['current']
 
+        self.crit_chance = {'current': 0.05,
+                            'base': 0.05}
+
+        self.dodge_chance = {'current': 0,
+                             'base': 0}
+
+        self.crit_chance['current'] = round(self.crit_chance['base'] + self.speed['current'] / 500, 2)
+        if self.crit_chance['current'] > 0.5:
+            self.crit_chance['current'] = 0.5
+
+        self.dodge_chance['current'] = round(self.dodge_chance['base'] + self.speed['current'] / 750, 2)
+        if self.dodge_chance['current'] > 0.33:
+            self.dodge_chance['current'] = 0.33
+
+        # sprites
+        self.frame = 0
         self.animation_types = {'idle': [],
                                 'attack': []}
 
         for type in self.animation_types:
-            num_of_frames = len(os.listdir(f'sprites/enemies/sunflower/{type}'))
+            num_of_frames = len(os.listdir(
+                f'sprites/enemies/sunflower/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'sunflower_{type}{i + 1}.png']
-                image = pygame.transform.scale(image, (self.width, self.height))
+                image = pygame.transform.scale(
+                    image, (self.width, self.height))
 
                 self.animation_types[type].append(image)
 
@@ -1204,10 +1263,9 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1600 / len(self.animation_types['idle']) 
-        self.attack_cooldown = 1200 / len(self.animation_types['attack']) 
+        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
-        
 
     def update(self):
         '''Handles events'''
@@ -1222,10 +1280,12 @@ class Chest(pygame.sprite.Sprite):
 
         self.chest_sprites = {}
         self.chest_sprites['closed'] = IMAGES['chest_closed.png']
-        self.chest_sprites['closed'] = pygame.transform.scale(self.chest_sprites['closed'], (self.width, self.height))
+        self.chest_sprites['closed'] = pygame.transform.scale(
+            self.chest_sprites['closed'], (self.width, self.height))
 
         self.chest_sprites['opened'] = IMAGES['chest_opened.png']
-        self.chest_sprites['opened'] = pygame.transform.scale(self.chest_sprites['opened'], (self.width, self.height))
+        self.chest_sprites['opened'] = pygame.transform.scale(
+            self.chest_sprites['opened'], (self.width, self.height))
         self.image = self.chest_sprites['closed']
 
         self.rect = self.image.get_rect(center=coords)
@@ -1279,18 +1339,27 @@ class StaticTile(pygame.sprite.Sprite):
 
 
 class AnimatedTile(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, images: str, groups):
+    def __init__(self, coords: list, size: list, images, groups):
         super().__init__(groups)
         self.width, self.height = size
         self.frame = 0
 
-        self.animation_types = images
+        self.animation_types = []
+        num_of_frames = len(
+            os.listdir(f'sprites/decoration/animated/{images}'))
+
+        for i in range(num_of_frames):
+            image = IMAGES[f'{images}{i + 1}.png']
+            image = pygame.transform.scale(image, size)
+
+            self.animation_types.append(image)
+
         self.image = self.animation_types[self.frame]
         self.rect = self.image.get_rect(center=coords)
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1200 / len(self.animation_types)
-        
+
     def animation(self):
         '''Handles animation'''
         # loops frames
@@ -1388,7 +1457,7 @@ player_speed_bar = SpeedBar(
     player_bars)
 
 player_attack_bar = AttackBar(
-    (0, player_bars.coords[1] + player_bars.height - 65), 
+    (0, player_bars.coords[1] + player_bars.height - 65),
     player_bars)
 
 enemy_health_bar = HealthBar(
