@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 import pygame
 import random
 import os
@@ -54,9 +55,14 @@ class Level:
     def read_csv_level(self):
         files = os.listdir(f'levels/{self._floor_level}')
         for path in files:
+            file_extention = os.path.splitext(path)[1]
+            if file_extention != '.csv':
+                raise Exception(f'File "{path}" is not recognized as a csv file.')
+
             with open(os.path.join(f'levels/{self._floor_level}', path)) as file:
                 csv_file = csv.reader(file)
-                self.create_tile_group(csv_file, path[:-4])
+                self.create_tile_group(csv_file, path)
+
 
     def clear_level(self):
         global camera_group, player_group
@@ -66,7 +72,7 @@ class Level:
                 sprite.kill()
                 del sprite
 
-    def create_tile_group(self, csv_file, type):
+    def create_tile_group(self, csv_file, path):
         create_tile = {'player': self.set_player_coords,
                        'wall': self.add_walls,
                        'enemies': self.add_enemies,
@@ -75,13 +81,22 @@ class Level:
                        'animated_decor': self.add_animated_decor,
                        'exit': self.add_exit}
 
+        if path[:-4] not in create_tile:
+            raise Exception(f'The csv file "{path}" is invalid.')
+
         for row_index, row in enumerate(csv_file):
             for col_index, id in enumerate(row):
                 id = int(id)
-                if id != -1:
+                if id != -1 and id >= 0:
                     x = col_index * self.tile_size
                     y = row_index * self.tile_size
-                    create_tile[type](id, (x, y))
+                    create_tile[path[:-4]](id, (x, y))
+
+                else:
+                    if id < -1:
+                        raise Exception(f'Unexpected value was found in csv file "{path}".')
+                    
+
 
     def set_player_coords(self, id, coords):
         global player
