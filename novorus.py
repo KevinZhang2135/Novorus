@@ -1,4 +1,3 @@
-from multiprocessing.sharedctypes import Value
 import pygame
 import random
 import os
@@ -319,8 +318,30 @@ class Text:
 
 
 class Particle(pygame.sprite.Sprite):
-    def __init__(self):
-        pass
+    def __init__(self, coords, size, image, groups):
+        super().__init__(groups)
+        self.width, self.height = size
+
+        self.image = IMAGES[image]
+        self.image = pygame.transform.scale(self.image, size)
+        self.rect = self.image.get_rect(center=coords)
+
+        self.time = pygame.time.get_ticks()
+        self.expiration_time = randomize(750, 0.25)
+
+    def movement(self):
+        '''Handles movement'''
+        self.rect.centery -= 1
+
+    def expire(self):
+        '''Deletes particle after its expiration time'''
+        if pygame.time.get_ticks() - self.time > self.expiration_time:
+            self.kill()
+            del self
+
+    def update(self):
+        self.movement()
+        self.expire()
 
 
 class LightSources(pygame.sprite.Group):
@@ -469,10 +490,8 @@ class HealthBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
-        self.coords = coords
 
         self.width, self.height = 60, 60
-
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
@@ -480,7 +499,7 @@ class HealthBar(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
-        self.rect = self.image.get_rect(topleft=self.coords)
+        self.rect = self.image.get_rect(topleft=coords)
         self.bar = pygame.Rect(
             self.rect.centerx,
             self.rect.centery - self.bar_height / 2,
@@ -513,7 +532,6 @@ class SpeedBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
-        self.coords = coords
 
         self.width, self.height = 60, 60
         self.bar_width = self.width * 1.7
@@ -523,7 +541,7 @@ class SpeedBar(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
-        self.rect = self.image.get_rect(topleft=self.coords)
+        self.rect = self.image.get_rect(topleft=coords)
         self.bar = pygame.Rect(
             self.rect.centerx,
             self.rect.centery - self.bar_height / 2,
@@ -546,10 +564,8 @@ class AttackBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
-        self.coords = coords
 
         self.width, self.height = 60, 60
-
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
@@ -557,7 +573,7 @@ class AttackBar(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
-        self.rect = self.image.get_rect(topleft=self.coords)
+        self.rect = self.image.get_rect(topleft=coords)
         self.bar = pygame.Rect(
             self.rect.centerx,
             self.rect.centery - self.bar_height / 2,
@@ -622,7 +638,7 @@ class Bars(pygame.sprite.Group):
                 # blits the bar
                 for sprite in self.sprites():
                     sprite.draw(target)
-                    self.display_surface.blit(sprite.image, sprite.coords)
+                    self.display_surface.blit(sprite.image, sprite.rect.topleft)
 
                 # displays exp if the cursor is hovered over the name
                 if name_text_rect.collidepoint(pygame.mouse.get_pos()):
@@ -758,6 +774,7 @@ class Player(pygame.sprite.Sprite):
         self.cooldown = self.animation_cooldown
 
     def set_stats(self):
+        '''Scales stats according to its base and bonuses'''
         stats = {'health': self.health,
                  'speed': self.speed,
                  'attack': self.attack}
@@ -772,11 +789,11 @@ class Player(pygame.sprite.Sprite):
             stats[type]['current'] = round(ratio * stats[type]['total'])
 
             self.crit_chance['current'] = round(self.crit_chance['base'] + self.speed['current'] / 500, 2)
-            if self.crit_chance['current'] > 0.5:
+            if self.crit_chance['current'] > 0.5: # crit chance caps at 50%
                 self.crit_chance['current'] = 0.5
 
             self.dodge_chance['current'] = round(self.dodge_chance['base'] + self.speed['current'] / 750, 2)
-            if self.dodge_chance['current'] > 0.33:
+            if self.dodge_chance['current'] > 0.33: # dodge chance caps at 33%
                 self.dodge_chance['current'] = 0.33
 
     def movement(self):
@@ -916,11 +933,22 @@ class Player(pygame.sprite.Sprite):
                                         enemy.health['current'] -= damage
 
                                     else:
-                                        pop_up_text.add_text(
+                                        camera_group.add_text(
                                             'Dodged', enemy_coords, 20, GOLD)
 
                                     if enemy.health['current'] <= 0:
                                         player.exp += enemy.exp
+
+
+                                        for i in range(5):
+                                            x = random.randint(enemy.rect.left, enemy.rect.right)
+                                            y = random.randint(enemy.rect.top, enemy.rect.bottom)
+
+                                            dust = Particle(
+                                                (x, y),
+                                                (30, 40),
+                                                f'dust{random.randint(1, 3)}.png',
+                                                camera_group)
 
                                         enemy.health['current'] = 0
                                         enemy.in_combat = False
@@ -978,7 +1006,6 @@ class Player(pygame.sprite.Sprite):
             self.level += 1
 
     def update(self):
-        '''Handles events'''
         self.movement()
         self.collision()
         self.attack_enemy()
@@ -1024,7 +1051,7 @@ class GenericEnemy:
                         player.health['current'] -= damage
 
                     else:
-                        pop_up_text.add_text('Dodged', player_coords, 20, GOLD)
+                        camera_group.add_text('Dodged', player_coords, 20, GOLD)
 
                     if player.health['current'] <= 0:
                         player.health['current'] = 0
@@ -1387,6 +1414,7 @@ class AnimatedTile(pygame.sprite.Sprite):
 
 
 def load_text(text, coords, text_size, color):
+    '''Returns text and its rect'''
     # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
     font = pygame.font.Font('comicoro.ttf', round(text_size))
     # pygame.font.Font.set_bold(font, 1) # creates a bold font if the boolean is true
@@ -1398,12 +1426,14 @@ def load_text(text, coords, text_size, color):
 
 
 def randomize(value: int, offset: float):
+    '''Randomizes the value with a +- deviation of the offset'''
     return random.randint(
         round(value * (1 - offset)),
         round(value * (1 + offset)))
 
 
 def color_image(image, color):
+    '''Recolors a surface'''
     # zeros out rgb and preserves original transparency
     image.fill((0, 0, 0, 255), None, special_flags=pygame.BLEND_RGBA_MULT)
     # adds in new rgb values
@@ -1413,6 +1443,7 @@ def color_image(image, color):
 
 
 def dir_as_dict(root):
+    '''Walks through file system of root and returns it as a dictionary'''
     dict = {}
     for (path, dirs, files) in os.walk(root, topdown=True):
         for file in files:
