@@ -1452,7 +1452,7 @@ class Torch(AnimatedTile):
                 f'smoke{random.randint(1, self.smoke_frames)}.png',
                 camera_group)
 
-            smoke.expiration_time = randomize(1500, 0.2)
+            smoke.expiration_time = randomize(1500, 0.1)
             
     def update(self):
         self.animation()
