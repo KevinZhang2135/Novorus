@@ -255,9 +255,21 @@ class CameraGroup(pygame.sprite.Group):
         self.half_width = self.display_surface.get_width() / 2
         self.half_height = self.display_surface.get_height() / 2
 
+        self.texts = []
+
     def center_target(self, target):
         self.offset.x = target.rect.centerx - self.half_width
         self.offset.y = target.rect.centery - self.half_height
+
+    def add_text(self, text, coords, size, color):
+        text = Text(*load_text(text, coords, size, color))
+        self.texts.append(text)
+
+    def move_text(self, text):
+        '''Moves the text vertically'''
+        if text.velocity > 0:
+            text.rect.y -= text.velocity
+            text.velocity += text.acceleration
 
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
@@ -280,6 +292,36 @@ class CameraGroup(pygame.sprite.Group):
                     hitbox,
                     1)
 
+        expired_texts = []
+        for index, text in enumerate(self.texts):
+            if pygame.time.get_ticks() - text.time > 1000:
+                expired_texts.append(index)
+
+            self.move_text(text)
+            offset_pos = text.rect.topleft - self.offset
+            self.display_surface.blit(text.text, offset_pos)
+
+        # removes texts that have remained on the screen
+        expired_texts.sort(reverse=True)
+        for index in expired_texts:
+            expired_text = self.texts.pop(index)
+            del expired_text
+
+
+class Text:
+    def __init__(self, text, rect):
+        self.text = text
+        self.rect = rect
+
+        self.time = pygame.time.get_ticks()
+        self.acceleration = -0.1
+        self.velocity = random.randint(1250, 2000) / 1000 + 1.5
+
+
+class Particle(pygame.sprite.Sprite):
+    def __init__(self):
+        pass
+
 
 class LightSources(pygame.sprite.Group):
     def __init__(self, resolution):
@@ -288,10 +330,11 @@ class LightSources(pygame.sprite.Group):
         self.resolution = resolution
 
         self.light_size = pygame.math.Vector2(500, 500)
-        self.light = IMAGES['soft_circle.png']
-        self.light = pygame.transform.scale(self.light, self.light_size)
 
+        self.light = IMAGES['soft_circle.png']
+        self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
         self.light = color_image(self.light, MELLOW_YELLOW)
+
         self.filter = pygame.surface.Surface(self.resolution)
 
         # light offset
@@ -420,56 +463,6 @@ class Menu(pygame.sprite.Sprite):
 
         else:
             self.image = self.menu_sprites['menu']
-
-
-class Text:
-    def __init__(self, text, rect):
-        self.text = text
-        self.rect = rect
-
-        self.time = pygame.time.get_ticks()
-        self.acceleration = -0.1
-        self.velocity = random.randint(1250, 2000) / 1000 + 1.5
-
-
-class PopUpText:
-    def __init__(self):
-        self.display_surface = pygame.display.get_surface()
-        self.texts = []
-        self.offset = pygame.math.Vector2()
-
-    def center_target(self, player):
-        self.offset.x = player.rect.centerx - self.display_surface.get_width() / 2
-        self.offset.y = player.rect.centery - self.display_surface.get_height() / 2
-
-    def add_text(self, text, coords, size, color):
-        text = Text(*load_text(text, coords, size, color))
-        self.texts.append(text)
-
-    def move_text(self, text):
-        '''Moves the text vertically'''
-        if text.velocity > 0:
-            text.rect.y -= text.velocity
-            text.velocity += text.acceleration
-
-    def custom_draw(self, player):
-        '''Draws the text according to player movement'''
-        self.center_target(player)
-        expired_texts = []
-
-        for index, text in enumerate(self.texts):
-            if pygame.time.get_ticks() - text.time > 1000:
-                expired_texts.append(index)
-
-            self.move_text(text)
-            offset_pos = text.rect.topleft - self.offset
-            self.display_surface.blit(text.text, offset_pos)
-
-        # removes texts that have remained on the screen
-        expired_texts.sort(reverse=True)
-        for index in expired_texts:
-            expired_text = self.texts.pop(index)
-            del expired_text
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -857,7 +850,7 @@ class Player(pygame.sprite.Sprite):
                     self.velocity.y = 0
 
     def attack_enemy(self):
-        global enemy_group
+        global enemy_group, camera_group
 
         # checks if the player rect overlaps an enemy rect
         if pygame.sprite.spritecollide(self, enemy_group, False):
@@ -913,11 +906,11 @@ class Player(pygame.sprite.Sprite):
                                         crit = self.crit_chance['current'] >= random.randint(0, 100) / 100
                                         if crit:
                                             damage *= 2
-                                            pop_up_text.add_text(
+                                            camera_group.add_text(
                                                 damage, enemy_coords, 35, TANGERINE)
 
                                         else:
-                                            pop_up_text.add_text(
+                                            camera_group.add_text(
                                                 damage, enemy_coords, 30, ORANGE)
 
                                         enemy.health['current'] -= damage
@@ -995,7 +988,7 @@ class Player(pygame.sprite.Sprite):
 
 class GenericEnemy:
     def attack_enemy(self):
-        global player
+        global player, camera_group
 
         if self.in_combat:
             self.cooldown = self.attack_cooldown
@@ -1021,11 +1014,11 @@ class GenericEnemy:
                         crit = self.crit_chance['current'] >= random.randint(0, 100) / 100
                         if crit:
                             damage *= 2
-                            pop_up_text.add_text(
+                            camera_group.add_text(
                                 damage, player_coords, 35, BLOOD_RED)
 
                         else:
-                            pop_up_text.add_text(
+                            camera_group.add_text(
                                 damage, player_coords, 30, RED)
 
                         player.health['current'] -= damage
@@ -1489,7 +1482,6 @@ enemy_attack_bar = AttackBar(
 
 # player
 player = Player((0, 0), (75, 75), (camera_group, player_group))
-pop_up_text = PopUpText()
 
 # levels and map
 level = Level(starting_floor_level, tile_size)
@@ -1505,7 +1497,6 @@ while game_state['runtime']:
 
     # redraws sprites and images
     camera_group.custom_draw(player, show_hitboxes=False)
-    pop_up_text.custom_draw(player)
     cursor_group.draw(screen)
 
     light_group.render_lighting(player)
