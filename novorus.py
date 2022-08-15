@@ -137,7 +137,7 @@ class Level:
             (camera_group, collision_group))
 
     def add_static_decor(self, id, coords):
-        global camera_group, images
+        global camera_group
 
         sprites = [{'file': 'grass1.png',
                     'size': 30},
@@ -186,25 +186,16 @@ class Level:
             decor.image = pygame.transform.flip(decor.image, True, False)
 
     def add_animated_decor(self, id, coords):
-        global camera_group, light_group, images
+        global camera_group, light_group
 
-        sprites = [{'file': 'torch',
-                    'size': 50},
-                   ]
+        decor_sprites = [Torch]
+        sprite_size = [50]
+        size = round(randomize(sprite_size[id], 0.1))
 
-        folder = sprites[id]['file']
-        size = round(randomize(sprites[id]['size'], 0.1))
-
-        decor = AnimatedTile(
+        decor = decor_sprites[id](
             coords,
             [size] * 2,
-            folder,
             (camera_group, light_group))
-
-        if folder == 'torch':
-            decor.sprite_layer = 2
-            decor.rect.centerx += random.randint(-1, 1) * 25
-            decor.rect.centery += 25
 
     def add_exit(self, id, coords):
         global camera_group
@@ -324,7 +315,7 @@ class Particle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=coords)
 
         self.time = pygame.time.get_ticks()
-        self.expiration_time = randomize(750, 0.25)
+        self.expiration_time = randomize(1000, 0.1)
 
         self.sprite_layer = 3
 
@@ -893,6 +884,8 @@ class Player(pygame.sprite.Sprite):
                             self.in_combat = True
                             self.animation_time = pygame.time.get_ticks()
                             self.frame = 0
+                            self.velocity.x = 0
+                            self.velocity.y = 0
 
                             enemy.show_stats = True
                             enemy.in_combat = True
@@ -951,15 +944,13 @@ class Player(pygame.sprite.Sprite):
 
                                     if enemy.health['current'] <= 0:
                                         player.exp += enemy.exp
-
-
                                         for i in range(5):
                                             x = random.randint(enemy.rect.left, enemy.rect.right)
                                             y = random.randint(enemy.rect.top, enemy.rect.bottom)
 
                                             dust = Particle(
                                                 (x, y),
-                                                (30, 40),
+                                                [randomize(20, 0.1) for i in range(2)],
                                                 f'dust{random.randint(1, 3)}.png',
                                                 camera_group)
 
@@ -1435,34 +1426,38 @@ class AnimatedTile(pygame.sprite.Sprite):
             self.animation_time = pygame.time.get_ticks()
             self.frame += 1
 
-    def update(self):
-        self.animation()
-
 
 class Torch(AnimatedTile):
-    def __init__(self, coords: list, size: list, images, groups):
-        super().__init__(coords, size, images, groups)
-        self.smoke = []
+    def __init__(self, coords: list, size: list, groups):
+        super().__init__(coords, size, 'torch', groups)
+        self.sprite_layer = 2
+        self.rect.centerx += random.randint(-1, 1) * 25
+        self.rect.centery += 25
+
         self.smoke_time = pygame.time.get_ticks()
-        self.smoke_cooldown = 2000
+        self.smoke_cooldown = randomize(5000, 0.2)
         
-        for i in range(3):
-            self.smoke.append(
-                color_image(
-                    IMAGES[f'dust{i + 1}.png'],
-                    BLACK))
+        self.smoke_frames = len(
+            os.listdir(f'sprites/particles/smoke'))
 
     def draw_smoke(self):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
-            x = random.randint(self.rect.left, self.rect.right)
-            y = random.randint(self.rect.top, self.rect.bottom)
+            x = self.rect.centerx
+            y = random.randint(self.rect.top, self.rect.centery)
 
             smoke = Particle(
                 (x, y),
-                (30, 40),
-                f'dust{random.randint(1, 3)}.png',
+                [randomize(20, 0.1) for i in range(2)],
+                f'smoke{random.randint(1, self.smoke_frames)}.png',
                 camera_group)
+
+            smoke.expiration_time = randomize(1500, 0.2)
+            
+    def update(self):
+        self.animation()
+        self.draw_smoke()
+
 
 def load_text(text, coords, text_size, color):
     '''Returns text and its rect'''
