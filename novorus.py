@@ -324,7 +324,7 @@ class Particle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=coords)
 
         self.time = pygame.time.get_ticks()
-        self.expiration_time = randomize(11750, 0.25)
+        self.expiration_time = randomize(750, 0.25)
 
         self.sprite_layer = 3
 
@@ -1438,6 +1438,31 @@ class AnimatedTile(pygame.sprite.Sprite):
     def update(self):
         self.animation()
 
+
+class Torch(AnimatedTile):
+    def __init__(self, coords: list, size: list, images, groups):
+        super().__init__(coords, size, images, groups)
+        self.smoke = []
+        self.smoke_time = pygame.time.get_ticks()
+        self.smoke_cooldown = 2000
+        
+        for i in range(3):
+            self.smoke.append(
+                color_image(
+                    IMAGES[f'dust{i + 1}.png'],
+                    BLACK))
+
+    def draw_smoke(self):
+        if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
+            self.smoke_time = pygame.time.get_ticks()
+            x = random.randint(self.rect.left, self.rect.right)
+            y = random.randint(self.rect.top, self.rect.bottom)
+
+            smoke = Particle(
+                (x, y),
+                (30, 40),
+                f'dust{random.randint(1, 3)}.png',
+                camera_group)
 
 def load_text(text, coords, text_size, color):
     '''Returns text and its rect'''
