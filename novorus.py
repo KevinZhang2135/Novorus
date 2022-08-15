@@ -62,7 +62,6 @@ class Level:
                 csv_file = csv.reader(file)
                 self.create_tile_group(csv_file, path)
 
-
     def clear_level(self):
         global camera_group, player_group
 
@@ -95,8 +94,6 @@ class Level:
                     if id < -1:
                         raise Exception(f'Unexpected value was found in csv file "{path}".')
                     
-
-
     def set_player_coords(self, id, coords):
         global player
 
@@ -205,9 +202,9 @@ class Level:
             (camera_group, light_group))
 
         if folder == 'torch':
+            decor.sprite_layer = 2
             decor.rect.centerx += random.randint(-1, 1) * 25
             decor.rect.centery += 25
-            decor.rect.height += 5
 
     def add_exit(self, id, coords):
         global camera_group
@@ -274,7 +271,7 @@ class CameraGroup(pygame.sprite.Group):
         '''Draws the screen according to player movement'''
         self.center_target(player)
 
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.bottom):
+        for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.rect.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
 
@@ -327,7 +324,9 @@ class Particle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=coords)
 
         self.time = pygame.time.get_ticks()
-        self.expiration_time = randomize(750, 0.25)
+        self.expiration_time = randomize(11750, 0.25)
+
+        self.sprite_layer = 3
 
     def movement(self):
         '''Handles movement'''
@@ -362,6 +361,8 @@ class LightSources(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
         self.half_width = self.display_surface.get_width() / 2
         self.half_height = self.display_surface.get_height() / 2
+
+        self.sprite_layer = 2
 
     def offset_lights(self, target):
         self.offset.x = target.rect.centerx - self.half_width
@@ -431,6 +432,8 @@ class Menu(pygame.sprite.Sprite):
         self.black_exit_text = self.draw_exit_text(BLACK)
         self.exit_text = self.black_exit_text
         self.pressed = False
+
+        self.sprite_layer = 5
 
     def draw_exit_text(self, color):
         exit_text, exit_text_rect = load_text(
@@ -512,6 +515,8 @@ class HealthBar(pygame.sprite.Sprite):
             self.bar_width,
             self.bar_height)
 
+        self.sprite_layer = 5
+
     def draw(self, target):
         ratio = target.health['current'] / target.health['total']
         self.bar.width = self.bar_width * ratio
@@ -548,6 +553,8 @@ class SpeedBar(pygame.sprite.Sprite):
             self.bar_width,
             self.bar_height)
 
+        self.sprite_layer = 5
+
     def draw(self, target):
         pygame.draw.rect(self.display_surface, YELLOW, self.bar)
         pygame.draw.rect(self.display_surface, GOLD, self.bar, 2)
@@ -579,6 +586,8 @@ class AttackBar(pygame.sprite.Sprite):
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
+
+        self.sprite_layer = 5
 
     def draw(self, target):
         pygame.draw.rect(self.display_surface, GREY, self.bar)
@@ -674,6 +683,8 @@ class Cursor(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (100, 100))
 
         self.rect = self.image.get_rect(center=(0, 0))
+
+        self.sprite_layer = 4
 
     def update(self):
         global player
@@ -772,6 +783,8 @@ class Player(pygame.sprite.Sprite):
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
         self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
+
+        self.sprite_layer = 1
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
@@ -1161,6 +1174,8 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
         self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
 
+        self.sprite_layer = 1
+
     def update(self):
         '''Handles events'''
         self.attack_enemy()
@@ -1230,6 +1245,8 @@ class Mimic(pygame.sprite.Sprite, GenericEnemy):
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
         self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
+
+        self.sprite_layer = 1
 
     def update(self):
         '''Handles events'''
@@ -1302,6 +1319,8 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
         self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
 
+        self.sprite_layer = 1
+
     def update(self):
         '''Handles events'''
         self.attack_enemy()
@@ -1325,6 +1344,8 @@ class Chest(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(center=coords)
         self.opened = False
+
+        self.sprite_layer = 1
 
     def collision(self):
         global player
@@ -1351,8 +1372,9 @@ class LevelExit(pygame.sprite.Sprite):
 
         self.image = IMAGES['dirt_hole.png']
         self.image = pygame.transform.scale(self.image, size)
-
         self.rect = self.image.get_rect(center=coords)
+
+        self.sprite_layer = 1
 
     def update(self):
         global player_group, level
@@ -1371,6 +1393,8 @@ class StaticTile(pygame.sprite.Sprite):
         self.image = IMAGES[image]
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
+
+        self.sprite_layer = 1
 
 
 class AnimatedTile(pygame.sprite.Sprite):
@@ -1394,6 +1418,8 @@ class AnimatedTile(pygame.sprite.Sprite):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1200 / len(self.animation_types)
+
+        self.sprite_layer = 1
 
     def animation(self):
         '''Handles animation'''
