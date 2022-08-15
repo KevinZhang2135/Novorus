@@ -1434,7 +1434,7 @@ class Torch(AnimatedTile):
         self.rect.centerx += random.randint(-1, 1) * 25
         self.rect.centery += 25
 
-        self.smoke_time = pygame.time.get_ticks()
+        self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
         self.smoke_cooldown = randomize(5000, 0.2)
         
         self.smoke_frames = len(
