@@ -2,28 +2,7 @@ import pygame
 import random
 import os
 import csv
-
-# colors
-RED = (211, 47, 47)
-BLOOD_RED = (198, 40, 40)
-
-ORANGE = (255, 174, 66)
-TANGERINE = (212, 103, 0)
-
-MELLOW_YELLOW = (255, 229, 134)
-YELLOW = (255, 231, 45)
-GOLD = (255, 219, 14)
-
-WHITE = (255, 255, 255)
-LIGHT_GREY = (210, 210, 210)
-GREY = (188, 188, 188)
-DARK_GREY = (168, 168, 168)
-BLACK = (50, 50, 50)
-
-BROWN = (131, 106, 83)
-PECAN = (115, 93, 71)
-DARK_BROWN = (104, 84, 66)
-
+from constants import *
 
 class Level:
     def __init__(self, floor_level, tile_size):
@@ -681,10 +660,10 @@ class Cursor(pygame.sprite.Sprite):
         global player
 
         coords = self.offset_mouse_pos()
-        coords[0] = round(coords[0] / tile_size) * tile_size
+        coords[0] = round(coords[0] / TILE_SIZE) * TILE_SIZE
         coords[0] -= player.rect.centerx - self.display_surface.get_width() / 2
 
-        coords[1] = round(coords[1] / tile_size) * tile_size
+        coords[1] = round(coords[1] / TILE_SIZE) * TILE_SIZE
         coords[1] -= player.rect.centery - \
             self.display_surface.get_height() / 2
 
@@ -700,6 +679,15 @@ class Cursor(pygame.sprite.Sprite):
         mouse_pos[1] += player.rect.centery - display_surface.get_height() / 2
 
         return mouse_pos
+
+
+class Inventory:
+    def __init__(self):
+        self.display_surface = pygame.display.get_surface()
+        self.items = {}
+
+    def display(self):
+        pass
 
 
 class Player(pygame.sprite.Sprite):
@@ -945,12 +933,19 @@ class Player(pygame.sprite.Sprite):
                                     if enemy.health['current'] <= 0:
                                         player.exp += enemy.exp
                                         for i in range(5):
-                                            x = random.randint(enemy.rect.left, enemy.rect.right)
-                                            y = random.randint(enemy.rect.top, enemy.rect.bottom)
+                                            x_offset = round((enemy.rect.right - enemy.rect.left) / 4)
+                                            x = random.randint(
+                                                enemy.rect.centerx - x_offset, 
+                                                enemy.rect.centerx + x_offset)
+
+                                            y_offset = round((enemy.rect.bottom - enemy.rect.top) / 4)
+                                            y = random.randint(
+                                                enemy.rect.centery - y_offset, 
+                                                enemy.rect.centery + y_offset)
 
                                             dust = Particle(
                                                 (x, y),
-                                                [randomize(20, 0.1) for i in range(2)],
+                                                [randomize(enemy.rect.width / 2, 0.05) for i in range(2)],
                                                 f'dust{random.randint(1, 3)}.png',
                                                 camera_group)
 
@@ -1488,35 +1483,7 @@ def color_image(image, color):
     return image
 
 
-def dir_as_dict(root):
-    '''Walks through file system of root and returns it as a dictionary'''
-    dict = {}
-    for (path, dirs, files) in os.walk(root, topdown=True):
-        for file in files:
-            dict[file] = path
-
-    return dict
-
-
-tile_size = 100
-starting_floor_level = 1
-game_state = {'paused': False,
-              'runtime': True,
-              'fullscreen': True}
-
-pygame.init()
-pygame.font.init()
-pygame.display.set_caption('Novorus')
-
-# sets the size of the screen; defaults to full screen
-resolution = (1920, 1080)
-screen = pygame.display.set_mode(resolution)  # , pygame.FULLSCREEN)
-clock = pygame.time.Clock()
-
-# gets images
-IMAGES = dir_as_dict('sprites')
-for file, path in IMAGES.items():
-    IMAGES[file] = pygame.image.load(os.path.join(path, file)).convert_alpha()
+# pygame setup is declared in constants.py to create images
 
 # sprite groups
 camera_group = CameraGroup()
@@ -1527,10 +1494,10 @@ cursor_group = pygame.sprite.GroupSingle()
 hud_group = CameraGroup()
 player_bars = Bars((0, 0))
 enemy_bars = Bars((0, player_bars.height))
-light_group = LightSources(resolution)
+light_group = LightSources(RESOLUTION)
 
 # hud
-cursor = Cursor(tile_size, cursor_group)
+cursor = Cursor(TILE_SIZE, cursor_group)
 menu = Menu(hud_group)
 
 player_health_bar = HealthBar(
@@ -1561,7 +1528,7 @@ enemy_attack_bar = AttackBar(
 player = Player((0, 0), (75, 75), (camera_group, player_group))
 
 # levels and map
-level = Level(starting_floor_level, tile_size)
+level = Level(STARTING_FLOOR, TILE_SIZE)
 
 while game_state['runtime']:
     # event handling
