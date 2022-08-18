@@ -240,7 +240,6 @@ class CameraGroup(pygame.sprite.Group):
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
-
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.rect.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
@@ -272,6 +271,14 @@ class CameraGroup(pygame.sprite.Group):
         for index in expired_texts:
             expired_text = self.texts.pop(index)
             del expired_text
+
+    def update(self):
+        global player
+
+        for sprite in self.sprites():
+            if (abs(player.rect.left - sprite.rect.left) < self.half_width
+                or abs(player.rect.top - sprite.rect.top) < self.half_height):
+                sprite.update()
 
 
 class Text:
@@ -317,11 +324,13 @@ class LightSources(pygame.sprite.Group):
     def __init__(self, resolution):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
+        self.half_width = self.display_surface.get_width() / 2
+        self.half_height = self.display_surface.get_height() / 2
         self.resolution = resolution
 
         self.light_size = pygame.math.Vector2(500, 500)
 
-        self.light = IMAGES['soft_circle.png']
+        self.light = IMAGES['heart.png']
         self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
         self.light = color_image(self.light, MELLOW_YELLOW)
 
@@ -329,32 +338,31 @@ class LightSources(pygame.sprite.Group):
 
         # light offset
         self.offset = pygame.math.Vector2()
-        self.half_width = self.display_surface.get_width() / 2
-        self.half_height = self.display_surface.get_height() / 2
-
         self.sprite_layer = 2
 
-    def offset_lights(self, target):
+    def center_target(self, target):
         self.offset.x = target.rect.centerx - self.half_width
         self.offset.y = target.rect.centery - self.half_height
 
     def render_lighting(self, player):
         global level
 
-        self.offset_lights(player)
         if level.floor_level > 1:
             self.filter.fill(DARK_GREY)
 
         else:
             self.filter.fill(LIGHT_GREY)
-
+        
+        self.center_target(player)
         for sprite in self.sprites():
-            offset_pos = sprite.rect.topleft \
-                - self.offset \
-                + list(map(lambda x: x / 2, sprite.rect.size)) \
-                - self.light_size / 2
-
-            self.filter.blit(self.light, offset_pos)
+            if (abs(player.rect.left - sprite.rect.left) < self.half_width
+                or abs(player.rect.top - sprite.rect.top) < self.half_height):
+                offset_pos = sprite.rect.topleft \
+                            - self.offset \
+                            + list(map(lambda x: x / 2, sprite.rect.size)) \
+                            - self.light_size / 2
+                            
+                self.filter.blit(self.light, offset_pos)
 
         self.display_surface.blit(
             self.filter,
@@ -389,7 +397,7 @@ class Menu(pygame.sprite.Sprite):
             (self.display_surface.get_height() - menu_width) / 2,
             menu_width,
             menu_width)
-
+ 
         # menu text
         self.menu_text = load_text(
             'Menu',
@@ -414,7 +422,7 @@ class Menu(pygame.sprite.Sprite):
 
         return exit_text, exit_text_rect
 
-    def update(self):
+    def draw(self):
         global game_state
 
         pause_left_click = (pygame.mouse.get_pressed()[0]
@@ -457,7 +465,7 @@ class Menu(pygame.sprite.Sprite):
 
         else:
             self.image = self.menu_sprites['menu']
-
+        
 
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
@@ -1548,6 +1556,7 @@ while game_state['runtime']:
     player_bars.custom_draw(player_group)
     enemy_bars.custom_draw(enemy_group)
     hud_group.draw(screen)
+    menu.draw()
     level.draw()
 
     # updates
