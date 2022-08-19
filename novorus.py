@@ -1,3 +1,4 @@
+from msilib.schema import Error
 import pygame
 import random
 import os
@@ -330,7 +331,7 @@ class LightSources(pygame.sprite.Group):
 
         self.light_size = pygame.math.Vector2(500, 500)
 
-        self.light = IMAGES['heart.png']
+        self.light = IMAGES['soft_circle.png']
         self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
         self.light = color_image(self.light, MELLOW_YELLOW)
 
@@ -497,6 +498,9 @@ class HealthBar(pygame.sprite.Sprite):
 
     def draw(self, target):
         ratio = target.health['current'] / target.health['total']
+        if ratio > 1:
+            ratio = 1
+
         self.bar.width = self.bar_width * ratio
 
         pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2)
@@ -698,11 +702,150 @@ class Inventory:
         pass
 
 
-class Player(pygame.sprite.Sprite):
+class GenericNPC:
+    def face_enemy(self, target):
+        if self.rect.centerx < target.rect.centerx:
+            self.facing = 'right'
+
+        else:
+            self.facing = 'left'
+
+    def attack_enemy(self, target_group):
+        global camera_group
+
+        # checks if the player mask overlaps an enemy mask
+        if (pygame.sprite.spritecollide(self, target_group, False)
+            and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)):
+            try:
+                self.velocity.x = 0
+                self.velocity.y = 0
+
+            except AttributeError:
+                pass
+
+            distance = pygame.math.Vector2(self.rect.center)
+            closest_distance = lambda enemy: distance.distance_to(enemy.rect.center)
+
+            enemies = target_group.sprites()
+            enemy = sorted(enemies, key=closest_distance)[0] # closest enemy
+            self.face_enemy(enemy)
+
+            if not self.in_combat:
+                self.in_combat = True
+                self.show_stats = True
+
+                self.animation_time = pygame.time.get_ticks()
+                self.cooldown = self.attack_cooldown
+                self.frame = 0
+
+            if self.in_combat:
+                if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                    self.attacking = True
+                    self.frame = 0
+
+                # only deal damage when animation ends
+                if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
+                    if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                        enemy.hurt(self.attack['current'], self.crit_chance['current'])
+                        if enemy.health['current'] <= 0:
+                            self.in_combat = False
+                            self.exp += enemy.exp
+
+        else:
+            self.in_combat = False
+            self.attacking = False
+
+    def check_state(self):
+        if not self.in_combat:
+            self.action = 'idle'
+
+        else:
+            if self.attacking:
+                self.action = 'attack'
+
+            else:
+                self.action = 'idle'
+
+        if self.health['current'] < 0:
+            # sprite dies
+            self.health['current'] = 0
+            self.in_combat = False
+            self.animation_time = pygame.time.get_ticks()
+            self.cooldown = player.animation_cooldown
+
+            for i in range(5):
+                x_offset = round((self.rect.right - self.rect.left) / 4)
+                x = random.randint(
+                    self.rect.centerx - x_offset, 
+                    self.rect.centerx + x_offset)
+
+                y_offset = round((self.rect.bottom - self.rect.top) / 4)
+                y = random.randint(
+                    self.rect.centery - y_offset, 
+                    self.rect.centery + y_offset)
+
+                dust = Particle(
+                    (x, y),
+                    [randomize(self.rect.width / 2, 0.05) for i in range(2)],
+                    f'dust{random.randint(1, 3)}.png',
+                    camera_group)
+
+            self.kill()
+            del self
+
+    def hurt(self, attack, crit_chance):
+        text_coords = [
+            random.randint(
+                round((self.rect.left + self.rect.centerx) / 2),
+                round((self.rect.right + self.rect.centerx) / 2)),
+            self.rect.top]
+
+        dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
+        if not dodge:
+            # randomizes damage between 0.9 and 1.1
+            damage = randomize(attack, 0.15)
+
+            # doubles damage if crit
+            crit = crit_chance >= random.randint(0, 100) / 100
+            if crit:
+                damage *= 2
+                camera_group.add_text(
+                    damage, text_coords, 35, BLOOD_RED)
+
+            else:
+                camera_group.add_text(
+                    damage, text_coords, 30, RED)
+
+            self.health['current'] -= damage
+
+        else:
+            camera_group.add_text('Dodged', text_coords, 20, GOLD)
+
+    def animation(self):
+        '''Handles animation'''
+
+        # loops frames
+        if self.frame >= len(self.animation_types[self.action]):
+            self.frame = 0
+
+        # set image
+        self.image = self.animation_types[self.action][self.frame]
+
+        # determines whether the animation cooldown is over
+        if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+            self.animation_time = pygame.time.get_ticks()
+            self.frame += 1
+
+        # reflects over y-axis if facing left
+        if self.facing == 'left':
+            self.image = pygame.transform.flip(self.image, True, False)
+
+
+class Player(pygame.sprite.Sprite, GenericNPC):
     def __init__(self, coords: list, size: list, groups):
         super().__init__(groups)
         self.width, self.height = size
-
+        
         self.in_combat = False
         self.attacking = False
         self.show_stats = True
@@ -717,7 +860,7 @@ class Player(pygame.sprite.Sprite):
         self.max_velocity = 7
 
         # stats
-        self.exp = 0
+        self.exp = 0 # max exp is 9900
         self.exp_levels = [i for i in range(100, 10000, 100)]
         self.level = 1
         while self.exp > self.exp_levels[self.level - 1]:
@@ -810,12 +953,15 @@ class Player(pygame.sprite.Sprite):
             if self.acceleration.length_squared() > 0:  # checks if the player is moving
                 # converts the coordinates to a vector according to the radius
                 self.acceleration.scale_to_length(self.max_velocity)
+
                 self.velocity += self.acceleration
                 self.velocity *= 0.5
 
             else:
+                # movement decay when input is not received
                 self.velocity *= 0.8
 
+            # movement decay when the speed is low
             if abs(self.velocity.x) < 0.25:
                 self.velocity.x = 0
 
@@ -866,111 +1012,12 @@ class Player(pygame.sprite.Sprite):
 
                     self.velocity.y = 0
 
-    def attack_enemy(self):
-        global enemy_group, camera_group
+    def leveling_up(self):
+        '''Increases player level when they reach exp cap'''
+        if self.exp > self.exp_levels[self.level - 1]:
+            self.level += 1
 
-        # checks if the player rect overlaps an enemy rect
-        if pygame.sprite.spritecollide(self, enemy_group, False):
-            # checks if the player mask overlaps an enemy mask
-            if pygame.sprite.spritecollide(self, enemy_group, False, pygame.sprite.collide_mask):
-                for enemy in enemy_group:
-                    # determines which enemy is within the player rect
-                    if pygame.Rect.colliderect(player.rect, enemy.rect):
-                        if not self.in_combat and self.health['current'] > 0 and enemy.health['current'] > 0:
-                            self.in_combat = True
-                            self.animation_time = pygame.time.get_ticks()
-                            self.frame = 0
-                            self.velocity.x = 0
-                            self.velocity.y = 0
-
-                            enemy.show_stats = True
-                            enemy.in_combat = True
-                            enemy.animation_time = pygame.time.get_ticks()
-                            enemy.frame = 0
-
-                            # player faces enemy
-                            if self.rect.centerx < enemy.rect.centerx:
-                                self.facing = 'right'
-                                enemy.facing = 'left'
-
-                            else:
-                                self.facing = 'left'
-                                enemy.facing = 'right'
-
-                        if self.in_combat:
-                            self.cooldown = self.attack_cooldown
-
-                            # attack animation
-                            if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                                self.attacking = True
-                                self.frame = 0
-
-                            # checks if the animation ended
-                            if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
-                                # only deal damage when attack cooldown ends
-                                if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                                    enemy_coords = [
-                                        random.randint(
-                                            round((enemy.rect.left + enemy.rect.centerx) / 2),
-                                            round((enemy.rect.right + enemy.rect.centerx) / 2)),
-                                        enemy.rect.top]
-
-                                    dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
-                                    if not dodge:
-                                        # randomizes damage between 0.9 and 1.1
-                                        damage = randomize(
-                                            self.attack['current'], 0.15)
-
-                                        # doubles damage if crit
-                                        crit = self.crit_chance['current'] >= random.randint(0, 100) / 100
-                                        if crit:
-                                            damage *= 2
-                                            camera_group.add_text(
-                                                damage, enemy_coords, 35, TANGERINE)
-
-                                        else:
-                                            camera_group.add_text(
-                                                damage, enemy_coords, 30, ORANGE)
-
-                                        enemy.health['current'] -= damage
-
-                                    else:
-                                        camera_group.add_text(
-                                            'Dodged', enemy_coords, 20, GOLD)
-
-                                    if enemy.health['current'] <= 0:
-                                        player.exp += enemy.exp
-                                        for i in range(5):
-                                            x_offset = round((enemy.rect.right - enemy.rect.left) / 4)
-                                            x = random.randint(
-                                                enemy.rect.centerx - x_offset, 
-                                                enemy.rect.centerx + x_offset)
-
-                                            y_offset = round((enemy.rect.bottom - enemy.rect.top) / 4)
-                                            y = random.randint(
-                                                enemy.rect.centery - y_offset, 
-                                                enemy.rect.centery + y_offset)
-
-                                            dust = Particle(
-                                                (x, y),
-                                                [randomize(enemy.rect.width / 2, 0.05) for i in range(2)],
-                                                f'dust{random.randint(1, 3)}.png',
-                                                camera_group)
-
-                                        enemy.health['current'] = 0
-                                        enemy.in_combat = False
-                                        enemy.animation_time = pygame.time.get_ticks()
-                                        enemy.cooldown = enemy.animation_cooldown
-                                        enemy.kill()
-                                        del enemy
-
-                                        self.in_combat = False
-                                        self.animation_time = pygame.time.get_ticks()
-                                        self.cooldown = self.animation_cooldown
-                        break
-
-    def animation(self):
-        '''Handles animation'''
+    def check_state(self):
         if not self.in_combat:
             if self.velocity.length_squared() > 0:
                 self.action = 'run'
@@ -991,120 +1038,54 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.action = 'idle'
 
-        # loops frames
-        if self.frame >= len(self.animation_types[self.action]):
-            self.frame = 0
+    def hurt(self, attack, crit_chance):
+        text_coords = [
+            random.randint(
+                round((self.rect.left + self.rect.centerx) / 2),
+                round((self.rect.right + self.rect.centerx) / 2)),
+            self.rect.top]
 
-        # set image
-        self.image = self.animation_types[self.action][self.frame]
+        dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
+        if not dodge:
+            # randomizes damage between 0.9 and 1.1
+            damage = randomize(attack, 0.15)
 
-        # determines whether the animation cooldown is over
-        if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+            # doubles damage if crit
+            crit = crit_chance >= random.randint(0, 100) / 100
+            if crit:
+                damage *= 2
+                camera_group.add_text(
+                    damage, text_coords, 35, ORANGE)
+
+            else:
+                camera_group.add_text(
+                    damage, text_coords, 30, TANGERINE)
+
+            self.health['current'] -= damage
+
+        else:
+            camera_group.add_text('Dodged', text_coords, 20, GOLD)
+
+        if self.health['current'] < 0:
+            # sprite dies
+            self.health['current'] = 0
+            self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
-            self.frame += 1
-
-        # reflect image if facing left
-        if self.facing == 'left':
-            self.image = pygame.transform.flip(self.image, True, False)
-
-    def leveling_up(self):
-        '''Increases player level when they reach exp cap'''
-        if self.exp > self.exp_levels[self.level - 1]:
-            self.level += 1
+            self.cooldown = player.animation_cooldown
 
     def update(self):
+        '''Handles events'''
+        global enemy_group
+
         self.movement()
         self.collision()
-        self.attack_enemy()
+        self.attack_enemy(enemy_group)
+        self.check_state()
         self.animation()
         self.leveling_up()
 
 
-class GenericEnemy:
-    def attack_enemy(self):
-        global player, camera_group
-
-        if self.in_combat:
-            self.cooldown = self.attack_cooldown
-            if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                self.attacking = True
-                self.frame = 0
-
-            # only deal damage when animation ends
-            if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
-                if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                    player_coords = [
-                        random.randint(
-                            round((player.rect.left + player.rect.centerx) / 2),
-                            round((player.rect.right + player.rect.centerx) / 2)),
-                        player.rect.top]
-
-                    dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
-                    if not dodge:
-                        # randomizes damage between 0.9 and 1.1
-                        damage = randomize(self.attack['current'], 0.15)
-
-                        # doubles damage if crit
-                        crit = self.crit_chance['current'] >= random.randint(0, 100) / 100
-                        if crit:
-                            damage *= 2
-                            camera_group.add_text(
-                                damage, player_coords, 35, BLOOD_RED)
-
-                        else:
-                            camera_group.add_text(
-                                damage, player_coords, 30, RED)
-
-                        player.health['current'] -= damage
-
-                    else:
-                        camera_group.add_text('Dodged', player_coords, 20, GOLD)
-
-                    if player.health['current'] <= 0:
-                        player.health['current'] = 0
-                        player.in_combat = False
-                        player.animation_time = pygame.time.get_ticks()
-                        player.cooldown = player.animation_cooldown
-
-                        self.in_combat = False
-                        self.animation_time = pygame.time.get_ticks()
-                        self.cooldown = self.animation_cooldown
-
-        if self.health['current'] < 0:
-            # enemy dies
-            self.in_combat = False
-            self.cooldown = self.animation_cooldown
-
-    def animation(self):
-        '''Handles animation'''
-        if not self.in_combat:
-            self.action = 'idle'
-
-        else:
-            if self.attacking:
-                self.action = 'attack'
-
-            else:
-                self.action = 'idle'
-
-        # loops frames
-        if self.frame >= len(self.animation_types[self.action]):
-            self.frame = 0
-
-        # set image
-        self.image = self.animation_types[self.action][self.frame]
-
-        # determines whether the animation cooldown is over
-        if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-            self.animation_time = pygame.time.get_ticks()
-            self.frame += 1
-
-        # reflects over y-axis if facing left
-        if self.facing == 'left':
-            self.image = pygame.transform.flip(self.image, True, False)
-
-
-class Ghost(pygame.sprite.Sprite, GenericEnemy):
+class Ghost(pygame.sprite.Sprite, GenericNPC):
     def __init__(self, coords: list, size: list, level, groups):
         super().__init__(groups)
         self.width, self.height = size
@@ -1172,11 +1153,14 @@ class Ghost(pygame.sprite.Sprite, GenericEnemy):
 
     def update(self):
         '''Handles events'''
-        self.attack_enemy()
+        global player_group
+
+        self.attack_enemy(player_group)
+        self.check_state()
         self.animation()
 
 
-class Mimic(pygame.sprite.Sprite, GenericEnemy):
+class Mimic(pygame.sprite.Sprite, GenericNPC):
     def __init__(self, coords: list, size: list, level, groups):
         super().__init__(groups)
         self.width, self.height = size
@@ -1244,11 +1228,14 @@ class Mimic(pygame.sprite.Sprite, GenericEnemy):
 
     def update(self):
         '''Handles events'''
-        self.attack_enemy()
+        global player_group
+
+        self.attack_enemy(player_group)
+        self.check_state()
         self.animation()
 
 
-class Sunflower(pygame.sprite.Sprite, GenericEnemy):
+class Sunflower(pygame.sprite.Sprite, GenericNPC):
     def __init__(self, coords: list, size: list, level, groups):
         super().__init__(groups)
         self.width, self.height = size
@@ -1269,7 +1256,7 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
         self.health = {'current': round(25 * (1.05**(self.level - 1)))}
         self.health['total'] = self.health['current']
 
-        self.attack = {'current': round(8 * (1.05**(self.level - 1)))}
+        self.attack = {'current': round(7 * (1.05**(self.level - 1)))}
         self.attack['total'] = self.attack['current']
 
         self.speed = {'current': 0}
@@ -1317,7 +1304,10 @@ class Sunflower(pygame.sprite.Sprite, GenericEnemy):
 
     def update(self):
         '''Handles events'''
-        self.attack_enemy()
+        global player_group
+
+        self.attack_enemy(player_group)
+        self.check_state()
         self.animation()
 
 
