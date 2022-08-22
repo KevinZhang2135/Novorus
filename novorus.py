@@ -371,28 +371,12 @@ class LightSources(pygame.sprite.Group):
             special_flags=pygame.BLEND_RGBA_MULT)
 
 
-class Menu(pygame.sprite.Sprite):
-    def __init__(self, groups):
-        super().__init__(groups)
+class Menu(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
         self.display_surface = pygame.display.get_surface()
 
-        self.width, self.height = 100, 100
         menu_width = 350
-
-        self.menu_sprites = {}
-        self.menu_sprites['menu'] = IMAGES['menu.png']
-        self.menu_sprites['menu'] = pygame.transform.scale(
-            self.menu_sprites['menu'], (self.width, self.height))
-
-        self.menu_sprites['paused'] = IMAGES['paused.png']
-        self.menu_sprites['paused'] = pygame.transform.scale(
-            self.menu_sprites['paused'], (self.width, self.height))
-        self.image = self.menu_sprites['menu']
-
-        self.rect = self.image.get_rect(
-            bottomright=[self.display_surface.get_width(),
-                         self.display_surface.get_height()])
-
         self.menu_rect = pygame.Rect(
             (self.display_surface.get_width() - menu_width) / 2,
             (self.display_surface.get_height() - menu_width) / 2,
@@ -407,41 +391,27 @@ class Menu(pygame.sprite.Sprite):
             BLACK)
 
         # exit text
-        self.yellow_exit_text = self.draw_exit_text(YELLOW)
-        self.black_exit_text = self.draw_exit_text(BLACK)
-        self.exit_text = self.black_exit_text
-        self.pressed = False
-
-        self.sprite_layer = 5
-
-    def draw_exit_text(self, color):
-        exit_text, exit_text_rect = load_text(
+        self.yellow_exit_text = load_text(
             'Exit',
             (self.menu_rect.centerx, self.menu_rect.bottom - self.menu_rect.height / 8),
             self.menu_rect.width / 8,
-            color)
+            YELLOW)
 
-        return exit_text, exit_text_rect
+        self.black_exit_text = load_text(
+            'Exit',
+            (self.menu_rect.centerx, self.menu_rect.bottom - self.menu_rect.height / 8),
+            self.menu_rect.width / 8,
+            BLACK)
 
+        self.exit_text = self.black_exit_text
+    
     def draw(self):
         global game_state
 
-        pause_left_click = (pygame.mouse.get_pressed()[0]
-                            and self.rect.collidepoint(pygame.mouse.get_pos()))
-
-        escape_key = pygame.key.get_pressed()[pygame.K_ESCAPE]
-
-        # checks for left click and escape_key to popup menu
-        if (pause_left_click or escape_key) and not self.pressed:
-            self.pressed = True
-            game_state['paused'] = not game_state['paused']
-
-        elif not (pause_left_click or escape_key) and self.pressed:
-            self.pressed = False
+        for sprite in self.sprites():
+            self.display_surface.blit(sprite.image, sprite.rect.topleft)
 
         if game_state['paused']:
-            self.image = self.menu_sprites['paused']
-
             pygame.draw.rect(
                 self.display_surface,
                 BROWN,
@@ -464,9 +434,57 @@ class Menu(pygame.sprite.Sprite):
             else:
                 self.exit_text = self.black_exit_text
 
+
+class MenuButton(pygame.sprite.Sprite):
+    def __init__(self, groups):
+        super().__init__(groups)
+        self.display_surface = pygame.display.get_surface()
+
+        self.width, self.height = 100, 100
+
+        self.menu_sprites = {}
+        self.menu_sprites['menu'] = IMAGES['menu.png']
+        self.menu_sprites['menu'] = pygame.transform.scale(
+            self.menu_sprites['menu'], (self.width, self.height))
+
+        self.menu_sprites['paused'] = IMAGES['paused.png']
+        self.menu_sprites['paused'] = pygame.transform.scale(
+            self.menu_sprites['paused'], (self.width, self.height))
+
+        self.image = self.menu_sprites['menu']
+
+        self.rect = self.image.get_rect(
+            bottomright=[self.display_surface.get_width(),
+                         self.display_surface.get_height()])
+
+        self.pressed = False
+
+    def pausing(self):
+        global game_state
+
+        pause_left_click = (pygame.mouse.get_pressed()[0]
+                            and self.rect.collidepoint(pygame.mouse.get_pos()))
+
+        pause_key = pygame.key.get_pressed()[pygame.K_ESCAPE]
+
+        # checks for left click or escape_key to popup menu
+        if (pause_left_click or pause_key) and not self.pressed:
+            self.pressed = True
+            game_state['paused'] = not game_state['paused']
+
+        elif not (pause_left_click or pause_key) and self.pressed:
+            self.pressed = False
+
+        if game_state['paused']:
+            self.image = self.menu_sprites['paused']
+
         else:
             self.image = self.menu_sprites['menu']
-        
+
+    def update(self):
+        '''Handles events'''
+        self.pausing()
+
 
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
@@ -493,8 +511,6 @@ class HealthBar(pygame.sprite.Sprite):
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
-
-        self.sprite_layer = 5
 
     def draw(self, target):
         ratio = target.health['current'] / target.health['total']
@@ -535,8 +551,6 @@ class SpeedBar(pygame.sprite.Sprite):
             self.bar_width,
             self.bar_height)
 
-        self.sprite_layer = 5
-
     def draw(self, target):
         pygame.draw.rect(self.display_surface, YELLOW, self.bar)
         pygame.draw.rect(self.display_surface, GOLD, self.bar, 2)
@@ -568,8 +582,6 @@ class AttackBar(pygame.sprite.Sprite):
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
-
-        self.sprite_layer = 5
 
     def draw(self, target):
         pygame.draw.rect(self.display_surface, GREY, self.bar)
@@ -1489,14 +1501,17 @@ collision_group = pygame.sprite.Group()
 player_group = pygame.sprite.GroupSingle()
 enemy_group = pygame.sprite.Group()
 cursor_group = pygame.sprite.GroupSingle()
-hud_group = CameraGroup()
+light_group = LightSources(RESOLUTION)
+
+menu = Menu()
+
 player_bars = Bars((0, 0))
 enemy_bars = Bars((0, player_bars.height))
-light_group = LightSources(RESOLUTION)
+
 
 # hud
 cursor = Cursor(TILE_SIZE, cursor_group)
-menu = Menu(hud_group)
+menu_button = MenuButton(menu)
 
 player_health_bar = HealthBar(
     (0, player_bars.coords[1] + player_bars.height - 165),
@@ -1540,12 +1555,11 @@ while game_state['runtime']:
     # redraws sprites and images
     camera_group.custom_draw(player, show_hitboxes=False)
     cursor_group.draw(screen)
-
     light_group.render_lighting(player)
 
     player_bars.custom_draw(player_group)
     enemy_bars.custom_draw(enemy_group)
-    hud_group.draw(screen)
+
     menu.draw()
     level.draw()
 
@@ -1554,7 +1568,7 @@ while game_state['runtime']:
         camera_group.update()
 
     cursor_group.update()
-    hud_group.update()
+    menu.update()
     level.update()
 
     # updates screen
