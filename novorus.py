@@ -435,7 +435,7 @@ class Menu(pygame.sprite.Group):
                 self.exit_text = self.black_exit_text
 
 
-class MenuButton(pygame.sprite.Sprite):
+class PauseButton(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
@@ -601,8 +601,12 @@ class Bars(pygame.sprite.Group):
         self.display_surface = pygame.display.get_surface()
         self.coords = pygame.math.Vector2(coords)
 
+        bar_padding = 0
+        bars = [HealthBar, SpeedBar, AttackBar]
+
         self.width = 150
-        self.height = 200
+        self.height = 75 + len(bars) * 50
+
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
 
         self.exp_width = self.width * 0.5
@@ -610,6 +614,13 @@ class Bars(pygame.sprite.Group):
         self.exp_rect = pygame.Rect(
             self.coords, (self.exp_width, self.exp_height))
 
+        for bar in bars:
+            bar = bar(
+                (self.coords[0], self.coords[1] + 50 + bar_padding),
+                self)
+            bar_padding += 50
+
+        
     def custom_draw(self, targets):
         if len(targets.sprites()) > 0:
             if len(targets.sprites()) > 1:
@@ -632,8 +643,8 @@ class Bars(pygame.sprite.Group):
                 name_text, name_text_rect = load_text(
                     f'{target.name} lvl {target.level}',
                     (self.coords.x + self.width / 2,
-                     self.coords.y + self.height * 0.15),
-                    self.height * 0.125,
+                     self.coords.y + 35),
+                    30,
                     BLACK)
 
                 self.display_surface.blit(name_text, name_text_rect)
@@ -1511,31 +1522,7 @@ enemy_bars = Bars((0, player_bars.height))
 
 # hud
 cursor = Cursor(TILE_SIZE, cursor_group)
-menu_button = MenuButton(menu)
-
-player_health_bar = HealthBar(
-    (0, player_bars.coords[1] + player_bars.height - 165),
-    player_bars)
-
-player_speed_bar = SpeedBar(
-    (0, player_bars.coords[1] + player_bars.height - 115),
-    player_bars)
-
-player_attack_bar = AttackBar(
-    (0, player_bars.coords[1] + player_bars.height - 65),
-    player_bars)
-
-enemy_health_bar = HealthBar(
-    (0, enemy_bars.coords[1] + enemy_bars.height - 165),
-    enemy_bars)
-
-enemy_speed_bar = SpeedBar(
-    (0, enemy_bars.coords[1] + enemy_bars.height - 115),
-    enemy_bars)
-
-enemy_attack_bar = AttackBar(
-    (0, enemy_bars.coords[1] + enemy_bars.height - 65),
-    enemy_bars)
+pause_button = PauseButton(menu)
 
 # player
 player = Player((0, 0), (75, 75), (camera_group, player_group))
