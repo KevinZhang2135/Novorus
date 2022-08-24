@@ -1,4 +1,3 @@
-from msilib.schema import Error
 import pygame
 import random
 import os
@@ -18,6 +17,12 @@ class Level:
             0,
             self.display_surface.get_width(),
             self.display_surface.get_height())
+
+        self.floor_level_text = load_text(
+            f'Floor {self.floor_level}',
+            (self.display_surface.get_width() / 2, self.display_surface.get_height() - 50),
+            50,
+            BLACK)
 
         self.read_csv_level()
 
@@ -184,23 +189,29 @@ class Level:
             coords, [round(self.tile_size * 0.8)] * 2, camera_group)
 
     def draw(self):
+        self.display_surface.blit(*self.floor_level_text)
         if self.transitioning:
             pygame.draw.rect(
                 self.display_surface,
                 BLACK,
                 self.level_transition_rect)
-
+            
     def update(self):
         global player
 
         if self.transitioning:
-            self.level_transition_rect.x += 100
+            self.level_transition_rect.x += 50
             if (self.level_transition_rect.x > 0
-                    and not self.level_updated):
+                and not self.level_updated):
                 self.level_updated = True
-
+                
                 self.clear_level()
                 self.read_csv_level()
+                self.floor_level_text = load_text(
+                    f'Floor {self.floor_level}',
+                    (self.display_surface.get_width() / 2, self.display_surface.get_height() - 50),
+                    50,
+                    BLACK)
 
                 player.velocity.x = 0
                 player.velocity.y = 0
@@ -618,6 +629,7 @@ class Bars(pygame.sprite.Group):
             bar = bar(
                 (self.coords[0], self.coords[1] + 50 + bar_padding),
                 self)
+
             bar_padding += 50
 
         
@@ -880,7 +892,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 7
+        self.max_velocity = 17
 
         # stats
         self.exp = 0 # max exp is 9900
