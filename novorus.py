@@ -4,6 +4,7 @@ import os
 import csv
 from constants import *
 
+
 class Level:
     def __init__(self, floor_level, tile_size):
         self.tile_size = tile_size
@@ -242,20 +243,6 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = target.rect.centerx - self.half_width
         self.offset.y = target.rect.centery - self.half_height
 
-    def move_text(self, text):
-        '''Moves the text vertically'''
-        text.velocity += text.acceleration
-        text.velocity *= 0.9
-
-        # movement decay when the speed is low
-        if abs(text.velocity.x) < 0.25:
-            text.velocity.x = 0
-
-        if abs(text.velocity.y) < 0.25:
-            text.velocity.y = 0
-
-        text.rect.center += text.velocity
-
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
@@ -278,14 +265,15 @@ class CameraGroup(pygame.sprite.Group):
 
         expired_texts = []
         for index, text in enumerate(self.texts):
-            if pygame.time.get_ticks() - text.time > 1000:
+            if text.alpha <= 0:
                 expired_texts.append(index)
 
-            self.move_text(text)
+            text.update()
             offset_pos = text.rect.topleft - self.offset
             self.display_surface.blit(text.text, offset_pos)
 
-        # removes texts that have remained on the screen
+        
+        # removes texts that have expired
         expired_texts.sort(reverse=True)
         for index in expired_texts:
             expired_text = self.texts.pop(index)
@@ -300,14 +288,44 @@ class CameraGroup(pygame.sprite.Group):
                 sprite.update()
 
 
-class Text:
+class TextPopUp:
     def __init__(self, text, rect):
         self.text = text
         self.rect = rect
 
-        self.time = pygame.time.get_ticks()
+        self.alpha = 255
+
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
+
+        self.time = pygame.time.get_ticks()
+        self.expiration_time = randomize(1000, 0.1)
+
+    def movement(self):
+        '''Moves the text vertically'''
+        self.velocity += self.acceleration
+        self.velocity *= 0.9
+
+        # movement decay when the speed is low
+        if abs(self.velocity.x) < 0.25:
+            self.velocity.x = 0
+
+        if abs(self.velocity.y) < 0.25:
+            self.velocity.y = 0
+
+        self.rect.center += self.velocity
+
+    def expire(self):
+        '''Fades text after its expiration time'''
+        if pygame.time.get_ticks() - self.time > self.expiration_time:
+            self.alpha -= 10
+            if self.alpha > 0:
+                self.text.set_alpha(self.alpha)
+
+    def update(self):
+        '''Handles events'''
+        self.movement()
+        self.expire()
 
 
 class Particle(pygame.sprite.Sprite):
@@ -315,7 +333,8 @@ class Particle(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = IMAGES[image]
+        self.alpha = 255
+        self.image = IMAGES[image].copy()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
 
@@ -344,10 +363,17 @@ class Particle(pygame.sprite.Sprite):
     def expire(self):
         '''Deletes particle after its expiration time'''
         if pygame.time.get_ticks() - self.time > self.expiration_time:
-            self.kill()
-            del self
-
+            self.alpha -= 10
+            if self.alpha > 0:
+                self.image.set_alpha(self.alpha)
+                
+            else:
+                self.kill()
+                del self
+                
+                  
     def update(self):
+        '''Handles events'''
         self.movement()
         self.expire()
 
@@ -362,7 +388,7 @@ class LightSources(pygame.sprite.Group):
 
         self.light_size = pygame.math.Vector2(500, 500)
 
-        self.light = IMAGES['soft_circle.png']
+        self.light = IMAGES['soft_circle.png'].copy()
         self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
         self.light = color_image(self.light, MELLOW_YELLOW)
 
@@ -409,9 +435,15 @@ class Menu(pygame.sprite.Group):
 
         self.pause_button = Button(
             (self.display_surface.get_width(), self.display_surface.get_height()),
-            {'inactive': IMAGES['menu.png'], 'active': IMAGES['paused.png']},
+            {'inactive': IMAGES['menu.png'].copy(), 'active': IMAGES['paused.png'].copy()},
             self,
             optional_key=pygame.K_ESCAPE)
+
+        self.inventory_button = Button(
+            (self.display_surface.get_width() - 100, self.display_surface.get_height()),
+            {'inactive': IMAGES['backpack.png'].copy(), 'active': IMAGES['heart.png'].copy()},
+            self,
+            optional_key=pygame.K_q)
 
         menu_width = 350
         self.menu_rect = pygame.Rect(
@@ -518,13 +550,13 @@ class Button(pygame.sprite.Sprite):
         if self.active:
             self.image = self.sprites['active']
 
-        else:
+        else: 
             self.image = self.sprites['inactive']
 
     def update(self):
         '''Handles events'''
         self.press_button()
-        
+
 
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
@@ -535,7 +567,7 @@ class HealthBar(pygame.sprite.Sprite):
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
-        self.image = IMAGES['heart.png']
+        self.image = IMAGES['heart.png'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
@@ -580,7 +612,7 @@ class SpeedBar(pygame.sprite.Sprite):
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
-        self.image = IMAGES['lightning.png']
+        self.image = IMAGES['lightning.png'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
@@ -612,7 +644,7 @@ class AttackBar(pygame.sprite.Sprite):
         self.bar_width = self.width * 1.7
         self.bar_height = 15
 
-        self.image = IMAGES['sword.png']
+        self.image = IMAGES['sword.png'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
@@ -725,7 +757,7 @@ class Cursor(pygame.sprite.Sprite):
         self.display_surface = pygame.display.get_surface()
         self.tile_size = tile_size
 
-        self.image = IMAGES['cursor.png']
+        self.image = IMAGES['cursor.png'].copy()
         self.image = pygame.transform.scale(self.image, (100, 100))
 
         self.rect = self.image.get_rect(center=(0, 0))
@@ -875,13 +907,13 @@ class GenericNPC:
             crit = crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
-                text = Text(*load_text(damage, text_coords, 35, BLOOD_RED))
+                text = TextPopUp(*load_text(damage, text_coords, 35, BLOOD_RED))
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
 
             else:
-                text = Text(*load_text(damage, text_coords, 30, RED))
+                text = TextPopUp(*load_text(damage, text_coords, 30, RED))
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
@@ -889,7 +921,7 @@ class GenericNPC:
             self.health['current'] -= damage
 
         else:
-            text = Text(*load_text('Dodged', text_coords, 20, GOLD))
+            text = TextPopUp(*load_text('Dodged', text_coords, 20, GOLD))
             text.velocity.y = -5
 
             camera_group.texts.append(text)
@@ -972,7 +1004,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'sprites/player/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'knight_{type}{i + 1}.png']
+                image = IMAGES[f'knight_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -983,7 +1015,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.animation_cooldown = 1200 / len(self.animation_types['idle'])
         self.attack_cooldown = 1200 / len(self.animation_types['attack'])
         self.cooldown = self.animation_cooldown
 
@@ -1126,13 +1158,13 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             crit = crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
-                text = Text(*load_text(damage, text_coords, 35, ORANGE))
+                text = TextPopUp(*load_text(damage, text_coords, 35, ORANGE))
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
 
             else:
-                text = Text(*load_text(damage, text_coords, 30, TANGERINE))
+                text = TextPopUp(*load_text(damage, text_coords, 30, TANGERINE))
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
@@ -1140,7 +1172,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             self.health['current'] -= damage
 
         else:
-            text = Text(*load_text('Dodged', text_coords, 20, GOLD))
+            text = TextPopUp(*load_text('Dodged', text_coords, 20, GOLD))
             text.velocity.y = -5
 
             camera_group.texts.append(text)
@@ -1213,7 +1245,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'sprites/enemies/ghost/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'ghost_{type}{i + 1}.png']
+                image = IMAGES[f'ghost_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -1288,7 +1320,7 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'sprites/enemies/mimic/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'mimic_{type}{i + 1}.png']
+                image = IMAGES[f'mimic_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -1364,7 +1396,7 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
             num_of_frames = len(os.listdir(
                 f'sprites/enemies/sunflower/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'sunflower_{type}{i + 1}.png']
+                image = IMAGES[f'sunflower_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -1396,11 +1428,11 @@ class Chest(pygame.sprite.Sprite):
         self.width, self.height = size
 
         self.chest_sprites = {}
-        self.chest_sprites['closed'] = IMAGES['chest_closed.png']
+        self.chest_sprites['closed'] = IMAGES['chest_closed.png'].copy()
         self.chest_sprites['closed'] = pygame.transform.scale(
             self.chest_sprites['closed'], (self.width, self.height))
 
-        self.chest_sprites['opened'] = IMAGES['chest_opened.png']
+        self.chest_sprites['opened'] = IMAGES['chest_opened.png'].copy()
         self.chest_sprites['opened'] = pygame.transform.scale(
             self.chest_sprites['opened'], (self.width, self.height))
         self.image = self.chest_sprites['closed']
@@ -1433,7 +1465,7 @@ class LevelExit(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = IMAGES['dirt_hole.png']
+        self.image = IMAGES['dirt_hole.png'].copy()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
 
@@ -1453,7 +1485,7 @@ class StaticTile(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = IMAGES[image]
+        self.image = IMAGES[image].copy()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
 
@@ -1471,7 +1503,7 @@ class AnimatedTile(pygame.sprite.Sprite):
             os.listdir(f'sprites/decoration/animated/{images}'))
 
         for i in range(num_of_frames):
-            image = IMAGES[f'{images}{i + 1}.png']
+            image = IMAGES[f'{images}{i + 1}.png'].copy()
             image = pygame.transform.scale(image, size)
 
             self.animation_types.append(image)
@@ -1515,15 +1547,14 @@ class Torch(AnimatedTile):
     def draw_smoke(self):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
-            for i in range(3):
-                smoke = Particle(
-                    self.rect.center,
-                    [randomize(25, 0.1) for i in range(2)],
-                    f'smoke{random.randint(1, self.smoke_frames)}.png',
-                    camera_group)
+            smoke = Particle(
+                self.rect.center,
+                [randomize(25, 0.1) for i in range(2)],
+                f'smoke{random.randint(1, self.smoke_frames)}.png',
+                camera_group)
 
-                smoke.velocity.y = -4
-                smoke.expiration_time = 1500
+            smoke.velocity.y = -4
+            smoke.expiration_time = 1500
             
     def update(self):
         self.animation()
@@ -1551,10 +1582,12 @@ def randomize(value: int, offset: float):
 
 def color_image(image, color):
     '''Recolors a surface'''
+    image = image.copy()
     # zeros out rgb and preserves original transparency
     image.fill((0, 0, 0, 255), None, special_flags=pygame.BLEND_RGBA_MULT)
+
     # adds in new rgb values
-    image.fill(color + (0,), None, pygame.BLEND_RGBA_ADD)\
+    image.fill(color + (0,), None, pygame.BLEND_RGBA_ADD)
 
     return image
 
