@@ -239,15 +239,19 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = target.rect.centerx - self.half_width
         self.offset.y = target.rect.centery - self.half_height
 
-    def add_text(self, text, coords, size, color):
-        text = Text(*load_text(text, coords, size, color))
-        self.texts.append(text)
-
     def move_text(self, text):
         '''Moves the text vertically'''
-        if text.velocity > 0:
-            text.rect.y -= text.velocity
-            text.velocity += text.acceleration
+        text.velocity += text.acceleration
+        text.velocity *= 0.9
+
+        # movement decay when the speed is low
+        if abs(text.velocity.x) < 0.25:
+            text.velocity.x = 0
+
+        if abs(text.velocity.y) < 0.25:
+            text.velocity.y = 0
+
+        text.rect.center += text.velocity
 
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
@@ -299,8 +303,8 @@ class Text:
         self.rect = rect
 
         self.time = pygame.time.get_ticks()
-        self.acceleration = -0.1
-        self.velocity = random.randint(1250, 2000) / 1000 + 1.5
+        self.acceleration = pygame.math.Vector2(0, 0)
+        self.velocity = pygame.math.Vector2(0, 0)
 
 
 class Particle(pygame.sprite.Sprite):
@@ -312,6 +316,9 @@ class Particle(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
 
+        self.acceleration = pygame.math.Vector2(0, 0)
+        self.velocity = pygame.math.Vector2(0, 0)
+
         self.time = pygame.time.get_ticks()
         self.expiration_time = randomize(1000, 0.1)
 
@@ -319,7 +326,17 @@ class Particle(pygame.sprite.Sprite):
 
     def movement(self):
         '''Handles movement'''
-        self.rect.centery -= 1
+        self.velocity += self.acceleration
+        self.velocity *= 0.9
+
+        # movement decay when the speed is low
+        if abs(self.velocity.x) < 0.25:
+            self.velocity.x = 0
+
+        if abs(self.velocity.y) < 0.25:
+            self.velocity.y = 0
+
+        self.rect.center += self.velocity
 
     def expire(self):
         '''Deletes particle after its expiration time'''
@@ -825,6 +842,8 @@ class GenericNPC:
                     f'dust{random.randint(1, 3)}.png',
                     camera_group)
 
+                dust.velocity.y = -2
+
             self.kill()
             del self
 
@@ -844,17 +863,24 @@ class GenericNPC:
             crit = crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
-                camera_group.add_text(
-                    damage, text_coords, 35, BLOOD_RED)
+                text = Text(*load_text(damage, text_coords, 35, BLOOD_RED))
+                text.velocity.y = -5
+
+                camera_group.texts.append(text)
 
             else:
-                camera_group.add_text(
-                    damage, text_coords, 30, RED)
+                text = Text(*load_text(damage, text_coords, 30, RED))
+                text.velocity.y = -5
+
+                camera_group.texts.append(text)
 
             self.health['current'] -= damage
 
         else:
-            camera_group.add_text('Dodged', text_coords, 20, GOLD)
+            text = Text(*load_text('Dodged', text_coords, 20, GOLD))
+            text.velocity.y = -5
+
+            camera_group.texts.append(text)
 
     def animation(self):
         '''Handles animation'''
@@ -892,7 +918,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 17
+        self.max_velocity = 7
 
         # stats
         self.exp = 0 # max exp is 9900
@@ -1003,8 +1029,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             if abs(self.velocity.y) < 0.25:
                 self.velocity.y = 0
 
-            self.rect.centerx += self.velocity.x
-            self.rect.centery += self.velocity.y
+            self.rect.center += self.velocity
 
     def collision(self):
         '''Handles collision'''
@@ -1089,17 +1114,24 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             crit = crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
-                camera_group.add_text(
-                    damage, text_coords, 35, ORANGE)
+                text = Text(*load_text(damage, text_coords, 35, ORANGE))
+                text.velocity.y = -5
+
+                camera_group.texts.append(text)
 
             else:
-                camera_group.add_text(
-                    damage, text_coords, 30, TANGERINE)
+                text = Text(*load_text(damage, text_coords, 30, TANGERINE))
+                text.velocity.y = -5
+
+                camera_group.texts.append(text)
 
             self.health['current'] -= damage
 
         else:
-            camera_group.add_text('Dodged', text_coords, 20, GOLD)
+            text = Text(*load_text('Dodged', text_coords, 20, GOLD))
+            text.velocity.y = -5
+
+            camera_group.texts.append(text)
 
         if self.health['current'] < 0:
             # sprite dies
@@ -1471,16 +1503,15 @@ class Torch(AnimatedTile):
     def draw_smoke(self):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
-            x = self.rect.centerx
-            y = random.randint(self.rect.top, self.rect.centery)
+            for i in range(3):
+                smoke = Particle(
+                    self.rect.center,
+                    [randomize(25, 0.1) for i in range(2)],
+                    f'smoke{random.randint(1, self.smoke_frames)}.png',
+                    camera_group)
 
-            smoke = Particle(
-                (x, y),
-                [randomize(20, 0.1) for i in range(2)],
-                f'smoke{random.randint(1, self.smoke_frames)}.png',
-                camera_group)
-
-            smoke.expiration_time = randomize(1500, 0.1)
+                smoke.velocity.y = -4
+                smoke.expiration_time = 1500
             
     def update(self):
         self.animation()
