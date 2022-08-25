@@ -35,6 +35,32 @@ class Level:
         self._floor_level = value
 
         self.transitioning = True
+    
+    def transition_level(self):
+        global player
+
+        if self.transitioning:
+            self.level_transition_rect.x += 75
+            if (self.level_transition_rect.x > 0
+                and not self.level_updated):
+                self.level_updated = True
+                
+                self.clear_level()
+                self.read_csv_level()
+                self.floor_level_text = load_text(
+                    f'Floor {self.floor_level}',
+                    (self.display_surface.get_width() / 2, self.display_surface.get_height() - 50),
+                    50,
+                    BLACK)
+
+                player.velocity.x = 0
+                player.velocity.y = 0
+
+            if self.level_transition_rect.x > self.display_surface.get_width():
+                self.level_transition_rect.x = -self.display_surface.get_width()
+
+                self.transitioning = False
+                self.level_updated = False
 
     def read_csv_level(self):
         files = os.listdir(f'levels/{self._floor_level}')
@@ -197,30 +223,7 @@ class Level:
                 self.level_transition_rect)
             
     def update(self):
-        global player
-
-        if self.transitioning:
-            self.level_transition_rect.x += 50
-            if (self.level_transition_rect.x > 0
-                and not self.level_updated):
-                self.level_updated = True
-                
-                self.clear_level()
-                self.read_csv_level()
-                self.floor_level_text = load_text(
-                    f'Floor {self.floor_level}',
-                    (self.display_surface.get_width() / 2, self.display_surface.get_height() - 50),
-                    50,
-                    BLACK)
-
-                player.velocity.x = 0
-                player.velocity.y = 0
-
-            if self.level_transition_rect.x > self.display_surface.get_width():
-                self.level_transition_rect.x = -self.display_surface.get_width()
-
-                self.transitioning = False
-                self.level_updated = False
+        self.transition_level()
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -404,6 +407,12 @@ class Menu(pygame.sprite.Group):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
 
+        self.pause_button = Button(
+            (self.display_surface.get_width(), self.display_surface.get_height()),
+            {'inactive': IMAGES['menu.png'], 'active': IMAGES['paused.png']},
+            self,
+            optional_key=pygame.K_ESCAPE)
+
         menu_width = 350
         self.menu_rect = pygame.Rect(
             (self.display_surface.get_width() - menu_width) / 2,
@@ -433,13 +442,11 @@ class Menu(pygame.sprite.Group):
 
         self.exit_text = self.black_exit_text
     
-    def draw(self):
+    def menu_popup(self):
         global game_state
 
-        for sprite in self.sprites():
-            self.display_surface.blit(sprite.image, sprite.rect.topleft)
-
-        if game_state['paused']:
+        if self.pause_button.active:
+            game_state['paused'] = True
             pygame.draw.rect(
                 self.display_surface,
                 BROWN,
@@ -462,57 +469,62 @@ class Menu(pygame.sprite.Group):
             else:
                 self.exit_text = self.black_exit_text
 
+        else:
+            game_state['paused'] = False
 
-class PauseButton(pygame.sprite.Sprite):
-    def __init__(self, groups):
+    def draw(self):
+        for sprite in self.sprites():
+            self.display_surface.blit(sprite.image, sprite.rect.topleft)
+
+        self.menu_popup()
+
+    def update(self):
+        for sprite in self.sprites():
+            sprite.update()
+
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, coords, images:dict, groups, optional_key=False):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
-
         self.width, self.height = 100, 100
 
-        self.menu_sprites = {}
-        self.menu_sprites['menu'] = IMAGES['menu.png']
-        self.menu_sprites['menu'] = pygame.transform.scale(
-            self.menu_sprites['menu'], (self.width, self.height))
+        self.sprites = images
+        for key, image in images.items():
+            self.sprites[key] = pygame.transform.scale(image, (self.width, self.height))
 
-        self.menu_sprites['paused'] = IMAGES['paused.png']
-        self.menu_sprites['paused'] = pygame.transform.scale(
-            self.menu_sprites['paused'], (self.width, self.height))
+        self.image = self.sprites['inactive']
+        self.rect = self.image.get_rect(bottomright=coords)
 
-        self.image = self.menu_sprites['menu']
-
-        self.rect = self.image.get_rect(
-            bottomright=[self.display_surface.get_width(),
-                         self.display_surface.get_height()])
-
+        self.optional_key = optional_key
         self.pressed = False
+        self.active = False
 
-    def pausing(self):
-        global game_state
+    def press_button(self):
+        left_click = pygame.mouse.get_pressed()[0] and self.rect.collidepoint(pygame.mouse.get_pos())
+        key_press = False
 
-        pause_left_click = (pygame.mouse.get_pressed()[0]
-                            and self.rect.collidepoint(pygame.mouse.get_pos()))
+        if self.optional_key:
+            key_press = pygame.key.get_pressed()[self.optional_key]
 
-        pause_key = pygame.key.get_pressed()[pygame.K_ESCAPE]
-
-        # checks for left click or escape_key to popup menu
-        if (pause_left_click or pause_key) and not self.pressed:
+        # checks for left click or optional to popup menu
+        if (left_click or key_press) and not self.pressed:
             self.pressed = True
-            game_state['paused'] = not game_state['paused']
+            self.active = not self.active
 
-        elif not (pause_left_click or pause_key) and self.pressed:
+        elif not (left_click or key_press) and self.pressed:
             self.pressed = False
 
-        if game_state['paused']:
-            self.image = self.menu_sprites['paused']
+        if self.active:
+            self.image = self.sprites['active']
 
         else:
-            self.image = self.menu_sprites['menu']
+            self.image = self.sprites['inactive']
 
     def update(self):
         '''Handles events'''
-        self.pausing()
-
+        self.press_button()
+        
 
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
@@ -1565,7 +1577,6 @@ enemy_bars = Bars((0, player_bars.height))
 
 # hud
 cursor = Cursor(TILE_SIZE, cursor_group)
-pause_button = PauseButton(menu)
 
 # player
 player = Player((0, 0), (75, 75), (camera_group, player_group))
