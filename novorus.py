@@ -7,6 +7,8 @@ from constants import *
 
 class Level:
     def __init__(self, floor_level, tile_size):
+        global player
+
         self.tile_size = tile_size
         self._floor_level = floor_level
         self.display_surface = pygame.display.get_surface()
@@ -25,6 +27,7 @@ class Level:
             50,
             BLACK)
 
+        self.update_player_coords()
         self.read_csv_level()
 
     @property
@@ -215,8 +218,19 @@ class Level:
         exit = LevelExit(
             coords, [round(self.tile_size * 0.8)] * 2, camera_group)
 
+    def update_player_coords(self):
+        global player
+
+        self.player_coords = load_text(
+            f'X: {player.rect.centerx} | Y: {player.rect.centery}',
+            (self.display_surface.get_width() / 2, 50),
+            50,
+            BLACK)
+
     def draw(self):
         self.display_surface.blit(*self.floor_level_text)
+        self.display_surface.blit(*self.player_coords)
+
         if self.transitioning:
             pygame.draw.rect(
                 self.display_surface,
@@ -224,7 +238,9 @@ class Level:
                 self.level_transition_rect)
             
     def update(self):
+        self.update_player_coords()
         self.transition_level()
+        
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -521,6 +537,11 @@ class Button(pygame.sprite.Sprite):
         self.display_surface = pygame.display.get_surface()
         self.width, self.height = 100, 100
 
+        #self.button_base = IMAGES['button.png']
+        #self.button_base = pygame.transform.scale(
+        #    self.button_base, 
+        #    (self.width, self.height))
+
         self.sprites = images
         for key, image in images.items():
             self.sprites[key] = pygame.transform.scale(image, (self.width, self.height))
@@ -811,7 +832,8 @@ class GenericNPC:
 
         # checks if the player mask overlaps an enemy mask
         if (pygame.sprite.spritecollide(self, target_group, False)
-            and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)):
+            and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)
+            and self.health['current'] > 0):
             try:
                 self.velocity.x = 0
                 self.velocity.y = 0
@@ -826,7 +848,7 @@ class GenericNPC:
             enemy = sorted(enemies, key=closest_distance)[0] # closest enemy
             self.face_enemy(enemy)
 
-            if not self.in_combat:
+            if not self.in_combat and enemy.health['current'] > 0:
                 self.in_combat = True
                 self.show_stats = True
 
@@ -1547,6 +1569,8 @@ class Torch(AnimatedTile):
     def draw_smoke(self):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
+            self.smoke_cooldown = randomize(5000, 0.2)
+
             smoke = Particle(
                 self.rect.center,
                 [randomize(25, 0.1) for i in range(2)],
