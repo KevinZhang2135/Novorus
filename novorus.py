@@ -9,6 +9,9 @@ class Level:
     def __init__(self, floor_level, tile_size):
         global player
 
+        self.size = pygame.math.Vector2(0, 0)
+        self.rect = pygame.Rect(0, 0, 0, 0)
+
         self.tile_size = tile_size
         self._floor_level = floor_level
         self.display_surface = pygame.display.get_surface()
@@ -68,15 +71,23 @@ class Level:
 
     def read_csv_level(self):
         files = os.listdir(f'levels/{self._floor_level}')
+
+        i = 0
         for path in files:
             file_extention = os.path.splitext(path)[1]
             if file_extention != '.csv':
                 raise Exception(f'File "{path}" is not recognized as a csv file.')
 
             with open(os.path.join(f'levels/{self._floor_level}', path)) as file:
-                csv_file = csv.reader(file)
+                csv_file = list(csv.reader(file))
                 self.create_tile_group(csv_file, path)
+                if not i: # determines the dimensions of the first csv_file
+                    self.size.x = len(list(csv_file)[0]) * self.tile_size
+                    self.size.y = len(list(csv_file)) * self.tile_size
 
+                    self.rect = pygame.Rect(0, 0, *self.size)
+                    i += 1
+            
     def clear_level(self):
         global camera_group, player_group
 
@@ -241,7 +252,6 @@ class Level:
         self.update_player_coords()
         self.transition_level()
         
-
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -498,13 +508,16 @@ class Menu(pygame.sprite.Group):
             pygame.draw.rect(
                 self.display_surface,
                 BROWN,
-                self.menu_rect)
+                self.menu_rect,
+                0,
+                3)
 
             pygame.draw.rect(
                 self.display_surface,
                 DARK_BROWN,
                 self.menu_rect,
-                5)
+                5,
+                3)
 
             self.display_surface.blit(*self.menu_text)
             self.display_surface.blit(*self.exit_text)
@@ -584,9 +597,8 @@ class HealthBar(pygame.sprite.Sprite):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
 
-        self.width, self.height = 60, 60
-        self.bar_width = self.width * 1.7
-        self.bar_height = 15
+        self.width, self.height = 45, 45
+        self.bar_width, self.bar_height = 120, 15
 
         self.image = IMAGES['heart.png'].copy()
         self.image = pygame.transform.scale(
@@ -594,33 +606,29 @@ class HealthBar(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(topleft=coords)
         self.bar = pygame.Rect(
-            self.rect.centerx,
+            self.rect.right,
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
 
-        self.total_bar = pygame.Rect(
-            self.rect.centerx,
-            self.rect.centery - self.bar_height / 2,
-            self.bar_width,
-            self.bar_height)
+        self.total_bar = self.bar.copy()
 
     def draw(self, target):
+        pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2, 3)
         ratio = target.health['current'] / target.health['total']
         if ratio > 1:
             ratio = 1
 
         self.bar.width = self.bar_width * ratio
-
-        pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2)
-        pygame.draw.rect(self.display_surface, RED, self.bar)
-        pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2)
+        if ratio > 0: # only display the bar when  the player has health
+            pygame.draw.rect(self.display_surface, RED, self.bar, 0, 2)
+            pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2, 3)
 
         self.display_surface.blit(
             *load_text(
                 target.health['current'],
                 self.total_bar.center,
-                self.bar.height,
+                self.bar_height,
                 BLACK))
 
 
@@ -629,9 +637,8 @@ class SpeedBar(pygame.sprite.Sprite):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
 
-        self.width, self.height = 60, 60
-        self.bar_width = self.width * 1.7
-        self.bar_height = 15
+        self.width, self.height = 45, 45
+        self.bar_width, self.bar_height = 120, 15
 
         self.image = IMAGES['lightning.png'].copy()
         self.image = pygame.transform.scale(
@@ -639,20 +646,20 @@ class SpeedBar(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(topleft=coords)
         self.bar = pygame.Rect(
-            self.rect.centerx,
+            self.rect.right,
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
 
     def draw(self, target):
-        pygame.draw.rect(self.display_surface, YELLOW, self.bar)
-        pygame.draw.rect(self.display_surface, GOLD, self.bar, 2)
+        pygame.draw.rect(self.display_surface, YELLOW, self.bar, 0, 3)
+        pygame.draw.rect(self.display_surface, GOLD, self.bar, 2, 3)
 
         self.display_surface.blit(
             *load_text(
                 target.speed['current'],
                 self.bar.center,
-                self.bar.height,
+                self.bar_height,
                 BLACK))
 
 
@@ -661,9 +668,8 @@ class AttackBar(pygame.sprite.Sprite):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
 
-        self.width, self.height = 60, 60
-        self.bar_width = self.width * 1.7
-        self.bar_height = 15
+        self.width, self.height = 45, 45
+        self.bar_width, self.bar_height = 120, 15
 
         self.image = IMAGES['sword.png'].copy()
         self.image = pygame.transform.scale(
@@ -671,20 +677,20 @@ class AttackBar(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(topleft=coords)
         self.bar = pygame.Rect(
-            self.rect.centerx,
+            self.rect.right,
             self.rect.centery - self.bar_height / 2,
             self.bar_width,
             self.bar_height)
 
     def draw(self, target):
-        pygame.draw.rect(self.display_surface, GREY, self.bar)
-        pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2)
+        pygame.draw.rect(self.display_surface, GREY, self.bar, 0, 3)
+        pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2, 3)
 
         self.display_surface.blit(
             *load_text(
                 target.attack['current'],
                 self.bar.center,
-                self.bar.height,
+                self.bar_height,
                 BLACK))
 
 
@@ -694,30 +700,25 @@ class Bars(pygame.sprite.Group):
         self.display_surface = pygame.display.get_surface()
         self.coords = pygame.math.Vector2(coords)
 
-        bar_padding = 0
+        padding = 40
+        self.padding_step = 30
         bars = [HealthBar, SpeedBar, AttackBar]
-
-        self.width = 150
-        self.height = 75 + len(bars) * 50
-
-        self.rect = pygame.Rect(self.coords, (self.width, self.height))
-
-        self.exp_width = self.width * 0.5
-        self.exp_height = self.height * 0.167
-        self.exp_rect = pygame.Rect(
-            self.coords, (self.exp_width, self.exp_height))
-
         for bar in bars:
             bar = bar(
-                (self.coords[0], self.coords[1] + 50 + bar_padding),
+                (self.coords[0], self.coords[1] + padding),
                 self)
 
-            bar_padding += 50
+            padding += self.padding_step
 
-        
-    def custom_draw(self, targets):
-        if len(targets.sprites()) > 0:
-            if len(targets.sprites()) > 1:
+        self.width = bar.bar.right + 10
+        self.height = bar.rect.top - self.coords.y + 50
+
+        self.rect = pygame.Rect(self.coords, (self.width, self.height))
+        self.exp_rect = pygame.Rect(self.coords, (60, 30))
+       
+    def draw(self, targets):
+        if len(targets) > 0:
+            if len(targets) > 1:
                 for target in targets:
                     if (target.in_combat or target.rect.collidepoint(Cursor.offset_mouse_pos())):
                         break
@@ -730,15 +731,14 @@ class Bars(pygame.sprite.Group):
 
             # draws the card of the target's health, speed, and attack
             if target and target.show_stats:
-                pygame.draw.rect(self.display_surface, BROWN, self.rect)
-                pygame.draw.rect(self.display_surface,
-                                 DARK_BROWN, self.rect, 5)
+                pygame.draw.rect(self.display_surface, BROWN, self.rect, 0, 3)
+                pygame.draw.rect(self.display_surface,DARK_BROWN, self.rect, 3, 3)
 
                 name_text, name_text_rect = load_text(
                     f'{target.name} lvl {target.level}',
                     (self.coords.x + self.width / 2,
-                     self.coords.y + 35),
-                    30,
+                     self.coords.y + self.padding_step),
+                    25,
                     BLACK)
 
                 self.display_surface.blit(name_text, name_text_rect)
@@ -759,7 +759,7 @@ class Bars(pygame.sprite.Group):
                     exp_text, exp_text_rect = load_text(
                         text,
                         self.exp_rect.center,
-                        self.exp_height * 0.75,
+                        self.exp_rect.height * 0.75,
                         BLACK)
 
                     self.exp_rect.width = exp_text_rect.width + 20
@@ -1099,11 +1099,10 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
     def collision(self):
         '''Handles collision'''
-        global collision_group
+        global collision_group, level
 
+        margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
         for sprite in collision_group:
-            margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
-
             collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
                                                      (self.rect.height + sprite.rect.height) / 2)
 
@@ -1112,7 +1111,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
             # checks if the distance of the sprites are within collision distance
             if (abs(distance.x) + margin.x <= collision_distance.x
-                    and abs(distance.y) + margin.y <= collision_distance.y):
+                and abs(distance.y) + margin.y <= collision_distance.y):
 
                 # horizontal collision
                 if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
@@ -1137,6 +1136,26 @@ class Player(pygame.sprite.Sprite, GenericNPC):
                         self.rect.top = sprite.rect.bottom - margin.y
 
                     self.velocity.y = 0
+
+        # left edge map
+        if player.rect.centerx < level.rect.left:
+            player.rect.centerx = level.rect.left
+            self.velocity.x = 0
+
+        # right edge map
+        elif player.rect.centerx > level.rect.right:
+            player.rect.centerx = level.rect.right
+            self.velocity.x = 0
+
+        # bottom edge map
+        if player.rect.centery < level.rect.top:
+            player.rect.centery = level.rect.top
+            self.velocity.y = 0
+
+        # top edge map
+        if player.rect.centery > level.rect.bottom:
+            player.rect.centery = level.rect.bottom
+            self.velocity.y = 0
 
     def leveling_up(self):
         '''Increases player level when they reach exp cap'''
@@ -1628,8 +1647,8 @@ light_group = LightSources(RESOLUTION)
 
 menu = Menu()
 
-player_bars = Bars((0, 0))
-enemy_bars = Bars((0, player_bars.height))
+player_bars = Bars((2, 2))
+enemy_bars = Bars((2, player_bars.height + 4))
 
 
 # hud
@@ -1655,8 +1674,8 @@ while game_state['runtime']:
     cursor_group.draw(screen)
     light_group.render_lighting(player)
 
-    player_bars.custom_draw(player_group)
-    enemy_bars.custom_draw(enemy_group)
+    player_bars.draw(player_group)
+    enemy_bars.draw(enemy_group)
 
     menu.draw()
     level.draw()
