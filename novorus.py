@@ -2,7 +2,6 @@ import pygame
 import random
 import os
 import csv
-from constants import *
 
 
 class Level:
@@ -24,11 +23,12 @@ class Level:
             self.display_surface.get_width(),
             self.display_surface.get_height())
 
-        self.floor_level_text = load_text(
-            f'Floor {self.floor_level}',
-            (self.display_surface.get_width() / 2, self.display_surface.get_height() - 50),
-            50,
-            BLACK)
+        text = COMICORO[50].render(f'Floor {self.floor_level}', True, BLACK)
+        text_rect = text.get_rect(
+            center=(self.display_surface.get_width() / 2, 
+                    self.display_surface.get_height() - 50))
+
+        self.floor_level_text = text, text_rect
 
         self.update_player_coords()
         self.read_csv_level()
@@ -40,7 +40,6 @@ class Level:
     @floor_level.setter
     def floor_level(self, value):
         self._floor_level = value
-
         self.transitioning = True
     
     def transition_level(self):
@@ -54,11 +53,13 @@ class Level:
                 
                 self.clear_level()
                 self.read_csv_level()
-                self.floor_level_text = load_text(
-                    f'Floor {self.floor_level}',
-                    (self.display_surface.get_width() / 2, self.display_surface.get_height() - 50),
-                    50,
-                    BLACK)
+
+                text = COMICORO[50].render(f'Floor {self.floor_level}', True, BLACK)
+                text_rect = text.get_rect(
+                    center=(self.display_surface.get_width() / 2, 
+                            self.display_surface.get_height() - 50))
+
+                self.floor_level_text = text, text_rect
 
                 player.velocity.x = 0
                 player.velocity.y = 0
@@ -232,11 +233,13 @@ class Level:
     def update_player_coords(self):
         global player
 
-        self.player_coords = load_text(
-            f'X: {player.rect.centerx} | Y: {player.rect.centery}',
-            (self.display_surface.get_width() / 2, 50),
-            50,
+        text = COMICORO[50].render(
+            f'X: {player.rect.centerx} | Y: {player.rect.centery}', 
+            True, 
             BLACK)
+
+        text_rect = text.get_rect(center=(self.display_surface.get_width() / 2, 50))
+        self.player_coords = text, text_rect
 
     def draw(self):
         self.display_surface.blit(*self.floor_level_text)
@@ -273,21 +276,23 @@ class CameraGroup(pygame.sprite.Group):
         '''Draws the screen according to player movement'''
         self.center_target(player)
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.rect.bottom)):
-            offset_pos = sprite.rect.topleft - self.offset
-            self.display_surface.blit(sprite.image, offset_pos)
+            if (abs(player.rect.left - sprite.rect.left) < self.half_width
+                or abs(player.rect.top - sprite.rect.top) < self.half_height):
+                offset_pos = sprite.rect.topleft - self.offset
+                self.display_surface.blit(sprite.image, offset_pos)
 
-            if show_hitboxes:
-                hitbox = pygame.Rect(
-                    sprite.rect.x - self.offset.x,
-                    sprite.rect.y - self.offset.y,
-                    sprite.rect.width,
-                    sprite.rect.height)
+                if show_hitboxes:
+                    hitbox = pygame.Rect(
+                        sprite.rect.x - self.offset.x,
+                        sprite.rect.y - self.offset.y,
+                        sprite.rect.width,
+                        sprite.rect.height)
 
-                pygame.draw.rect(
-                    self.display_surface,
-                    (255, 0, 0),
-                    hitbox,
-                    1)
+                    pygame.draw.rect(
+                        self.display_surface,
+                        (255, 0, 0),
+                        hitbox,
+                        1)
 
         expired_texts = []
         for index, text in enumerate(self.texts):
@@ -396,8 +401,7 @@ class Particle(pygame.sprite.Sprite):
             else:
                 self.kill()
                 del self
-                
-                  
+                                 
     def update(self):
         '''Handles events'''
         self.movement()
@@ -479,26 +483,22 @@ class Menu(pygame.sprite.Group):
             menu_width)
  
         # menu text
-        self.menu_text = load_text(
-            'Menu',
-            (self.menu_rect.centerx, self.menu_rect.top + self.menu_rect.height / 8),
-            self.menu_rect.width / 8,
-            BLACK)
+        text = COMICORO[50].render('Menu', True, BLACK)
+        text_rect = text.get_rect(
+            center=(self.menu_rect.centerx, 
+                    self.menu_rect.top + self.menu_rect.height / 8))
+
+        self.menu_text = text, text_rect
 
         # exit text
-        self.yellow_exit_text = load_text(
-            'Exit',
-            (self.menu_rect.centerx, self.menu_rect.bottom - self.menu_rect.height / 8),
-            self.menu_rect.width / 8,
-            YELLOW)
+        text = COMICORO[50].render('Exit', True, BLACK)
+        text_rect = text.get_rect(
+            center=(self.menu_rect.centerx, 
+                    self.menu_rect.bottom - self.menu_rect.height / 8))
 
-        self.black_exit_text = load_text(
-            'Exit',
-            (self.menu_rect.centerx, self.menu_rect.bottom - self.menu_rect.height / 8),
-            self.menu_rect.width / 8,
-            BLACK)
+        self.exit_text = text, text_rect
 
-        self.exit_text = self.black_exit_text
+        self.yellow_exit_text = color_image(self.exit_text[0], YELLOW)
     
     def menu_popup(self):
         global game_state
@@ -520,15 +520,14 @@ class Menu(pygame.sprite.Group):
                 3)
 
             self.display_surface.blit(*self.menu_text)
-            self.display_surface.blit(*self.exit_text)
-
+            
             if self.exit_text[1].collidepoint(pygame.mouse.get_pos()):
-                self.exit_text = self.yellow_exit_text
+                self.display_surface.blit(self.yellow_exit_text, self.exit_text[1])
                 if pygame.mouse.get_pressed()[0]:
                     game_state['runtime'] = False
 
             else:
-                self.exit_text = self.black_exit_text
+                self.display_surface.blit(self.exit_text[0], self.exit_text[1])
 
         else:
             game_state['paused'] = False
@@ -624,12 +623,9 @@ class HealthBar(pygame.sprite.Sprite):
             pygame.draw.rect(self.display_surface, RED, self.bar, 0, 2)
             pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2, 3)
 
-        self.display_surface.blit(
-            *load_text(
-                target.health['current'],
-                self.total_bar.center,
-                self.bar_height,
-                BLACK))
+        text = COMICORO[20].render(str(target.health['current']), True, BLACK)
+        text_rect = text.get_rect(center=self.total_bar.center)
+        self.display_surface.blit(text, text_rect)
 
 
 class SpeedBar(pygame.sprite.Sprite):
@@ -655,12 +651,9 @@ class SpeedBar(pygame.sprite.Sprite):
         pygame.draw.rect(self.display_surface, YELLOW, self.bar, 0, 3)
         pygame.draw.rect(self.display_surface, GOLD, self.bar, 2, 3)
 
-        self.display_surface.blit(
-            *load_text(
-                target.speed['current'],
-                self.bar.center,
-                self.bar_height,
-                BLACK))
+        text = COMICORO[20].render(str(target.speed['current']), True, BLACK)
+        text_rect = text.get_rect(center=self.bar.center)
+        self.display_surface.blit(text, text_rect)
 
 
 class AttackBar(pygame.sprite.Sprite):
@@ -686,12 +679,9 @@ class AttackBar(pygame.sprite.Sprite):
         pygame.draw.rect(self.display_surface, GREY, self.bar, 0, 3)
         pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2, 3)
 
-        self.display_surface.blit(
-            *load_text(
-                target.attack['current'],
-                self.bar.center,
-                self.bar_height,
-                BLACK))
+        text = COMICORO[20].render(str(target.attack['current']), True, BLACK)
+        text_rect = text.get_rect(center=self.bar.center)
+        self.display_surface.blit(text, text_rect)
 
 
 class Bars(pygame.sprite.Group):
@@ -734,19 +724,17 @@ class Bars(pygame.sprite.Group):
                 pygame.draw.rect(self.display_surface, BROWN, self.rect, 0, 3)
                 pygame.draw.rect(self.display_surface,DARK_BROWN, self.rect, 3, 3)
 
-                name_text, name_text_rect = load_text(
-                    f'{target.name} lvl {target.level}',
-                    (self.coords.x + self.width / 2,
-                     self.coords.y + self.padding_step),
-                    25,
-                    BLACK)
+                name_text = COMICORO[25].render(f'{target.name} lvl {target.level}', True, BLACK)
+                name_text_rect = name_text.get_rect(
+                    center=(self.coords.x + self.width / 2,
+                            self.coords.y + self.padding_step))
 
                 self.display_surface.blit(name_text, name_text_rect)
 
                 # blits the bar
                 for sprite in self.sprites():
-                    sprite.draw(target)
                     self.display_surface.blit(sprite.image, sprite.rect.topleft)
+                    sprite.draw(target)
 
                 # displays exp if the cursor is hovered over the name
                 if name_text_rect.collidepoint(pygame.mouse.get_pos()):
@@ -756,19 +744,19 @@ class Bars(pygame.sprite.Group):
                     else:
                         text = f'exp {target.exp}'
 
-                    exp_text, exp_text_rect = load_text(
-                        text,
-                        self.exp_rect.center,
-                        self.exp_rect.height * 0.75,
-                        BLACK)
+
+                    exp_text = COMICORO[25].render(text, True, BLACK)
+                    exp_text_rect = exp_text.get_rect(center=self.exp_rect.center)
 
                     self.exp_rect.width = exp_text_rect.width + 20
                     self.exp_rect.topleft = pygame.mouse.get_pos()
 
                     pygame.draw.rect(self.display_surface,
                                      BROWN, self.exp_rect)
+                                     
                     pygame.draw.rect(self.display_surface,
                                      DARK_BROWN, self.exp_rect, 3)
+
                     self.display_surface.blit(exp_text, exp_text_rect)
 
 
@@ -929,13 +917,18 @@ class GenericNPC:
             crit = crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
-                text = TextPopUp(*load_text(damage, text_coords, 35, BLOOD_RED))
+
+                text = COMICORO[35].render(str(damage), True, BLOOD_RED)
+                text_rect = text.get_rect(center=text_coords)
+                text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
 
             else:
-                text = TextPopUp(*load_text(damage, text_coords, 30, RED))
+                text = COMICORO[25].render(str(damage), True, RED)
+                text_rect = text.get_rect(center=text_coords)
+                text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
@@ -943,7 +936,9 @@ class GenericNPC:
             self.health['current'] -= damage
 
         else:
-            text = TextPopUp(*load_text('Dodged', text_coords, 20, GOLD))
+            text = COMICORO[20].render('Dodged', True, GOLD)
+            text_rect = text.get_rect(center=text_coords)
+            text = TextPopUp(text, text_rect)
             text.velocity.y = -5
 
             camera_group.texts.append(text)
@@ -1199,13 +1194,18 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             crit = crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
-                text = TextPopUp(*load_text(damage, text_coords, 35, ORANGE))
+
+                text = COMICORO[35].render(str(damage), True, ORANGE)
+                text_rect = text.get_rect(center=text_coords)
+                text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
 
             else:
-                text = TextPopUp(*load_text(damage, text_coords, 30, TANGERINE))
+                text = COMICORO[25].render(str(damage), True, TANGERINE)
+                text_rect = text.get_rect(center=text_coords)
+                text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
                 camera_group.texts.append(text)
@@ -1213,7 +1213,9 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             self.health['current'] -= damage
 
         else:
-            text = TextPopUp(*load_text('Dodged', text_coords, 20, GOLD))
+            text = COMICORO[20].render('Dodged', True, GOLD)
+            text_rect = text.get_rect(center=text_coords)
+            text = TextPopUp(text, text_rect)
             text.velocity.y = -5
 
             camera_group.texts.append(text)
@@ -1604,18 +1606,6 @@ class Torch(AnimatedTile):
         self.draw_smoke()
 
 
-def load_text(text, coords, text_size, color):
-    '''Returns text and its rect'''
-    # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
-    font = pygame.font.Font('comicoro.ttf', round(text_size))
-    # pygame.font.Font.set_bold(font, 1) # creates a bold font if the boolean is true
-
-    text = font.render(str(text), True, color)
-    text_rect = text.get_rect(center=coords)
-
-    return text, text_rect
-
-
 def randomize(value: int, offset: float):
     '''Randomizes the value with a +- deviation of the offset'''
     return random.randint(
@@ -1634,8 +1624,18 @@ def color_image(image, color):
 
     return image
 
+# sets up pygame
+pygame.init()
+pygame.font.init()
+pygame.display.set_caption('Novorus')
 
-# pygame setup is declared in constants.py to create images
+# sets the size of the screen; defaults to full screen
+RESOLUTION = (1920, 1080)
+screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
+clock = pygame.time.Clock()
+
+pygame.event.set_allowed([pygame.QUIT])
+from constants import *
 
 # sprite groups
 camera_group = CameraGroup()

@@ -1,15 +1,5 @@
 import os, pygame
 
-# sets up pygame
-pygame.init()
-pygame.font.init()
-pygame.display.set_caption('Novorus')
-
-# sets the size of the screen; defaults to full screen
-RESOLUTION = (1920, 1080)
-screen = pygame.display.set_mode(RESOLUTION)  # , pygame.FULLSCREEN)
-clock = pygame.time.Clock()
-
 # colors
 RED = (211, 47, 47)
 BLOOD_RED = (198, 40, 40)
@@ -44,3 +34,10 @@ for (path, dirs, files) in os.walk('sprites', topdown=True):
 
 for file, path in IMAGES.items():
     IMAGES[file] = pygame.image.load(os.path.join(path, file)).convert_alpha()
+
+# "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
+COMICORO = {}
+font_sizes = [20, 25, 35, 50]
+for size in font_sizes:
+    COMICORO[size] = pygame.font.Font('comicoro.ttf', size)
+
