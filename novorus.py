@@ -234,7 +234,7 @@ class Level:
         global player
 
         text = COMICORO[50].render(
-            f'X: {player.rect.centerx} | Y: {player.rect.centery}', 
+            f'X: {player.rect.centerx} | Y: {int(self.size.y - player.rect.centery)}', 
             True, 
             BLACK)
 
@@ -471,7 +471,7 @@ class Menu(pygame.sprite.Group):
 
         self.inventory_button = Button(
             (self.display_surface.get_width() - 100, self.display_surface.get_height()),
-            {'inactive': IMAGES['backpack.png'].copy(), 'active': IMAGES['heart.png'].copy()},
+            {'inactive': IMAGES['backpack_closed.png'].copy(), 'active': IMAGES['backpack_opened.png'].copy()},
             self,
             optional_key=pygame.K_q)
 
@@ -1582,7 +1582,7 @@ class Torch(AnimatedTile):
         self.rect.centery += 25
 
         self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
-        self.smoke_cooldown = randomize(5000, 0.2)
+        self.smoke_cooldown = randomize(4000, 0.2)
         
         self.smoke_frames = len(
             os.listdir(f'sprites/particles/smoke'))
@@ -1590,7 +1590,7 @@ class Torch(AnimatedTile):
     def draw_smoke(self):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
-            self.smoke_cooldown = randomize(5000, 0.2)
+            self.smoke_cooldown = randomize(4000, 0.2)
 
             smoke = Particle(
                 self.rect.center,
@@ -1599,7 +1599,7 @@ class Torch(AnimatedTile):
                 camera_group)
 
             smoke.velocity.y = -4
-            smoke.expiration_time = 1500
+            smoke.expiration_time = 500
             
     def update(self):
         self.animation()
