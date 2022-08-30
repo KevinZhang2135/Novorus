@@ -475,13 +475,27 @@ class Menu(pygame.sprite.Group):
             self,
             optional_key=pygame.K_q)
 
-        menu_width = 350
+        menu_width = 360
+        menu_height = 360
         self.menu_rect = pygame.Rect(
             (self.display_surface.get_width() - menu_width) / 2,
-            (self.display_surface.get_height() - menu_width) / 2,
+            (self.display_surface.get_height() - menu_height) / 2,
             menu_width,
-            menu_width)
- 
+            menu_height)
+
+        inventory_width = 325
+        inventory_height = 475
+        self.inventory_rect = pygame.Rect(
+            0,
+            (self.display_surface.get_height() - inventory_height),
+            inventory_width,
+            inventory_height)
+
+        item_box_width = 60
+        item_box_height = 60
+        self.item_box = pygame.Surface((item_box_width, item_box_height))
+        self.item_box.fill(DARK_BROWN)
+       
         # menu text
         text = COMICORO[50].render('Menu', True, BLACK)
         text_rect = text.get_rect(
@@ -520,7 +534,6 @@ class Menu(pygame.sprite.Group):
                 3)
 
             self.display_surface.blit(*self.menu_text)
-            
             if self.exit_text[1].collidepoint(pygame.mouse.get_pos()):
                 self.display_surface.blit(self.yellow_exit_text, self.exit_text[1])
                 if pygame.mouse.get_pressed()[0]:
@@ -529,8 +542,42 @@ class Menu(pygame.sprite.Group):
             else:
                 self.display_surface.blit(self.exit_text[0], self.exit_text[1])
 
+        elif self.inventory_button.active:
+            self.show_inventory()
+
         else:
             game_state['paused'] = False
+
+    def show_inventory(self):
+        global player
+
+        pygame.draw.rect(
+            self.display_surface,
+            BROWN,
+            self.inventory_rect,
+            0,
+            3)
+
+        pygame.draw.rect(
+            self.display_surface,
+            DARK_BROWN,
+            self.inventory_rect,
+            5,
+            3)
+
+        items = 24#len(player.inventory)
+        column = 0
+        row = 0
+        for i in range(items):
+            self.display_surface.blit(
+                self.item_box, 
+                (column * (self.item_box.get_width() + 15) + 20,
+                 row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
+
+            column += 1
+            if not column % 4 and column != 0:
+                column = 0
+                row += 1
 
     def draw(self):
         for sprite in self.sprites():
@@ -548,11 +595,6 @@ class Button(pygame.sprite.Sprite):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
         self.width, self.height = 100, 100
-
-        #self.button_base = IMAGES['button.png']
-        #self.button_base = pygame.transform.scale(
-        #    self.button_base, 
-        #    (self.width, self.height))
 
         self.sprites = images
         for key, image in images.items():
@@ -798,15 +840,6 @@ class Cursor(pygame.sprite.Sprite):
         return mouse_pos
 
 
-class Inventory:
-    def __init__(self):
-        self.display_surface = pygame.display.get_surface()
-        self.items = {}
-
-    def display(self):
-        pass
-
-
 class GenericNPC:
     def face_enemy(self, target):
         if self.rect.centerx < target.rect.centerx:
@@ -1037,6 +1070,8 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.cooldown = self.animation_cooldown
 
         self.sprite_layer = 1
+
+        self.inventory = [1, 2]
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
