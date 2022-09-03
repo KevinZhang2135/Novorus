@@ -23,7 +23,7 @@ DARK_BROWN = (104, 84, 66)
 
 TILE_SIZE = 100
 STARTING_FLOOR = 1
-game_state = {'paused': False,
+game_state = {'unpaused': True,
               'runtime': True,
               'fullscreen': True}
 

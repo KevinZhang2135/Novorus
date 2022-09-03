@@ -460,6 +460,8 @@ class LightSources(pygame.sprite.Group):
 
 class Menu(pygame.sprite.Group):
     def __init__(self):
+        global game_state
+
         super().__init__()
         self.display_surface = pygame.display.get_surface()
 
@@ -467,7 +469,8 @@ class Menu(pygame.sprite.Group):
             (self.display_surface.get_width(), self.display_surface.get_height()),
             {'inactive': IMAGES['menu.png'].copy(), 'active': IMAGES['paused.png'].copy()},
             self,
-            optional_key=pygame.K_ESCAPE)
+            optional_key=pygame.K_ESCAPE,
+            work_paused = True)
 
         self.inventory_button = Button(
             (self.display_surface.get_width() - 100, self.display_surface.get_height()),
@@ -518,7 +521,7 @@ class Menu(pygame.sprite.Group):
         global game_state
 
         if self.pause_button.active:
-            game_state['paused'] = True
+            game_state['unpaused'] = False
             pygame.draw.rect(
                 self.display_surface,
                 BROWN,
@@ -542,11 +545,11 @@ class Menu(pygame.sprite.Group):
             else:
                 self.display_surface.blit(self.exit_text[0], self.exit_text[1])
 
-        elif self.inventory_button.active:
-            self.show_inventory()
-
         else:
-            game_state['paused'] = False
+            game_state['unpaused'] = True
+
+        if self.inventory_button.active:
+            self.show_inventory()
 
     def show_inventory(self):
         global player
@@ -591,7 +594,7 @@ class Menu(pygame.sprite.Group):
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, coords, images:dict, groups, optional_key=False):
+    def __init__(self, coords, images:dict, groups, optional_key=False, work_paused=False):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
         self.width, self.height = 100, 100
@@ -604,22 +607,30 @@ class Button(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(bottomright=coords)
 
         self.optional_key = optional_key
+        self.work_paused = work_paused
+
         self.pressed = False
         self.active = False
 
     def press_button(self):
-        left_click = pygame.mouse.get_pressed()[0] and self.rect.collidepoint(pygame.mouse.get_pos())
-        key_press = False
+        global game_state
 
+        left_click = pygame.mouse.get_pressed()[0] and self.rect.collidepoint(pygame.mouse.get_pos())
+        button_disabled = not game_state['unpaused']
+
+        if self.work_paused:
+            button_disabled = False
+            
+        key_press = False
         if self.optional_key:
             key_press = pygame.key.get_pressed()[self.optional_key]
-
+        
         # checks for left click or optional to popup menu
-        if (left_click or key_press) and not self.pressed:
+        if (left_click or key_press) and not self.pressed and not button_disabled:
             self.pressed = True
             self.active = not self.active
 
-        elif not (left_click or key_press) and self.pressed:
+        elif not (left_click or key_press) and self.pressed and not button_disabled:
             self.pressed = False
 
         if self.active:
@@ -1716,7 +1727,7 @@ while game_state['runtime']:
     level.draw()
 
     # updates
-    if not game_state['paused'] and not level.transitioning:
+    if game_state['unpaused'] and not level.transitioning:
         camera_group.update()
 
     cursor_group.update()
