@@ -608,8 +608,6 @@ class Inventory(pygame.sprite.Group):
             inventory_width,
             inventory_height)
 
-        self.items = {}
-
         self.item_box = IMAGES['item_box.png']
         self.item_box = pygame.transform.scale(self.item_box, (60, 60))
 
@@ -630,32 +628,44 @@ class Inventory(pygame.sprite.Group):
 
         column = 0
         row = 0
-        for item in self.items:
-            self.display_surface.blit(
-                self.item_box, 
-                (column * (self.item_box.get_width() + 15) + 20,
-                 row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
 
-            self.display_surface.blit(
-                self.items[item],
-                (column * (self.item_box.get_width() + 15) + 20,
-                 row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
+        for item in self.sprites():
+            if item != self.inventory_button:
+                self.display_surface.blit(
+                    self.item_box, 
+                    (column * (self.item_box.get_width() + 15) + 20,
+                    row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
 
-            column += 1
-            if not column % 4 and column != 0:
-                column = 0
-                row += 1
+                self.display_surface.blit(
+                    item.image,
+                    (column * (self.item_box.get_width() + 15) + 20,
+                    row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
+
+                column += 1
+                if not column % 4 and column != 0:
+                    column = 0
+                    row += 1
 
     def draw(self):
         if self.inventory_button.active:
             self.show_inventory()
 
-        for sprite in self.sprites():
-            self.display_surface.blit(sprite.image, sprite.rect.topleft)
+        self.display_surface.blit(self.inventory_button.image, self.inventory_button.rect.topleft)
 
     def update(self):
         for sprite in self.sprites():
             sprite.update()
+
+
+class Item(pygame.sprite.Sprite):
+    def __init__(self, name, image, groups):
+        super().__init__(groups)
+        self.width, self.height = 60, 60
+
+        self.image = pygame.transform.scale(image, (self.width, self.height))
+        self.rect = self.image.get_rect(center=(0, 0))
+
+        self.name = name
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -1097,21 +1107,10 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.sprite_layer = 1
 
         self.inventory = Inventory()
-        self.inventory.items['Wood Sword'] = pygame.transform.scale(
-            IMAGES['wood_sword.png'], 
-            (60, 60))
-
-        self.inventory.items['Leather Breastplate'] = pygame.transform.scale(
-            IMAGES['leather_breastplate.png'], 
-            (60, 60))
-
-        self.inventory.items['Leather Greaves'] = pygame.transform.scale(
-            IMAGES['leather_greaves.png'], 
-            (60, 60))
-
-        self.inventory.items['Wooden Helmet'] = pygame.transform.scale(
-            IMAGES['wooden_helmet.png'], 
-            (60, 60))
+        Item('Wood Sword', IMAGES['wood_sword.png'], self.inventory)
+        Item('Leather Breastplate', IMAGES['leather_breastplate.png'], self.inventory)
+        Item('Leather Greaves', IMAGES['leather_greaves.png'], self.inventory)
+        Item('Wooden Helmet', IMAGES['wooden_helmet.png'], self.inventory)
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
