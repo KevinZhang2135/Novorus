@@ -472,12 +472,6 @@ class Menu(pygame.sprite.Group):
             optional_key=pygame.K_ESCAPE,
             work_paused = True)
 
-        self.inventory_button = Button(
-            (self.display_surface.get_width() - 100, self.display_surface.get_height()),
-            {'inactive': IMAGES['backpack_closed.png'].copy(), 'active': IMAGES['backpack_opened.png'].copy()},
-            self,
-            optional_key=pygame.K_q)
-
         menu_width = 360
         menu_height = 360
         self.menu_rect = pygame.Rect(
@@ -486,19 +480,6 @@ class Menu(pygame.sprite.Group):
             menu_width,
             menu_height)
 
-        inventory_width = 325
-        inventory_height = 475
-        self.inventory_rect = pygame.Rect(
-            0,
-            (self.display_surface.get_height() - inventory_height),
-            inventory_width,
-            inventory_height)
-
-        item_box_width = 60
-        item_box_height = 60
-        self.item_box = pygame.Surface((item_box_width, item_box_height))
-        self.item_box.fill(DARK_BROWN)
-       
         # menu text
         text = COMICORO[50].render('Menu', True, BLACK)
         text_rect = text.get_rect(
@@ -514,7 +495,6 @@ class Menu(pygame.sprite.Group):
                     self.menu_rect.bottom - self.menu_rect.height / 8))
 
         self.exit_text = text, text_rect
-
         self.yellow_exit_text = color_image(self.exit_text[0], YELLOW)
     
     def menu_popup(self):
@@ -548,40 +528,6 @@ class Menu(pygame.sprite.Group):
         else:
             game_state['unpaused'] = True
 
-        if self.inventory_button.active:
-            self.show_inventory()
-
-    def show_inventory(self):
-        global player
-
-        pygame.draw.rect(
-            self.display_surface,
-            BROWN,
-            self.inventory_rect,
-            0,
-            3)
-
-        pygame.draw.rect(
-            self.display_surface,
-            DARK_BROWN,
-            self.inventory_rect,
-            5,
-            3)
-
-        items = 24#len(player.inventory)
-        column = 0
-        row = 0
-        for i in range(items):
-            self.display_surface.blit(
-                self.item_box, 
-                (column * (self.item_box.get_width() + 15) + 20,
-                 row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
-
-            column += 1
-            if not column % 4 and column != 0:
-                column = 0
-                row += 1
-
     def draw(self):
         for sprite in self.sprites():
             self.display_surface.blit(sprite.image, sprite.rect.topleft)
@@ -596,7 +542,6 @@ class Menu(pygame.sprite.Group):
 class Button(pygame.sprite.Sprite):
     def __init__(self, coords, images:dict, groups, optional_key=False, work_paused=False):
         super().__init__(groups)
-        self.display_surface = pygame.display.get_surface()
         self.width, self.height = 100, 100
 
         self.sprites = images
@@ -642,6 +587,75 @@ class Button(pygame.sprite.Sprite):
     def update(self):
         '''Handles events'''
         self.press_button()
+
+
+class Inventory(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+
+        self.inventory_button = Button(
+            (self.display_surface.get_width() - 100, self.display_surface.get_height()),
+            {'inactive': IMAGES['backpack_closed.png'].copy(), 'active': IMAGES['backpack_opened.png'].copy()},
+            self,
+            optional_key=pygame.K_q)
+
+        inventory_width = 325
+        inventory_height = 475
+        self.inventory_rect = pygame.Rect(
+            0,
+            (self.display_surface.get_height() - inventory_height),
+            inventory_width,
+            inventory_height)
+
+        self.items = {}
+
+        self.item_box = IMAGES['item_box.png']
+        self.item_box = pygame.transform.scale(self.item_box, (60, 60))
+
+    def show_inventory(self):
+        pygame.draw.rect(
+            self.display_surface,
+            BROWN,
+            self.inventory_rect,
+            0,
+            3)
+
+        pygame.draw.rect(
+            self.display_surface,
+            DARK_BROWN,
+            self.inventory_rect,
+            5,
+            3)
+
+        column = 0
+        row = 0
+        for item in self.items:
+            self.display_surface.blit(
+                self.item_box, 
+                (column * (self.item_box.get_width() + 15) + 20,
+                 row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
+
+            self.display_surface.blit(
+                self.items[item],
+                (column * (self.item_box.get_width() + 15) + 20,
+                 row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
+
+            column += 1
+            if not column % 4 and column != 0:
+                column = 0
+                row += 1
+
+    def draw(self):
+        if self.inventory_button.active:
+            self.show_inventory()
+
+        for sprite in self.sprites():
+            self.display_surface.blit(sprite.image, sprite.rect.topleft)
+
+    def update(self):
+        for sprite in self.sprites():
+            sprite.update()
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -1082,7 +1096,22 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
         self.sprite_layer = 1
 
-        self.inventory = [1, 2]
+        self.inventory = Inventory()
+        self.inventory.items['Wood Sword'] = pygame.transform.scale(
+            IMAGES['wood_sword.png'], 
+            (60, 60))
+
+        self.inventory.items['Leather Breastplate'] = pygame.transform.scale(
+            IMAGES['leather_breastplate.png'], 
+            (60, 60))
+
+        self.inventory.items['Leather Greaves'] = pygame.transform.scale(
+            IMAGES['leather_greaves.png'], 
+            (60, 60))
+
+        self.inventory.items['Wooden Helmet'] = pygame.transform.scale(
+            IMAGES['wooden_helmet.png'], 
+            (60, 60))
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
@@ -1724,6 +1753,7 @@ while game_state['runtime']:
     enemy_bars.draw(enemy_group)
 
     menu.draw()
+    player.inventory.draw()
     level.draw()
 
     # updates
@@ -1732,6 +1762,7 @@ while game_state['runtime']:
 
     cursor_group.update()
     menu.update()
+    player.inventory.update()
     level.update()
 
     # updates screen
