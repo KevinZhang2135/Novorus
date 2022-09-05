@@ -611,6 +611,17 @@ class Inventory(pygame.sprite.Group):
         self.item_box = IMAGES['item_box.png']
         self.item_box = pygame.transform.scale(self.item_box, (60, 60))
 
+    def add_item(self, name, image, count):
+        inventory = [item for item in self.sprites() if item != self.inventory_button and item.name == name]
+
+        # if the item already exists in inventory
+        if inventory:
+            inventory[0].count += count
+        
+        # adds a new item into the inventory
+        else:
+            Item(str(name), image, count, self)
+
     def show_inventory(self):
         pygame.draw.rect(
             self.display_surface,
@@ -636,10 +647,21 @@ class Inventory(pygame.sprite.Group):
                     (column * (self.item_box.get_width() + 15) + 20,
                     row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
 
+                item.rect.x = column * (self.item_box.get_width() + 15) + 20
+                item.rect.y = row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20
+
                 self.display_surface.blit(
                     item.image,
-                    (column * (self.item_box.get_width() + 15) + 20,
-                    row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
+                    item.rect.topleft)
+
+                if item.count > 1:
+                    text = COMICORO[25].render(str(item.count), True, WHITE)
+                    text_rect = text.get_rect(
+                        bottomright=(
+                            item.rect.right - 5,
+                            item.rect.bottom - 5))
+
+                    self.display_surface.blit(text, text_rect)
 
                 column += 1
                 if not column % 4 and column != 0:
@@ -658,14 +680,15 @@ class Inventory(pygame.sprite.Group):
 
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, name, image, groups):
+    def __init__(self, name, image, count, groups):
         super().__init__(groups)
         self.width, self.height = 60, 60
 
         self.image = pygame.transform.scale(image, (self.width, self.height))
-        self.rect = self.image.get_rect(center=(0, 0))
+        self.rect = self.image.get_rect()
 
         self.name = name
+        self.count = count
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -769,7 +792,7 @@ class Bars(pygame.sprite.Group):
 
         padding = 40
         self.padding_step = 30
-        bars = [HealthBar, SpeedBar, AttackBar]
+        bars = (HealthBar, SpeedBar, AttackBar)
         for bar in bars:
             bar = bar(
                 (self.coords[0], self.coords[1] + padding),
@@ -970,11 +993,11 @@ class GenericNPC:
             del self
 
     def hurt(self, attack, crit_chance):
-        text_coords = [
+        text_coords = (
             random.randint(
                 round((self.rect.left + self.rect.centerx) / 2),
                 round((self.rect.right + self.rect.centerx) / 2)),
-            self.rect.top]
+            self.rect.top)
 
         dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
         if not dodge:
@@ -1107,10 +1130,13 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.sprite_layer = 1
 
         self.inventory = Inventory()
-        Item('Wood Sword', IMAGES['wood_sword.png'], self.inventory)
-        Item('Leather Breastplate', IMAGES['leather_breastplate.png'], self.inventory)
-        Item('Leather Greaves', IMAGES['leather_greaves.png'], self.inventory)
-        Item('Wooden Helmet', IMAGES['wooden_helmet.png'], self.inventory)
+        self.inventory.add_item('Wood Sword', IMAGES['wood_sword.png'], 1)
+        self.inventory.add_item('Leather Breastplate', IMAGES['leather_breastplate.png'], 1)
+        self.inventory.add_item('Leather Greaves', IMAGES['leather_greaves.png'], 1)
+        self.inventory.add_item('Baguette', IMAGES['baguette.png'], 3)
+        self.inventory.add_item('Tidal Ring', IMAGES['tidal_ring.png'], 1)
+
+        self.inventory.add_item('Baguette', IMAGES['baguette.png'], 1000)
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
@@ -1253,11 +1279,11 @@ class Player(pygame.sprite.Sprite, GenericNPC):
                 self.action = 'idle'
 
     def hurt(self, attack, crit_chance):
-        text_coords = [
+        text_coords = (
             random.randint(
                 round((self.rect.left + self.rect.centerx) / 2),
                 round((self.rect.right + self.rect.centerx) / 2)),
-            self.rect.top]
+            self.rect.top)
 
         dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
         if not dodge:
@@ -1323,7 +1349,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
         self.show_stats = True
 
         self.action = 'idle'
-        self.facing = random.choice(['left', 'right'])
+        self.facing = random.choice(('left', 'right'))
         self.name = 'Ghost'
 
         # stats
@@ -1398,7 +1424,7 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
         self.show_stats = False
 
         self.action = 'idle'
-        self.facing = random.choice(['left', 'right'])
+        self.facing = random.choice(('left', 'right'))
         self.name = 'Mimic'
 
         # stats
@@ -1473,7 +1499,7 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
         self.show_stats = False
 
         self.action = 'idle'
-        self.facing = random.choice(['left', 'right'])
+        self.facing = random.choice(('left', 'right'))
         self.name = 'Sunflower'
 
         # stats
@@ -1708,7 +1734,7 @@ RESOLUTION = (1920, 1080)
 screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
 clock = pygame.time.Clock()
 
-pygame.event.set_allowed([pygame.QUIT])
+pygame.event.set_allowed(pygame.QUIT)
 from constants import *
 
 # sprite groups

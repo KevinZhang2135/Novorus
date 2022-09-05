@@ -37,7 +37,7 @@ for file, path in IMAGES.items():
 
 # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
 COMICORO = {}
-font_sizes = [20, 25, 35, 50]
+font_sizes = (20, 25, 35, 50)
 for size in font_sizes:
     COMICORO[size] = pygame.font.Font('comicoro.ttf', size)
 
