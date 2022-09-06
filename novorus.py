@@ -951,6 +951,7 @@ class GenericNPC:
         else:
             self.in_combat = False
             self.attacking = False
+            self.cooldown = self.animation_cooldown
 
     def check_state(self):
         if not self.in_combat:
@@ -1101,8 +1102,6 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.dodge_chance = {'current': 0.01,
                              'base': 0.01}
 
-        self.set_stats()
-
         # sprites
         self.frame = 0
         self.animation_types = {'idle': [],
@@ -1124,8 +1123,12 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1200 / len(self.animation_types['idle'])
-        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
+        self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
+        if self.attack_cooldown < 200:
+            self.attack_cooldown = 200
+
         self.cooldown = self.animation_cooldown
+        self.set_stats()
 
         self.sprite_layer = 1
 
@@ -1133,10 +1136,8 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.inventory.add_item('Wood Sword', IMAGES['wood_sword.png'], 1)
         self.inventory.add_item('Leather Breastplate', IMAGES['leather_breastplate.png'], 1)
         self.inventory.add_item('Leather Greaves', IMAGES['leather_greaves.png'], 1)
-        self.inventory.add_item('Baguette', IMAGES['baguette.png'], 3)
+        self.inventory.add_item('Baguette', IMAGES['baguette.png'], 2)
         self.inventory.add_item('Tidal Ring', IMAGES['tidal_ring.png'], 1)
-
-        self.inventory.add_item('Baguette', IMAGES['baguette.png'], 1000)
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
@@ -1160,6 +1161,10 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             self.dodge_chance['current'] = round(self.dodge_chance['base'] + self.speed['current'] / 750, 2)
             if self.dodge_chance['current'] > 0.33: # dodge chance caps at 33%
                 self.dodge_chance['current'] = 0.33
+
+            self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
+            if self.attack_cooldown < 200:
+                self.attack_cooldown = 200
 
     def movement(self):
         '''Handles movement'''
@@ -1400,7 +1405,10 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
-        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
+        self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
+        if self.attack_cooldown < 200:
+            self.attack_cooldown = 200
+
         self.cooldown = self.animation_cooldown
 
         self.sprite_layer = 1
@@ -1475,7 +1483,10 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
-        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
+        self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
+        if self.attack_cooldown < 200:
+            self.attack_cooldown = 200
+
         self.cooldown = self.animation_cooldown
 
         self.sprite_layer = 1
@@ -1513,7 +1524,7 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
         self.attack = {'current': round(7 * (1.05**(self.level - 1)))}
         self.attack['total'] = self.attack['current']
 
-        self.speed = {'current': 0}
+        self.speed = {'current': round(5 * (1.025**(self.level - 1)))}
         self.speed['total'] = self.speed['current']
 
         self.crit_chance = {'current': 0.05,
@@ -1551,7 +1562,10 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
-        self.attack_cooldown = 1200 / len(self.animation_types['attack'])
+        self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
+        if self.attack_cooldown < 200:
+            self.attack_cooldown = 200
+
         self.cooldown = self.animation_cooldown
 
         self.sprite_layer = 1
@@ -1593,11 +1607,10 @@ class Chest(pygame.sprite.Sprite):
             self.image = self.chest_sprites['opened']
             self.opened = True
 
-            player.exp += 10
-            player.bonuses['health'] += 0.05
-            player.bonuses['speed'] += 0.1
-            player.bonuses['attack'] += 0.05
-            player.set_stats()
+            player.inventory.add_item('Baguette', IMAGES['baguette.png'], random.randint(1, 3))
+            player.inventory.add_item('Oak Log', IMAGES['oak_log.png'], random.randint(1, 3))
+
+            
 
     def update(self):
         self.collision()
