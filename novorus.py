@@ -1072,6 +1072,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
         self.max_velocity = 7
+        
 
         # stats
         self.exp = 0 # max exp is 9900
