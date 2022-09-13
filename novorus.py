@@ -535,6 +535,7 @@ class Menu(pygame.sprite.Group):
         self.menu_popup()
 
     def update(self):
+        """Handles events"""
         for sprite in self.sprites():
             sprite.update()
 
@@ -600,6 +601,7 @@ class Inventory(pygame.sprite.Group):
             self,
             optional_key=pygame.K_q)
 
+        # inventory background
         inventory_width = 325
         inventory_height = 475
         self.inventory_rect = pygame.Rect(
@@ -610,6 +612,7 @@ class Inventory(pygame.sprite.Group):
 
         self.inventory_surface = pygame.Surface((self.inventory_rect.width, self.inventory_rect.height))
 
+        # inventory items
         self.item_box = IMAGES['item_box.png']
         self.item_box = pygame.transform.scale(self.item_box, (60, 60))
 
@@ -620,6 +623,7 @@ class Inventory(pygame.sprite.Group):
         self.scroll_max_velocity = 7
 
     def add_item(self, name, image, count):
+        """Adds items to the inventory, stacking if it is already present"""
         inventory = [item for item in self.sprites() if item != self.inventory_button and item.name == name]
 
         # if the item already exists in inventory
@@ -631,37 +635,37 @@ class Inventory(pygame.sprite.Group):
             Item(str(name), image, count, self)
 
     def show_inventory(self):
-        pygame.draw.rect(
-            self.display_surface,
-            BROWN,
-            self.inventory_rect,
-            0,
-            3)
+        """Displays inventory"""
+        self.display_surface.blit(
+            self.inventory_surface,
+            (self.inventory_rect.left, self.inventory_rect.top))
 
+        self.inventory_surface.fill(BROWN)
         pygame.draw.rect(
             self.display_surface,
             DARK_BROWN,
             self.inventory_rect,
             5,
-            3)
+            4)
 
+        # displays inventory items
         column = 0
         row = 0
-
         for item in self.sprites():
             if item != self.inventory_button:
-                self.display_surface.blit(
+                self.inventory_surface.blit(
                     self.item_box, 
                     (column * (self.item_box.get_width() + 15) + 20,
-                    row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20 - self.scroll))
+                    row * (self.item_box.get_height() + 15) + 20 - self.scroll)) # self.inventory_rect.top
 
                 item.rect.x = column * (self.item_box.get_width() + 15) + 20
-                item.rect.y = row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20 - self.scroll
+                item.rect.y = row * (self.item_box.get_height() + 15) + 20 - self.scroll # self.inventory_rect.top
 
-                self.display_surface.blit(
+                self.inventory_surface.blit(
                     item.image,
                     item.rect.topleft)
 
+                # displays item count when the player has multiple copies
                 if item.count > 1:
                     text = COMICORO[25].render(str(item.count), True, WHITE)
                     text_rect = text.get_rect(
@@ -669,7 +673,7 @@ class Inventory(pygame.sprite.Group):
                             item.rect.right - 5,
                             item.rect.bottom - 5))
 
-                    self.display_surface.blit(text, text_rect)
+                    self.inventory_surface.blit(text, text_rect)
 
                 column += 1
                 if not column % 4 and column != 0:
@@ -677,45 +681,43 @@ class Inventory(pygame.sprite.Group):
                     row += 1
 
     def scroll_inventory(self):
+        """Scrolls the inventory with the mouse wheel"""
         global event
 
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
             if len(self.sprites()) > 24:
                 if event.type == pygame.MOUSEWHEEL:
-                    scroll = 0
-                    if event.y > 0: scroll = -1
-                    if event.y < 0: scroll = 1
-                    event.y = 0
-
-                    if scroll: 
-                        self.scroll_acceleration = self.scroll_max_velocity * scroll
+                    if event.type:
+                        self.scroll_acceleration = self.scroll_max_velocity * event.y / abs(event.y)
 
                         self.scroll_velocity += self.scroll_acceleration
                         self.scroll_velocity *= 0.5
 
+
                     else:
                         # movement decay when input is not received
-                        self.scroll_velocity *= 0.9
-                        self.acceleration = 0 
+                        self.scroll_velocity *= 0.7
+                        self.scroll_acceleration = 0 
 
                     # movement decay when the speed is low
-                    if abs(self.scroll_velocity) < 0.25:
+                    if abs(self.scroll_velocity) < 0.1:
                         self.scroll_velocity = 0
 
-                    if abs(self.scroll_velocity) < 0.25:
+                    if abs(self.scroll_velocity) < 0.1:
                         self.scroll_velocity = 0
 
                     self.scroll += self.scroll_velocity
 
-
     def draw(self):
         if self.inventory_button.active:
+            
             self.show_inventory()
-
+            self.scroll_inventory()
+            
         self.display_surface.blit(self.inventory_button.image, self.inventory_button.rect.topleft)
 
     def update(self):
-        self.scroll_inventory()
+        """Handles events"""
         for sprite in self.sprites():
             sprite.update()
 
