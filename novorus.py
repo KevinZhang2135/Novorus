@@ -608,8 +608,16 @@ class Inventory(pygame.sprite.Group):
             inventory_width,
             inventory_height)
 
+        self.inventory_surface = pygame.Surface((self.inventory_rect.width, self.inventory_rect.height))
+
         self.item_box = IMAGES['item_box.png']
         self.item_box = pygame.transform.scale(self.item_box, (60, 60))
+
+        # scroll
+        self.scroll = 0
+        self.scroll_acceleration = 0
+        self.scroll_velocity = 0
+        self.scroll_max_velocity = 7
 
     def add_item(self, name, image, count):
         inventory = [item for item in self.sprites() if item != self.inventory_button and item.name == name]
@@ -645,10 +653,10 @@ class Inventory(pygame.sprite.Group):
                 self.display_surface.blit(
                     self.item_box, 
                     (column * (self.item_box.get_width() + 15) + 20,
-                    row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20))
+                    row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20 - self.scroll))
 
                 item.rect.x = column * (self.item_box.get_width() + 15) + 20
-                item.rect.y = row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20
+                item.rect.y = row * (self.item_box.get_height() + 15) + self.inventory_rect.top + 20 - self.scroll
 
                 self.display_surface.blit(
                     item.image,
@@ -668,6 +676,38 @@ class Inventory(pygame.sprite.Group):
                     column = 0
                     row += 1
 
+    def scroll_inventory(self):
+        global event
+
+        if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
+            if len(self.sprites()) > 24:
+                if event.type == pygame.MOUSEWHEEL:
+                    scroll = 0
+                    if event.y > 0: scroll = -1
+                    if event.y < 0: scroll = 1
+                    event.y = 0
+
+                    if scroll: 
+                        self.scroll_acceleration = self.scroll_max_velocity * scroll
+
+                        self.scroll_velocity += self.scroll_acceleration
+                        self.scroll_velocity *= 0.5
+
+                    else:
+                        # movement decay when input is not received
+                        self.scroll_velocity *= 0.9
+                        self.acceleration = 0 
+
+                    # movement decay when the speed is low
+                    if abs(self.scroll_velocity) < 0.25:
+                        self.scroll_velocity = 0
+
+                    if abs(self.scroll_velocity) < 0.25:
+                        self.scroll_velocity = 0
+
+                    self.scroll += self.scroll_velocity
+
+
     def draw(self):
         if self.inventory_button.active:
             self.show_inventory()
@@ -675,6 +715,7 @@ class Inventory(pygame.sprite.Group):
         self.display_surface.blit(self.inventory_button.image, self.inventory_button.rect.topleft)
 
     def update(self):
+        self.scroll_inventory()
         for sprite in self.sprites():
             sprite.update()
 
@@ -1139,6 +1180,8 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.inventory.add_item('Leather Greaves', IMAGES['leather_greaves.png'], 1)
         self.inventory.add_item('Baguette', IMAGES['baguette.png'], 2)
         self.inventory.add_item('Tidal Ring', IMAGES['tidal_ring.png'], 1)
+        for i in range(20):
+            self.inventory.add_item(i, IMAGES['tidal_ring.png'], 1)
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
@@ -1188,6 +1231,8 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             else:
                 # movement decay when input is not received
                 self.velocity *= 0.8
+                self.acceleration.x = 0
+                self.acceleration.y = 0
 
             # movement decay when the speed is low
             if abs(self.velocity.x) < 0.25:
@@ -1748,7 +1793,7 @@ RESOLUTION = (1920, 1080)
 screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
 clock = pygame.time.Clock()
 
-pygame.event.set_allowed(pygame.QUIT)
+pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION])
 from constants import *
 
 # sprite groups
