@@ -2,6 +2,7 @@ import pygame
 import random
 import os
 import csv
+import math
 
 
 class Level:
@@ -602,11 +603,11 @@ class Inventory(pygame.sprite.Group):
             optional_key=pygame.K_q)
 
         # inventory background
-        inventory_width = 325
+        inventory_width = 400
         inventory_height = 475
         self.inventory_rect = pygame.Rect(
-            0,
-            (self.display_surface.get_height() - inventory_height),
+            2,
+            (self.display_surface.get_height() - inventory_height) - 2,
             inventory_width,
             inventory_height)
 
@@ -646,7 +647,7 @@ class Inventory(pygame.sprite.Group):
             DARK_BROWN,
             self.inventory_rect,
             5,
-            4)
+            3)
 
         # displays inventory items
         column = 0
@@ -676,7 +677,7 @@ class Inventory(pygame.sprite.Group):
                     self.inventory_surface.blit(text, text_rect)
 
                 column += 1
-                if not column % 4 and column != 0:
+                if not column % 5 and column != 0:
                     column = 0
                     row += 1
 
@@ -685,14 +686,13 @@ class Inventory(pygame.sprite.Group):
         global event
 
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
-            if len(self.sprites()) > 24:
+            if len(self.sprites()) > 30:
                 if event.type == pygame.MOUSEWHEEL:
                     if event.type:
                         self.scroll_acceleration = self.scroll_max_velocity * event.y / abs(event.y)
 
                         self.scroll_velocity += self.scroll_acceleration
                         self.scroll_velocity *= 0.5
-
 
                     else:
                         # movement decay when input is not received
@@ -707,10 +707,16 @@ class Inventory(pygame.sprite.Group):
                         self.scroll_velocity = 0
 
                     self.scroll += self.scroll_velocity
+                    
+                    max_scroll = (math.ceil((len(self.sprites()) - 1) / 5) - 6) * (self.item_box.get_height() + 15)
+                    if self.scroll < 0:
+                        self.scroll = 0  
+
+                    elif self.scroll > max_scroll:
+                        self.scroll = max_scroll
 
     def draw(self):
-        if self.inventory_button.active:
-            
+        if self.inventory_button.active:      
             self.show_inventory()
             self.scroll_inventory()
             
@@ -972,24 +978,37 @@ class GenericNPC:
 
             if not self.in_combat and enemy.health['current'] > 0:
                 self.in_combat = True
-                self.show_stats = True
-
                 self.animation_time = pygame.time.get_ticks()
                 self.cooldown = self.attack_cooldown
                 self.frame = 0
 
             if self.in_combat:
-                if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                    self.attacking = True
-                    self.frame = 0
+                if pygame.time.get_ticks() - self.attack_time > 300:
+                    if not self.attack_pause:
+                        if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                            self.attacking = True
+                            self.frame = 0
 
-                # only deal damage when animation ends
-                if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
-                    if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                        enemy.hurt(self.attack['current'], self.crit_chance['current'])
-                        if enemy.health['current'] <= 0:
-                            self.in_combat = False
-                            self.exp += enemy.exp
+                            self.show_stats = True
+                            enemy.show_stats = True
+
+                        if self.attacking:
+                            # only deal damage when animation ends
+                            if self.frame >= len(self.animation_types['attack']) - 1:
+                                if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                                    enemy.hurt(self.attack['current'], self.crit_chance['current'])
+                                    if enemy.health['current'] <= 0:
+                                        self.in_combat = False
+                                        self.exp += enemy.exp
+
+                                    self.attacking = False
+                                    self.attack_pause = True
+                                    self.attack_time = pygame.time.get_ticks()
+
+                                    self.frame = 0
+
+                    else:
+                        self.attack_pause = False
 
         else:
             self.in_combat = False
@@ -1105,6 +1124,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         
         self.in_combat = False
         self.attacking = False
+        self.attack_pause = False
         self.show_stats = True
 
         self.action = 'idle'
@@ -1114,8 +1134,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 7
-        
+        self.max_velocity = 6.75
 
         # stats
         self.exp = 0 # max exp is 9900
@@ -1167,6 +1186,8 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1200 / len(self.animation_types['idle'])
+
+        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -1182,7 +1203,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.inventory.add_item('Leather Greaves', IMAGES['leather_greaves.png'], 1)
         self.inventory.add_item('Baguette', IMAGES['baguette.png'], 2)
         self.inventory.add_item('Tidal Ring', IMAGES['tidal_ring.png'], 1)
-        for i in range(20):
+        for i in range(26):
             self.inventory.add_item(i, IMAGES['tidal_ring.png'], 1)
 
     def set_stats(self):
@@ -1214,7 +1235,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
     def movement(self):
         '''Handles movement'''
-        if not self.in_combat:
+        if not self.attacking:
             keys = pygame.key.get_pressed()
             left = keys[pygame.K_LEFT] or keys[pygame.K_a]
             right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
@@ -1225,7 +1246,11 @@ class Player(pygame.sprite.Sprite, GenericNPC):
             self.acceleration = pygame.math.Vector2(right - left, down - up)
             if self.acceleration.length_squared() > 0:  # checks if the player is moving
                 # converts the coordinates to a vector according to the radius
-                self.acceleration.scale_to_length(self.max_velocity)
+                if self.in_combat: 
+                    self.acceleration.scale_to_length(self.max_velocity / 4)
+
+                else: 
+                    self.acceleration.scale_to_length(self.max_velocity)
 
                 self.velocity += self.acceleration
                 self.velocity *= 0.5
@@ -1399,6 +1424,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
 
         self.in_combat = False
         self.attacking = False
+        self.attack_pause = False
         self.show_stats = True
 
         self.action = 'idle'
@@ -1453,6 +1479,8 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+
+        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -1477,6 +1505,7 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
 
         self.in_combat = False
         self.attacking = False
+        self.attack_pause = False
         self.show_stats = False
 
         self.action = 'idle'
@@ -1531,6 +1560,8 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+
+        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -1555,6 +1586,7 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
 
         self.in_combat = False
         self.attacking = False
+        self.attack_pause = False
         self.show_stats = False
 
         self.action = 'idle'
@@ -1610,6 +1642,8 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+
+        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.speed['current']) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
