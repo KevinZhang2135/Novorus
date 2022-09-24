@@ -1,3 +1,4 @@
+from tkinter import Y
 import pygame
 import random
 import os
@@ -948,6 +949,101 @@ class Cursor(pygame.sprite.Sprite):
 
 
 class GenericNPC:
+    def movement(self):
+        '''Handles movement'''
+        global player, collision_group
+
+        self.acceleration = pygame.math.Vector2(player.rect.centerx - self.rect.centerx,
+                                                player.rect.centery - self.rect.centery)
+
+        if self.acceleration.length() < self.detection_distance and self.acceleration.length() > 0:
+            self.acceleration.scale_to_length(self.max_velocity)
+            self.velocity += self.acceleration
+            self.velocity *= 0.5
+
+        else:
+            # movement decay
+            self.velocity *= 0.8
+            self.acceleration.x = 0
+            self.acceleration.y = 0
+        
+        
+        # movement decay when the speed is low
+        if abs(self.velocity.x) < self.max_velocity / 100:
+            self.velocity.x = 0
+
+        if abs(self.velocity.y) < self.max_velocity / 100:
+            self.velocity.y = 0
+
+        self.coords += self.velocity
+        self.rect.center = self.coords
+
+    def collision(self):
+            '''Handles collision'''
+            global collision_group, level
+
+            margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
+            for sprite in collision_group:
+                collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
+                                                        (self.rect.height + sprite.rect.height) / 2)
+
+                distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
+                                               self.rect.centery - sprite.rect.centery)
+
+                # checks if the distance of the sprites are within collision distance
+                if (abs(distance.x) + margin.x <= collision_distance.x
+                    and abs(distance.y) + margin.y <= collision_distance.y):
+
+                    # horizontal collision
+                    if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
+                        # left collision
+                        if distance.x > 0 and self.velocity.x < 0:
+                            self.rect.left = sprite.rect.right - margin.x
+                            
+                        # right collision
+                        elif distance.x < 0 and self.velocity.x > 0:
+                            self.rect.right = sprite.rect.left + margin.x
+
+                        self.coords[0] = self.rect.centerx
+                        self.velocity.x = 0
+
+                    # vertical collision
+                    if abs(distance.y) + margin.y > abs(distance.x) + margin.x:
+                        # bottom collision
+                        if distance.y < 0 and self.velocity.y > 0:
+                            self.rect.bottom = sprite.rect.top + margin.y
+                            
+                        # top collision
+                        elif distance.y > 0 and self.velocity.y < 0:
+                            self.rect.top = sprite.rect.bottom - margin.y
+
+                        self.coords[1] = self.rect.centery
+                        self.velocity.y = 0
+
+            # left edge map
+            if self.rect.centerx < level.rect.left:
+                self.rect.centerx = level.rect.left
+                self.coords[0] = self.rect.centerx
+                self.velocity.x = 0
+
+            # right edge map
+            elif self.rect.centerx > level.rect.right:
+                self.rect.centerx = level.rect.right
+                self.coords[0] = self.rect.centerx
+                self.velocity.x = 0
+
+            # bottom edge map
+            if self.rect.centery < level.rect.top:
+                self.rect.centery = level.rect.top
+                self.coords[1] = self.rect.centery
+                self.velocity.y = 0
+
+            # top edge map
+            if self.rect.centery > level.rect.bottom:
+                self.rect.centery = level.rect.bottom
+                self.coords[1] = self.rect.centery
+                self.velocity.y = 0
+
     def face_enemy(self, target):
         if self.rect.centerx < target.rect.centerx:
             self.facing = 'right'
@@ -957,59 +1053,36 @@ class GenericNPC:
 
     def attack_enemy(self, target_group):
         global camera_group
-
         # checks if the player mask overlaps an enemy mask
         if (pygame.sprite.spritecollide(self, target_group, False)
             and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)
             and self.health['current'] > 0):
-            try:
-                self.velocity.x = 0
-                self.velocity.y = 0
-
-            except AttributeError:
-                pass
 
             distance = pygame.math.Vector2(self.rect.center)
             closest_distance = lambda enemy: distance.distance_to(enemy.rect.center)
-
             enemies = target_group.sprites()
             enemy = sorted(enemies, key=closest_distance)[0] # closest enemy
             self.face_enemy(enemy)
 
             if not self.in_combat and enemy.health['current'] > 0:
                 self.in_combat = True
+                self.show_stats = True
                 self.animation_time = pygame.time.get_ticks()
                 self.cooldown = self.attack_cooldown
                 self.frame = 0
 
             if self.in_combat:
-                if pygame.time.get_ticks() - self.attack_time > 300:
-                    if not self.attack_pause:
-                        if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                            self.attacking = True
-                            self.frame = 0
+                if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                    self.attacking = True
+                    self.frame = 0
 
-                            self.show_stats = True
-                            enemy.show_stats = True
-
-                        if self.attacking:
-                            # only deal damage when animation ends
-                            if self.frame >= len(self.animation_types['attack']) - 1:
-                                if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                                    enemy.hurt(self.attack['current'], self.crit_chance['current'])
-                                    if enemy.health['current'] <= 0:
-                                        self.in_combat = False
-                                        self.exp += enemy.exp
-
-                                    self.attacking = False
-                                    self.attack_pause = True
-                                    self.attack_time = pygame.time.get_ticks()
-
-                                    self.frame = 0
-
-                    else:
-                        self.attack_pause = False
-
+                # only deal damage when animation ends
+                if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
+                    if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                        enemy.hurt(self.attack['current'], self.crit_chance['current'])
+                        if enemy.health['current'] <= 0:
+                            self.in_combat = False
+                            self.exp += enemy.exp
         else:
             self.in_combat = False
             self.attacking = False
@@ -1124,7 +1197,6 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         
         self.in_combat = False
         self.attacking = False
-        self.attack_pause = False
         self.show_stats = True
 
         self.action = 'idle'
@@ -1182,6 +1254,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
         self.image = self.animation_types['idle'][self.frame]
         self.rect = self.image.get_rect(center=coords)
+        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -1235,100 +1308,35 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
     def movement(self):
         '''Handles movement'''
-        if not self.attacking:
-            keys = pygame.key.get_pressed()
-            left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-            right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-            down = keys[pygame.K_DOWN] or keys[pygame.K_s]
-            up = keys[pygame.K_UP] or keys[pygame.K_w]
+        keys = pygame.key.get_pressed()
+        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+        up = keys[pygame.K_UP] or keys[pygame.K_w]
 
-            # creates movement using falsy and truthy values that evaluate to 0 and 1
-            self.acceleration = pygame.math.Vector2(right - left, down - up)
-            if self.acceleration.length_squared() > 0:  # checks if the player is moving
-                # converts the coordinates to a vector according to the radius
-                if self.in_combat: 
-                    self.acceleration.scale_to_length(self.max_velocity / 4)
+        # creates movement using falsy and truthy values that evaluate to 0 and 1
+        self.acceleration = pygame.math.Vector2(right - left, down - up)
+        if self.acceleration.length_squared() > 0:  # checks if the player is moving
+            # converts the coordinates to a vector according to the radius
+            self.acceleration.scale_to_length(self.max_velocity)
+            self.velocity += self.acceleration
+            self.velocity *= 0.5
 
-                else: 
-                    self.acceleration.scale_to_length(self.max_velocity)
+        else:
+            # movement decay when input is not received
+            self.velocity *= 0.8
+            self.acceleration.x = 0
+            self.acceleration.y = 0
 
-                self.velocity += self.acceleration
-                self.velocity *= 0.5
-
-            else:
-                # movement decay when input is not received
-                self.velocity *= 0.8
-                self.acceleration.x = 0
-                self.acceleration.y = 0
-
-            # movement decay when the speed is low
-            if abs(self.velocity.x) < 0.25:
-                self.velocity.x = 0
-
-            if abs(self.velocity.y) < 0.25:
-                self.velocity.y = 0
-
-            self.rect.center += self.velocity
-
-    def collision(self):
-        '''Handles collision'''
-        global collision_group, level
-
-        margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
-        for sprite in collision_group:
-            collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
-                                                     (self.rect.height + sprite.rect.height) / 2)
-
-            distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
-                                           self.rect.centery - sprite.rect.centery)
-
-            # checks if the distance of the sprites are within collision distance
-            if (abs(distance.x) + margin.x <= collision_distance.x
-                and abs(distance.y) + margin.y <= collision_distance.y):
-
-                # horizontal collision
-                if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
-                    # left collision
-                    if distance.x > 0 and self.velocity.x < 0:
-                        self.rect.left = sprite.rect.right - margin.x
-
-                    # right collision
-                    elif distance.x < 0 and self.velocity.x > 0:
-                        self.rect.right = sprite.rect.left + margin.x
-
-                    self.velocity.x = 0
-
-                # vertical collision
-                if abs(distance.y) + margin.y > abs(distance.x) + margin.x:
-                    # bottom collision
-                    if distance.y < 0 and self.velocity.y > 0:
-                        self.rect.bottom = sprite.rect.top + margin.y
-
-                    # top collision
-                    elif distance.y > 0 and self.velocity.y < 0:
-                        self.rect.top = sprite.rect.bottom - margin.y
-
-                    self.velocity.y = 0
-
-        # left edge map
-        if player.rect.centerx < level.rect.left:
-            player.rect.centerx = level.rect.left
+        # movement decay when the speed is low
+        if abs(self.velocity.x) < self.max_velocity / 100:
             self.velocity.x = 0
 
-        # right edge map
-        elif player.rect.centerx > level.rect.right:
-            player.rect.centerx = level.rect.right
-            self.velocity.x = 0
-
-        # bottom edge map
-        if player.rect.centery < level.rect.top:
-            player.rect.centery = level.rect.top
+        if abs(self.velocity.y) < self.max_velocity / 100:
             self.velocity.y = 0
 
-        # top edge map
-        if player.rect.centery > level.rect.bottom:
-            player.rect.centery = level.rect.bottom
-            self.velocity.y = 0
+        self.coords += self.velocity
+        self.rect.center = self.coords
 
     def leveling_up(self):
         '''Increases player level when they reach exp cap'''
@@ -1424,12 +1432,17 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
 
         self.in_combat = False
         self.attacking = False
-        self.attack_pause = False
         self.show_stats = True
 
         self.action = 'idle'
         self.facing = random.choice(('left', 'right'))
         self.name = 'Ghost'
+
+        # movement
+        self.detection_distance = 500
+        self.acceleration = pygame.math.Vector2(0, 0)
+        self.velocity = pygame.math.Vector2(0, 0)
+        self.max_velocity = 1
 
         # stats
         self.exp = 15
@@ -1462,6 +1475,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
         # sprites
         self.frame = 0
         self.animation_types = {'idle': [],
+                                'run': [],
                                 'attack': []}
 
         for type in self.animation_types:
@@ -1475,6 +1489,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
 
         self.image = self.animation_types['idle'][self.frame]
         self.rect = self.image.get_rect(center=coords)
+        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -1488,11 +1503,34 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
         self.cooldown = self.animation_cooldown
 
         self.sprite_layer = 1
+    
+    def check_state(self):
+        if not self.in_combat:
+            if self.velocity.length_squared() > 0:
+                self.action = 'run'
+
+                if self.velocity.x < 0:
+                    self.facing = 'left'
+
+                elif self.velocity.x > 0:
+                    self.facing = 'right'
+
+            else:
+                self.action = 'idle'
+
+        else:
+            if self.attacking:
+                self.action = 'attack'
+
+            else:
+                self.action = 'idle'
 
     def update(self):
         '''Handles events'''
         global player_group
 
+        self.movement()
+        self.collision()
         self.attack_enemy(player_group)
         self.check_state()
         self.animation()
@@ -1505,7 +1543,6 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
 
         self.in_combat = False
         self.attacking = False
-        self.attack_pause = False
         self.show_stats = False
 
         self.action = 'idle'
@@ -1556,6 +1593,7 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
 
         self.image = self.animation_types['idle'][self.frame]
         self.rect = self.image.get_rect(center=coords)
+        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -1586,7 +1624,6 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
 
         self.in_combat = False
         self.attacking = False
-        self.attack_pause = False
         self.show_stats = False
 
         self.action = 'idle'
@@ -1638,6 +1675,7 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
 
         self.image = self.animation_types['idle'][self.frame]
         self.rect = self.image.get_rect(center=coords)
+        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -1825,8 +1863,8 @@ pygame.font.init()
 pygame.display.set_caption('Novorus')
 
 # sets the size of the screen; defaults to full screen
-RESOLUTION = (1920, 1080)
-screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
+RESOLUTION = (700, 700)#(1920, 1080)  | pygame.FULLSCREEN
+screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF, 16)
 clock = pygame.time.Clock()
 
 pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION])
