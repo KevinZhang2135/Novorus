@@ -11,18 +11,21 @@ MELLOW_YELLOW = (255, 229, 134)
 YELLOW = (255, 231, 45)
 GOLD = (255, 219, 14)
 
+SLATE_BLUE = (100, 117, 128)
+
 WHITE = (255, 255, 255)
 LIGHT_GREY = (210, 210, 210)
 GREY = (188, 188, 188)
 DARK_GREY = (168, 168, 168)
 BLACK = (50, 50, 50)
+MIDNIGHT = (0, 0, 0)
 
 BROWN = (131, 106, 83)
 PECAN = (115, 93, 71)
 DARK_BROWN = (104, 84, 66)
 
 TILE_SIZE = 100
-STARTING_FLOOR = 1
+STARTING_FLOOR = 3
 game_state = {'unpaused': True,
               'runtime': True,
               'fullscreen': True}

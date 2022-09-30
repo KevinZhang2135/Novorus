@@ -127,7 +127,8 @@ class Level:
         global player
 
         player.rect.center = coords
-
+        player.coords = player.rect.center
+        
     def add_walls(self, id, coords):
         global camera_group, collision_group
 
@@ -418,12 +419,6 @@ class LightSources(pygame.sprite.Group):
         self.half_height = self.display_surface.get_height() / 2
         self.resolution = resolution
 
-        self.light_size = pygame.math.Vector2(500, 500)
-
-        self.light = IMAGES['soft_circle.png'].copy()
-        self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
-        self.light = color_image(self.light, MELLOW_YELLOW)
-
         self.filter = pygame.surface.Surface(self.resolution)
 
         # light offset
@@ -438,7 +433,7 @@ class LightSources(pygame.sprite.Group):
         global level
 
         if level.floor_level > 1:
-            self.filter.fill(DARK_GREY)
+            self.filter.fill(MIDNIGHT)
 
         else:
             self.filter.fill(LIGHT_GREY)
@@ -450,9 +445,9 @@ class LightSources(pygame.sprite.Group):
                 offset_pos = sprite.rect.topleft \
                             - self.offset \
                             + list(map(lambda x: x / 2, sprite.rect.size)) \
-                            - self.light_size / 2
+                            - sprite.light_size / 2
                             
-                self.filter.blit(self.light, offset_pos)
+                self.filter.blit(sprite.light, offset_pos)
 
         self.display_surface.blit(
             self.filter,
@@ -485,16 +480,16 @@ class Menu(pygame.sprite.Group):
         # menu text
         text = COMICORO[50].render('Menu', True, BLACK)
         text_rect = text.get_rect(
-            center=(self.menu_rect.centerx, 
-                    self.menu_rect.top + self.menu_rect.height / 8))
+            center=(self.display_surface.get_width() / 2, 
+                    self.display_surface.get_height() / 2 - 120))
 
         self.menu_text = text, text_rect
 
         # exit text
         text = COMICORO[50].render('Exit', True, BLACK)
         text_rect = text.get_rect(
-            center=(self.menu_rect.centerx, 
-                    self.menu_rect.bottom - self.menu_rect.height / 8))
+            center=(self.display_surface.get_width() / 2, 
+                    self.display_surface.get_height() / 2 + 120))
 
         self.exit_text = text, text_rect
         self.yellow_exit_text = color_image(self.exit_text[0], YELLOW)
@@ -507,16 +502,13 @@ class Menu(pygame.sprite.Group):
             pygame.draw.rect(
                 self.display_surface,
                 BROWN,
-                self.menu_rect,
-                0,
-                3)
+                self.menu_rect)
 
             pygame.draw.rect(
                 self.display_surface,
                 DARK_BROWN,
-                self.menu_rect,
-                5,
-                3)
+                self.menu_rect, 
+                5)
 
             self.display_surface.blit(*self.menu_text)
             if self.exit_text[1].collidepoint(pygame.mouse.get_pos()):
@@ -647,8 +639,7 @@ class Inventory(pygame.sprite.Group):
             self.display_surface,
             DARK_BROWN,
             self.inventory_rect,
-            5,
-            3)
+            5)
 
         # displays inventory items
         column = 0
@@ -956,8 +947,10 @@ class GenericNPC:
         self.acceleration = pygame.math.Vector2(player.rect.centerx - self.rect.centerx,
                                                 player.rect.centery - self.rect.centery)
 
-        if self.acceleration.length() < self.detection_distance and self.acceleration.length() > 0:
-            self.acceleration.scale_to_length(self.max_velocity)
+        if (self.acceleration.length() < self.detection_distance 
+            and not self.in_combat):
+            if self.acceleration.length() > 0: self.acceleration.scale_to_length(self.max_velocity) 
+
             self.velocity += self.acceleration
             self.velocity *= 0.5
 
@@ -1206,7 +1199,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 6.75
+        self.max_velocity = 4
 
         # stats
         self.exp = 0 # max exp is 9900
@@ -1279,6 +1272,12 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         for i in range(26):
             self.inventory.add_item(i, IMAGES['tidal_ring.png'], 1)
 
+        self.light_size = pygame.math.Vector2(500, 500)
+
+        self.light = IMAGES['soft_circle.png'].copy()
+        self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
+        self.light = color_image(self.light, LIGHT_GREY, transparency=255)
+
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
         stats = {'health': self.health,
@@ -1308,35 +1307,36 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
     def movement(self):
         '''Handles movement'''
-        keys = pygame.key.get_pressed()
-        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
-        up = keys[pygame.K_UP] or keys[pygame.K_w]
+        if not self.in_combat:
+            keys = pygame.key.get_pressed()
+            left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+            right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+            down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+            up = keys[pygame.K_UP] or keys[pygame.K_w]
 
-        # creates movement using falsy and truthy values that evaluate to 0 and 1
-        self.acceleration = pygame.math.Vector2(right - left, down - up)
-        if self.acceleration.length_squared() > 0:  # checks if the player is moving
-            # converts the coordinates to a vector according to the radius
-            self.acceleration.scale_to_length(self.max_velocity)
-            self.velocity += self.acceleration
-            self.velocity *= 0.5
+            # creates movement using falsy and truthy values that evaluate to 0 and 1
+            self.acceleration = pygame.math.Vector2(right - left, down - up)
+            if self.acceleration.length_squared() > 0:  # checks if the player is moving
+                # converts the coordinates to a vector according to the radius
+                self.acceleration.scale_to_length(self.max_velocity)
+                self.velocity += self.acceleration
+                self.velocity *= 0.5
 
-        else:
-            # movement decay when input is not received
-            self.velocity *= 0.8
-            self.acceleration.x = 0
-            self.acceleration.y = 0
+            else:
+                # movement decay when input is not received
+                self.velocity *= 0.8
+                self.acceleration.x = 0
+                self.acceleration.y = 0
 
-        # movement decay when the speed is low
-        if abs(self.velocity.x) < self.max_velocity / 100:
-            self.velocity.x = 0
+            # movement decay when the speed is low
+            if abs(self.velocity.x) < self.max_velocity / 100:
+                self.velocity.x = 0
 
-        if abs(self.velocity.y) < self.max_velocity / 100:
-            self.velocity.y = 0
+            if abs(self.velocity.y) < self.max_velocity / 100:
+                self.velocity.y = 0
 
-        self.coords += self.velocity
-        self.rect.center = self.coords
+            self.coords += self.velocity
+            self.rect.center = self.coords
 
     def leveling_up(self):
         '''Increases player level when they reach exp cap'''
@@ -1524,6 +1524,35 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
 
             else:
                 self.action = 'idle'
+
+        if self.health['current'] < 0:
+            # sprite dies
+            self.health['current'] = 0
+            self.in_combat = False
+            self.animation_time = pygame.time.get_ticks()
+            self.cooldown = player.animation_cooldown
+
+            for i in range(5):
+                x_offset = round((self.rect.right - self.rect.left) / 4)
+                x = random.randint(
+                    self.rect.centerx - x_offset, 
+                    self.rect.centerx + x_offset)
+
+                y_offset = round((self.rect.bottom - self.rect.top) / 4)
+                y = random.randint(
+                    self.rect.centery - y_offset, 
+                    self.rect.centery + y_offset)
+
+                dust = Particle(
+                    (x, y),
+                    [randomize(self.rect.width / 2, 0.05) for i in range(2)],
+                    f'dust{random.randint(1, 3)}.png',
+                    camera_group)
+
+                dust.velocity.y = -2
+
+            self.kill()
+            del self
 
     def update(self):
         '''Handles events'''
@@ -1820,6 +1849,12 @@ class Torch(AnimatedTile):
         self.smoke_frames = len(
             os.listdir(f'sprites/particles/smoke'))
 
+        self.light_size = pygame.math.Vector2(500, 500)
+
+        self.light = IMAGES['soft_circle.png'].copy()
+        self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
+        self.light = color_image(self.light, MELLOW_YELLOW, transparency=100)
+
     def draw_smoke(self):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
@@ -1846,7 +1881,7 @@ def randomize(value: int, offset: float):
         round(value * (1 + offset)))
 
 
-def color_image(image, color):
+def color_image(image, color, transparency=255):
     '''Recolors a surface'''
     image = image.copy()
     # zeros out rgb and preserves original transparency
@@ -1854,6 +1889,9 @@ def color_image(image, color):
 
     # adds in new rgb values
     image.fill(color + (0,), None, pygame.BLEND_RGBA_ADD)
+
+    if transparency:
+        image.set_alpha(transparency)
 
     return image
 
@@ -1863,8 +1901,8 @@ pygame.font.init()
 pygame.display.set_caption('Novorus')
 
 # sets the size of the screen; defaults to full screen
-RESOLUTION = (700, 700)#(1920, 1080)  | pygame.FULLSCREEN
-screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF, 16)
+RESOLUTION = (1920, 1080)  
+screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
 clock = pygame.time.Clock()
 
 pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION])
@@ -1883,12 +1921,11 @@ menu = Menu()
 player_bars = Bars((2, 2))
 enemy_bars = Bars((2, player_bars.height + 4))
 
-
 # hud
 cursor = Cursor(TILE_SIZE, cursor_group)
 
 # player
-player = Player((0, 0), (75, 75), (camera_group, player_group))
+player = Player((0, 0), (75, 75), (camera_group, player_group, light_group))
 
 # levels and map
 level = Level(STARTING_FLOOR, TILE_SIZE)
@@ -1930,6 +1967,5 @@ while game_state['runtime']:
 # closes pygame application
 pygame.font.quit()
 pygame.quit()
-
 
 #
