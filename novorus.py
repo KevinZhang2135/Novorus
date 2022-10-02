@@ -1949,7 +1949,7 @@ while game_state['runtime']:
 
     # updates screen
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(30)
 
 # closes pygame application
 pygame.font.quit()
