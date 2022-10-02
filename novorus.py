@@ -31,8 +31,6 @@ class Level:
                     self.display_surface.get_height() - 50))
 
         self.floor_level_text = text, text_rect
-
-        self.update_player_coords()
         self.read_csv_level()
 
     @property
@@ -233,20 +231,8 @@ class Level:
         exit = LevelExit(
             coords, [round(self.tile_size * 0.8)] * 2, camera_group)
 
-    def update_player_coords(self):
-        global player
-
-        text = COMICORO[50].render(
-            f'X: {player.rect.centerx} | Y: {int(self.size.y - player.rect.centery)}', 
-            True, 
-            BLACK)
-
-        text_rect = text.get_rect(center=(self.display_surface.get_width() / 2, 50))
-        self.player_coords = text, text_rect
-
     def draw(self):
         self.display_surface.blit(*self.floor_level_text)
-        self.display_surface.blit(*self.player_coords)
 
         if self.transitioning:
             pygame.draw.rect(
@@ -255,7 +241,6 @@ class Level:
                 self.level_transition_rect)
             
     def update(self):
-        self.update_player_coords()
         self.transition_level()
         
 
@@ -949,7 +934,8 @@ class GenericNPC:
 
         if (self.acceleration.length() < self.detection_distance 
             and not self.in_combat):
-            if self.acceleration.length() > 0: self.acceleration.scale_to_length(self.max_velocity) 
+            if self.acceleration.length() > 0: 
+                self.acceleration.scale_to_length(self.max_velocity) 
 
             self.velocity += self.acceleration
             self.velocity *= 0.5
@@ -975,67 +961,68 @@ class GenericNPC:
             '''Handles collision'''
             global collision_group, level
 
-            margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
-            for sprite in collision_group:
-                collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
-                                                        (self.rect.height + sprite.rect.height) / 2)
+            if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
+                margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
+                for sprite in collision_group:
+                    collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
+                                                            (self.rect.height + sprite.rect.height) / 2)
 
-                distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
-                                               self.rect.centery - sprite.rect.centery)
+                    distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
+                                                self.rect.centery - sprite.rect.centery)
 
-                # checks if the distance of the sprites are within collision distance
-                if (abs(distance.x) + margin.x <= collision_distance.x
-                    and abs(distance.y) + margin.y <= collision_distance.y):
+                    # checks if the distance of the sprites are within collision distance
+                    if (abs(distance.x) + margin.x <= collision_distance.x
+                        and abs(distance.y) + margin.y <= collision_distance.y):
 
-                    # horizontal collision
-                    if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
-                        # left collision
-                        if distance.x > 0 and self.velocity.x < 0:
-                            self.rect.left = sprite.rect.right - margin.x
-                            
-                        # right collision
-                        elif distance.x < 0 and self.velocity.x > 0:
-                            self.rect.right = sprite.rect.left + margin.x
+                        # horizontal collision
+                        if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
+                            # left collision
+                            if distance.x > 0 and self.velocity.x < 0:
+                                self.rect.left = sprite.rect.right - margin.x
+                                
+                            # right collision
+                            elif distance.x < 0 and self.velocity.x > 0:
+                                self.rect.right = sprite.rect.left + margin.x
 
-                        self.coords[0] = self.rect.centerx
-                        self.velocity.x = 0
+                            self.coords[0] = self.rect.centerx
+                            self.velocity.x = 0
 
-                    # vertical collision
-                    if abs(distance.y) + margin.y > abs(distance.x) + margin.x:
-                        # bottom collision
-                        if distance.y < 0 and self.velocity.y > 0:
-                            self.rect.bottom = sprite.rect.top + margin.y
-                            
-                        # top collision
-                        elif distance.y > 0 and self.velocity.y < 0:
-                            self.rect.top = sprite.rect.bottom - margin.y
+                        # vertical collision
+                        if abs(distance.y) + margin.y > abs(distance.x) + margin.x:
+                            # bottom collision
+                            if distance.y < 0 and self.velocity.y > 0:
+                                self.rect.bottom = sprite.rect.top + margin.y
+                                
+                            # top collision
+                            elif distance.y > 0 and self.velocity.y < 0:
+                                self.rect.top = sprite.rect.bottom - margin.y
 
-                        self.coords[1] = self.rect.centery
-                        self.velocity.y = 0
+                            self.coords[1] = self.rect.centery
+                            self.velocity.y = 0
 
-            # left edge map
-            if self.rect.centerx < level.rect.left:
-                self.rect.centerx = level.rect.left
-                self.coords[0] = self.rect.centerx
-                self.velocity.x = 0
+                # left edge map
+                if self.rect.centerx < level.rect.left:
+                    self.rect.centerx = level.rect.left
+                    self.coords[0] = self.rect.centerx
+                    self.velocity.x = 0
 
-            # right edge map
-            elif self.rect.centerx > level.rect.right:
-                self.rect.centerx = level.rect.right
-                self.coords[0] = self.rect.centerx
-                self.velocity.x = 0
+                # right edge map
+                elif self.rect.centerx > level.rect.right:
+                    self.rect.centerx = level.rect.right
+                    self.coords[0] = self.rect.centerx
+                    self.velocity.x = 0
 
-            # bottom edge map
-            if self.rect.centery < level.rect.top:
-                self.rect.centery = level.rect.top
-                self.coords[1] = self.rect.centery
-                self.velocity.y = 0
+                # bottom edge map
+                if self.rect.centery < level.rect.top:
+                    self.rect.centery = level.rect.top
+                    self.coords[1] = self.rect.centery
+                    self.velocity.y = 0
 
-            # top edge map
-            if self.rect.centery > level.rect.bottom:
-                self.rect.centery = level.rect.bottom
-                self.coords[1] = self.rect.centery
-                self.velocity.y = 0
+                # top edge map
+                if self.rect.centery > level.rect.bottom:
+                    self.rect.centery = level.rect.bottom
+                    self.coords[1] = self.rect.centery
+                    self.velocity.y = 0
 
     def face_enemy(self, target):
         if self.rect.centerx < target.rect.centerx:
@@ -1199,7 +1186,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 4
+        self.max_velocity = 7
 
         # stats
         self.exp = 0 # max exp is 9900
