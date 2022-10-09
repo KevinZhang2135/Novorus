@@ -53,6 +53,7 @@ class Level:
                 
                 self.clear_level()
                 self.read_csv_level()
+                self.update_lighting()
 
                 text = COMICORO[50].render(f'Floor {self.floor_level}', True, BLACK)
                 text_rect = text.get_rect(
@@ -97,8 +98,14 @@ class Level:
                 sprite.kill()
                 del sprite
 
+    def update_lighting(self):
+        global light_group
+        if self.floor_level > 1:
+            light_group.color = MIDNIGHT
+
     def create_tile_group(self, csv_file, path):
         create_tile = {'player': self.set_player_coords,
+                       'terrain': self.add_terrain,
                        'wall': self.add_walls,
                        'enemies': self.add_enemies,
                        'chest': self.add_chests,
@@ -126,15 +133,37 @@ class Level:
 
         player.rect.center = coords
         player.coords = player.rect.center
+
+    def add_terrain(self, id, coords):
+        sprites = ('path1.png',
+                   'path2.png',
+                   'path3.png',
+                   'path4.png',
+                   'path5.png',
+                   'path6.png',
+                   'path7.png',
+                   'path8.png',
+                   'path9.png',
+                   'path10.png',
+                   'grassy1.png',)
+
+        size = (100,) * 2
+        terrain_tile = StaticTile(
+            coords,
+            size,
+            sprites[id],
+            camera_group)
+
+        terrain_tile.sprite_layer = -1
         
     def add_walls(self, id, coords):
         global camera_group, collision_group
 
-        images = ['brick_top.png',
+        images = ('brick_top.png',
                   'brick_middle.png',
                   'brick_bottom.png',
                   'brick_pile.png',
-                  'brick_side.png']
+                  'brick_side.png')
 
         wall = StaticTile(
             coords,
@@ -142,14 +171,16 @@ class Level:
             images[id],
             (camera_group, collision_group))
 
+        wall.sprite_layer = 0
+
     def add_enemies(self, id, coords):
         global camera_group, enemy_group, light_group
 
-        enemies = [Ghost,
+        enemies = (Ghost,
                    Mimic,
-                   Sunflower]
+                   Sunflower)
 
-        sprite_size = [50, 60, 30]
+        sprite_size = (50, 60, 30)
 
         enemy = enemies[id](coords, [sprite_size[id]] * 2,
                             self.floor_level, (camera_group, enemy_group))
@@ -167,7 +198,7 @@ class Level:
     def add_static_decor(self, id, coords):
         global camera_group
 
-        sprites = [{'file': 'grass1.png',
+        sprites = ({'file': 'grass1.png',
                     'size': 30},
 
                    {'file': 'grass2.png',
@@ -198,7 +229,7 @@ class Level:
                     'size': 120},
 
                    {'file': 'tree4.png',
-                    'size': 30}]
+                    'size': 30})
 
         size = round(randomize(sprites[id]['size'], 0.1))
         decor = StaticTile(
@@ -209,6 +240,7 @@ class Level:
 
         decor.rect.centerx += random.randint(-25, 25)
         decor.rect.centery += random.randint(-25, 25)
+        decor.sprite_layer = 1
 
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
@@ -216,14 +248,16 @@ class Level:
     def add_animated_decor(self, id, coords):
         global camera_group, light_group
 
-        decor_sprites = [Torch]
-        sprite_size = [50]
+        decor_sprites = (Torch,)
+        sprite_size = (50,)
         size = round(randomize(sprite_size[id], 0.1))
 
         decor = decor_sprites[id](
             coords,
             [size] * 2,
             (camera_group, light_group))
+        
+        decor.sprite_layer = 2
 
     def add_exit(self, id, coords):
         global camera_group
@@ -408,21 +442,15 @@ class LightSources(pygame.sprite.Group):
 
         # light offset
         self.offset = pygame.math.Vector2()
-        self.sprite_layer = 2
+        self.sprite_layer = 3
+        self.color = LIGHT_GREY
 
     def center_target(self, target):
         self.offset.x = target.rect.centerx - self.half_width
         self.offset.y = target.rect.centery - self.half_height
 
     def render_lighting(self, player):
-        global level
-
-        if level.floor_level > 1:
-            self.filter.fill(MIDNIGHT)
-
-        else:
-            self.filter.fill(LIGHT_GREY)
-        
+        self.filter.fill(self.color)
         self.center_target(player)
         for sprite in self.sprites():
             if (abs(player.rect.left - sprite.rect.left) < self.half_width
@@ -584,8 +612,8 @@ class Inventory(pygame.sprite.Group):
         inventory_width = 400
         inventory_height = 475
         self.inventory_rect = pygame.Rect(
-            2,
-            (self.display_surface.get_height() - inventory_height) - 2,
+            4,
+            (self.display_surface.get_height() - inventory_height) - 4,
             inventory_width,
             inventory_height)
 
@@ -1186,7 +1214,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 7
+        self.max_velocity = 5
 
         # stats
         self.exp = 0 # max exp is 9900
@@ -1426,10 +1454,10 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
         self.name = 'Ghost'
 
         # movement
-        self.detection_distance = 500
+        self.detection_distance = 300
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 1
+        self.max_velocity = 1.5
 
         # stats
         self.exp = 15
@@ -1924,7 +1952,7 @@ while game_state['runtime']:
         if event.type == pygame.QUIT:
             game_state['runtime'] = False
 
-    screen.fill((130, 200, 90))  # fills a surface with the rgb color
+    screen.fill((113, 170, 105))  # fills a surface with the rgb color
 
     # redraws sprites and images
     camera_group.custom_draw(player, show_hitboxes=False)
@@ -1949,7 +1977,7 @@ while game_state['runtime']:
 
     # updates screen
     pygame.display.update()
-    clock.tick(30)
+    clock.tick(60)
 
 # closes pygame application
 pygame.font.quit()
