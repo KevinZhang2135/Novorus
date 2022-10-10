@@ -1979,7 +1979,7 @@ while game_state['runtime']:
     screen.fill((105, 162, 97))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=True)
+    camera_group.custom_draw(player, show_hitboxes=False)
     cursor_group.draw(screen)
     light_group.render_lighting(player)
 
