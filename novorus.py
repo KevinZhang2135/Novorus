@@ -145,7 +145,31 @@ class Level:
                    'path8.png',
                    'path9.png',
                    'path10.png',
-                   'grassy1.png',)
+                   'grassy1.png',
+                   'grassy2.png',
+                   'path11.png',
+                   'path12.png',
+                   'path13.png',
+                   'path14.png',
+                   'path15.png',
+                   'path16.png',
+                   'path17.png',
+                   'path18.png',
+                   'path19.png',
+                   'path20.png',
+                   'path21.png',
+                   'path22.png',
+                   'path23.png',
+                   'path24.png',
+                   'path25.png',
+                   'path26.png',
+                   'path27.png',
+                   'path28.png',
+                   'path29.png',
+                   'path30.png',
+                   'path31.png',
+
+                   )
 
         size = (100,) * 2
         terrain_tile = StaticTile(
@@ -170,8 +194,6 @@ class Level:
             (100, 100),
             images[id],
             (camera_group, collision_group))
-
-        wall.sprite_layer = 0
 
     def add_enemies(self, id, coords):
         global camera_group, enemy_group, light_group
@@ -240,7 +262,6 @@ class Level:
 
         decor.rect.centerx += random.randint(-25, 25)
         decor.rect.centery += random.randint(-25, 25)
-        decor.sprite_layer = 1
 
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
@@ -275,6 +296,7 @@ class Level:
                 self.level_transition_rect)
             
     def update(self):
+        """Handles events"""
         self.transition_level()
         
 
@@ -297,6 +319,7 @@ class CameraGroup(pygame.sprite.Group):
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
+        # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.rect.bottom)):
             if (abs(player.rect.left - sprite.rect.left) < self.half_width
                 or abs(player.rect.top - sprite.rect.top) < self.half_height):
@@ -333,6 +356,7 @@ class CameraGroup(pygame.sprite.Group):
             del expired_text
 
     def update(self):
+        "Updates all sprites"
         global player
 
         for sprite in self.sprites():
@@ -1029,26 +1053,26 @@ class GenericNPC:
                             self.velocity.y = 0
 
                 # left edge map
-                if self.rect.centerx < level.rect.left:
-                    self.rect.centerx = level.rect.left
+                if self.rect.left < level.rect.left + margin.x:
+                    self.rect.left = level.rect.left + margin.x
                     self.coords[0] = self.rect.centerx
                     self.velocity.x = 0
 
                 # right edge map
-                elif self.rect.centerx > level.rect.right:
-                    self.rect.centerx = level.rect.right
+                elif self.rect.right > level.rect.right - margin.x:
+                    self.rect.right = level.rect.right - margin.x
                     self.coords[0] = self.rect.centerx
                     self.velocity.x = 0
 
-                # bottom edge map
-                if self.rect.centery < level.rect.top:
-                    self.rect.centery = level.rect.top
+                # top edge map
+                if self.rect.bottom < level.rect.top - margin.y:
+                    self.rect.bottom = level.rect.top - margin.y
                     self.coords[1] = self.rect.centery
                     self.velocity.y = 0
 
-                # top edge map
-                if self.rect.centery > level.rect.bottom:
-                    self.rect.centery = level.rect.bottom
+                # bottom edge map
+                elif self.rect.top > level.rect.bottom + margin.y:
+                    self.rect.top = level.rect.bottom + margin.y
                     self.coords[1] = self.rect.centery
                     self.velocity.y = 0
 
@@ -1214,7 +1238,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 5
+        self.max_velocity = 5 * 3
 
         # stats
         self.exp = 0 # max exp is 9900
@@ -1952,10 +1976,10 @@ while game_state['runtime']:
         if event.type == pygame.QUIT:
             game_state['runtime'] = False
 
-    screen.fill((113, 170, 105))  # fills a surface with the rgb color
+    screen.fill((105, 162, 97))  # fills a surface with the rgb color
 
     # redraws sprites and images
-    camera_group.custom_draw(player, show_hitboxes=False)
+    camera_group.custom_draw(player, show_hitboxes=True)
     cursor_group.draw(screen)
     light_group.render_lighting(player)
 
