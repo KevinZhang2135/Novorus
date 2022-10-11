@@ -25,7 +25,7 @@ PECAN = (115, 93, 71)
 DARK_BROWN = (104, 84, 66)
 
 TILE_SIZE = 100
-STARTING_FLOOR = 1
+STARTING_FLOOR = 2
 game_state = {'unpaused': True,
               'runtime': True,
               'fullscreen': True}

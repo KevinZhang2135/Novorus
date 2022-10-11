@@ -32,6 +32,7 @@ class Level:
 
         self.floor_level_text = text, text_rect
         self.read_csv_level()
+        self.update_lighting()
 
     @property
     def floor_level(self):
@@ -1238,7 +1239,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 5 * 3
+        self.max_velocity = 4
 
         # stats
         self.exp = 0 # max exp is 9900
@@ -1311,11 +1312,11 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         for i in range(26):
             self.inventory.add_item(i, IMAGES['tidal_ring.png'], 1)
 
-        self.light_size = pygame.math.Vector2(500, 500)
+        self.light_size = pygame.math.Vector2(700, 700)
 
         self.light = IMAGES['soft_circle.png'].copy()
         self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
-        self.light = color_image(self.light, LIGHT_GREY, transparency=255)
+        self.light = color_image(self.light, DARK_GREY, transparency=255)
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
@@ -1478,10 +1479,10 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
         self.name = 'Ghost'
 
         # movement
-        self.detection_distance = 300
+        self.detection_distance = 350
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 1.5
+        self.max_velocity = 2
 
         # stats
         self.exp = 15
