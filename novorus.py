@@ -169,7 +169,10 @@ class Level:
                    'path29.png',
                    'path30.png',
                    'path31.png',
-
+                   'grassy3.png',
+                   'grassy4.png',
+                   'grassy5.png',
+                   'grassy6.png',
                    )
 
         size = (100,) * 2
@@ -696,6 +699,8 @@ class Inventory(pygame.sprite.Group):
                     item.image,
                     item.rect.topleft)
 
+                item.show_tooltip()
+
                 # displays item count when the player has multiple copies
                 if item.count > 1:
                     text = COMICORO[25].render(str(item.count), True, WHITE)
@@ -761,6 +766,7 @@ class Inventory(pygame.sprite.Group):
 class Item(pygame.sprite.Sprite):
     def __init__(self, name, image, count, groups):
         super().__init__(groups)
+        self.display_surface = pygame.display.get_surface()
         self.width, self.height = 60, 60
 
         self.image = pygame.transform.scale(image, (self.width, self.height))
@@ -768,6 +774,31 @@ class Item(pygame.sprite.Sprite):
 
         self.name = name
         self.count = count
+
+        self.tooltip = ""
+        self.tooltip_rect = pygame.Rect(self.rect.x, self.rect.y, 100, 100)
+
+    def show_tooltip(self):
+        """Displays tooltip when hovered over"""
+        global player
+
+        mouse_coords = list(pygame.mouse.get_pos()) # hard coded fixed margin of 5
+        mouse_coords[0] -= 5
+        mouse_coords[1] += player.inventory.inventory_rect.height - RESOLUTION[1] + 5
+
+        if self.rect.collidepoint(mouse_coords):
+            self.tooltip_rect.topleft = pygame.mouse.get_pos()
+            pygame.draw.rect(
+                self.display_surface,
+                DARK_BROWN,
+                self.tooltip_rect)
+
+            pygame.draw.rect(
+                self.display_surface,
+                DARK_BROWN,
+                self.tooltip_rect,
+                5)
+            
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -1305,12 +1336,11 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
         self.inventory = Inventory()
         self.inventory.add_item('Wood Sword', IMAGES['wood_sword.png'], 1)
-        self.inventory.add_item('Leather Breastplate', IMAGES['leather_breastplate.png'], 1)
-        self.inventory.add_item('Leather Greaves', IMAGES['leather_greaves.png'], 1)
-        self.inventory.add_item('Baguette', IMAGES['baguette.png'], 2)
-        self.inventory.add_item('Tidal Ring', IMAGES['tidal_ring.png'], 1)
-        for i in range(26):
-            self.inventory.add_item(i, IMAGES['tidal_ring.png'], 1)
+        #self.inventory.add_item('Leather Breastplate', IMAGES['leather_breastplate.png'], 1)
+        #self.inventory.add_item('Leather Greaves', IMAGES['leather_greaves.png'], 1)
+        #self.inventory.add_item('Baguette', IMAGES['baguette.png'], 2)
+        #self.inventory.add_item('Tidal Ring', IMAGES['tidal_ring.png'], 1)
+        
 
         self.light_size = pygame.math.Vector2(700, 700)
 
