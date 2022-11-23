@@ -73,7 +73,7 @@ class Level:
                 self.level_updated = False
 
     def read_csv_level(self):
-        files = os.listdir(f'levels/{self._floor_level}')
+        files = os.listdir(f'./levels/{self._floor_level}')
 
         i = 0
         for path in files:
@@ -81,7 +81,7 @@ class Level:
             if file_extention != '.csv':
                 raise Exception(f'File "{path}" is not recognized as a csv file.')
 
-            with open(os.path.join(f'levels/{self._floor_level}', path)) as file:
+            with open(os.path.join(f'./levels/{self._floor_level}', path)) as file:
                 csv_file = list(csv.reader(file))
                 self.create_tile_group(csv_file, path)
                 if not i: # determines the dimensions of the first csv_file
@@ -101,7 +101,10 @@ class Level:
 
     def update_lighting(self):
         global light_group
-        if self.floor_level > 1:
+        if self.floor_level == 1:
+            light_group.color = GREY
+
+        else:
             light_group.color = MIDNIGHT
 
     def create_tile_group(self, csv_file, path):
@@ -352,7 +355,6 @@ class CameraGroup(pygame.sprite.Group):
             offset_pos = text.rect.topleft - self.offset
             self.display_surface.blit(text.text, offset_pos)
 
-        
         # removes texts that have expired
         expired_texts.sort(reverse=True)
         for index in expired_texts:
@@ -777,6 +779,12 @@ class Item(pygame.sprite.Sprite):
 
         self.tooltip = ""
         self.tooltip_rect = pygame.Rect(self.rect.x, self.rect.y, 100, 100)
+        
+        text = COMICORO[20].render(self.name, True, BLACK)
+        text_rect = text.get_rect(
+            center=self.rect.center)
+
+        self.tooltip_text = [text, text_rect]
 
     def show_tooltip(self):
         """Displays tooltip when hovered over"""
@@ -788,6 +796,9 @@ class Item(pygame.sprite.Sprite):
 
         if self.rect.collidepoint(mouse_coords):
             self.tooltip_rect.topleft = pygame.mouse.get_pos()
+
+            self.tooltip_text[1] = self.tooltip_rect.topleft
+
             pygame.draw.rect(
                 self.display_surface,
                 DARK_BROWN,
@@ -798,8 +809,9 @@ class Item(pygame.sprite.Sprite):
                 DARK_BROWN,
                 self.tooltip_rect,
                 5)
-            
 
+            self.display_surface.blit(*self.tooltip_text)
+            
 
 class HealthBar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
@@ -822,6 +834,11 @@ class HealthBar(pygame.sprite.Sprite):
 
         self.total_bar = self.bar.copy()
 
+        text = COMICORO[20].render(str(""), True, BLACK)
+        text_rect = text.get_rect(midleft=self.bar.midleft)
+        text_rect.left += self.bar.width * 0.3
+        self.stat_text = [text, text_rect]
+
     def draw(self, target):
         pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2, 3)
         ratio = target.health['current'] / target.health['total']
@@ -833,9 +850,8 @@ class HealthBar(pygame.sprite.Sprite):
             pygame.draw.rect(self.display_surface, RED, self.bar, 0, 2)
             pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2, 3)
 
-        text = COMICORO[20].render(str(target.health['current']), True, BLACK)
-        text_rect = text.get_rect(center=self.total_bar.center)
-        self.display_surface.blit(text, text_rect)
+        self.stat_text[0] = COMICORO[20].render(str(target.health['current']), True, BLACK)
+        self.display_surface.blit(*self.stat_text)
 
 
 class SpeedBar(pygame.sprite.Sprite):
@@ -857,13 +873,17 @@ class SpeedBar(pygame.sprite.Sprite):
             self.bar_width,
             self.bar_height)
 
+        text = COMICORO[20].render(str(""), True, BLACK)
+        text_rect = text.get_rect(midleft=self.bar.midleft)
+        text_rect.left += self.bar.width * 0.2
+        self.stat_text = [text, text_rect]
+
     def draw(self, target):
         pygame.draw.rect(self.display_surface, YELLOW, self.bar, 0, 3)
         pygame.draw.rect(self.display_surface, GOLD, self.bar, 2, 3)
 
-        text = COMICORO[20].render(str(target.speed['current']), True, BLACK)
-        text_rect = text.get_rect(center=self.bar.center)
-        self.display_surface.blit(text, text_rect)
+        self.stat_text[0] = COMICORO[20].render(str(target.speed['current']), True, BLACK)
+        self.display_surface.blit(*self.stat_text)
 
 
 class AttackBar(pygame.sprite.Sprite):
@@ -885,14 +905,17 @@ class AttackBar(pygame.sprite.Sprite):
             self.bar_width,
             self.bar_height)
 
+        text = COMICORO[20].render(str(""), True, BLACK)
+        text_rect = text.get_rect(midleft=self.bar.midleft)
+        text_rect.left += self.bar.width * 0.2
+        self.stat_text = [text, text_rect]
+
     def draw(self, target):
         pygame.draw.rect(self.display_surface, GREY, self.bar, 0, 3)
         pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2, 3)
 
-        text = COMICORO[20].render(str(target.attack['current']), True, BLACK)
-        text_rect = text.get_rect(center=self.bar.center)
-        self.display_surface.blit(text, text_rect)
-
+        self.stat_text[0] = COMICORO[20].render(str(target.attack['current']), True, BLACK)
+        self.display_surface.blit(*self.stat_text)
 
 class Bars(pygame.sprite.Group):
     def __init__(self, coords):
@@ -1308,7 +1331,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
                                 'attack': []}
 
         for type in self.animation_types:
-            num_of_frames = len(os.listdir(f'sprites/player/{type}'))
+            num_of_frames = len(os.listdir(f'./sprites/player/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'knight_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
@@ -1549,7 +1572,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
                                 'attack': []}
 
         for type in self.animation_types:
-            num_of_frames = len(os.listdir(f'sprites/enemies/ghost/{type}'))
+            num_of_frames = len(os.listdir(f'./sprites/enemies/ghost/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'ghost_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
@@ -1682,7 +1705,7 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
                                 'attack': []}
 
         for type in self.animation_types:
-            num_of_frames = len(os.listdir(f'sprites/enemies/mimic/{type}'))
+            num_of_frames = len(os.listdir(f'./sprites/enemies/mimic/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'mimic_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
@@ -1764,7 +1787,7 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
 
         for type in self.animation_types:
             num_of_frames = len(os.listdir(
-                f'sprites/enemies/sunflower/{type}'))
+                f'./sprites/enemies/sunflower/{type}'))
             for i in range(num_of_frames):
                 image = IMAGES[f'sunflower_{type}{i + 1}.png'].copy()
                 image = pygame.transform.scale(
@@ -1875,7 +1898,7 @@ class AnimatedTile(pygame.sprite.Sprite):
 
         self.animation_types = []
         num_of_frames = len(
-            os.listdir(f'sprites/decoration/animated/{images}'))
+            os.listdir(f'./sprites/decoration/animated/{images}'))
 
         for i in range(num_of_frames):
             image = IMAGES[f'{images}{i + 1}.png'].copy()
@@ -1917,7 +1940,7 @@ class Torch(AnimatedTile):
         self.smoke_cooldown = randomize(4000, 0.2)
         
         self.smoke_frames = len(
-            os.listdir(f'sprites/particles/smoke'))
+            os.listdir(f'./sprites/particles/smoke'))
 
         self.light_size = pygame.math.Vector2(500, 500)
 

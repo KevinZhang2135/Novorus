@@ -31,7 +31,7 @@ game_state = {'unpaused': True,
               'fullscreen': True}
 
 IMAGES = {}
-for (path, dirs, files) in os.walk('sprites', topdown=True):
+for (path, dirs, files) in os.walk('./sprites', topdown=True):
     for file in files:
         IMAGES[file] = path
 
@@ -42,5 +42,5 @@ for file, path in IMAGES.items():
 COMICORO = {}
 font_sizes = (20, 25, 35, 50)
 for size in font_sizes:
-    COMICORO[size] = pygame.font.Font('comicoro.ttf', size)
+    COMICORO[size] = pygame.font.Font('./comicoro.ttf', size)
 
