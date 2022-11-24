@@ -30,7 +30,7 @@ class Level:
             center=(self.display_surface.get_width() / 2, 
                     self.display_surface.get_height() - 50))
 
-        self.floor_level_text = text, text_rect
+        self.floor_level_text = [text, text_rect]
         self.read_csv_level()
         self.update_lighting()
 
@@ -57,11 +57,8 @@ class Level:
                 self.update_lighting()
 
                 text = COMICORO[50].render(f'Floor {self.floor_level}', True, BLACK)
-                text_rect = text.get_rect(
-                    center=(self.display_surface.get_width() / 2, 
-                            self.display_surface.get_height() - 50))
 
-                self.floor_level_text = text, text_rect
+                self.floor_level_text[0] = text
 
                 player.velocity.x = 0
                 player.velocity.y = 0
@@ -560,7 +557,7 @@ class Menu(pygame.sprite.Group):
                     game_state['runtime'] = False
 
             else:
-                self.display_surface.blit(self.exit_text[0], self.exit_text[1])
+                self.display_surface.blit(*self.exit_text)
 
         else:
             game_state['unpaused'] = True
@@ -795,9 +792,9 @@ class Item(pygame.sprite.Sprite):
         mouse_coords[1] += player.inventory.inventory_rect.height - RESOLUTION[1] + 5
 
         if self.rect.collidepoint(mouse_coords):
-            self.tooltip_rect.topleft = pygame.mouse.get_pos()
+            self.tooltip_rect.topleft = [i + 10 for i in pygame.mouse.get_pos()]
 
-            self.tooltip_text[1] = self.tooltip_rect.topleft
+            self.tooltip_text[1] = [i + 10 for i in self.tooltip_rect.topleft]
 
             pygame.draw.rect(
                 self.display_surface,
@@ -836,7 +833,7 @@ class HealthBar(pygame.sprite.Sprite):
 
         text = COMICORO[20].render(str(""), True, BLACK)
         text_rect = text.get_rect(midleft=self.bar.midleft)
-        text_rect.left += self.bar.width * 0.3
+        text_rect.left += self.total_bar.width * 0.25
         self.stat_text = [text, text_rect]
 
     def draw(self, target):
@@ -875,7 +872,7 @@ class SpeedBar(pygame.sprite.Sprite):
 
         text = COMICORO[20].render(str(""), True, BLACK)
         text_rect = text.get_rect(midleft=self.bar.midleft)
-        text_rect.left += self.bar.width * 0.2
+        text_rect.left += self.bar.width * 0.25
         self.stat_text = [text, text_rect]
 
     def draw(self, target):
@@ -907,7 +904,7 @@ class AttackBar(pygame.sprite.Sprite):
 
         text = COMICORO[20].render(str(""), True, BLACK)
         text_rect = text.get_rect(midleft=self.bar.midleft)
-        text_rect.left += self.bar.width * 0.2
+        text_rect.left += self.bar.width * 0.25
         self.stat_text = [text, text_rect]
 
     def draw(self, target):
@@ -916,6 +913,7 @@ class AttackBar(pygame.sprite.Sprite):
 
         self.stat_text[0] = COMICORO[20].render(str(target.attack['current']), True, BLACK)
         self.display_surface.blit(*self.stat_text)
+
 
 class Bars(pygame.sprite.Group):
     def __init__(self, coords):
@@ -938,6 +936,18 @@ class Bars(pygame.sprite.Group):
 
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
         self.exp_rect = pygame.Rect(self.coords, (60, 30))
+
+        name_text = COMICORO[25].render('', True, BLACK)
+        name_text_rect = name_text.get_rect(
+            center=(self.coords.x + self.width / 4,
+                    self.coords.y + self.padding_step))
+
+        self.name_text = [name_text, name_text_rect]
+
+        exp_text = COMICORO[25].render('', True, BLACK)
+        exp_text_rect = exp_text.get_rect(center=self.exp_rect.center)
+
+        self.exp_text = [exp_text, exp_text_rect]
        
     def draw(self, targets):
         if len(targets) > 0:
@@ -957,12 +967,8 @@ class Bars(pygame.sprite.Group):
                 pygame.draw.rect(self.display_surface, BROWN, self.rect, 0, 3)
                 pygame.draw.rect(self.display_surface,DARK_BROWN, self.rect, 3, 3)
 
-                name_text = COMICORO[25].render(f'{target.name} lvl {target.level}', True, BLACK)
-                name_text_rect = name_text.get_rect(
-                    center=(self.coords.x + self.width / 2,
-                            self.coords.y + self.padding_step))
-
-                self.display_surface.blit(name_text, name_text_rect)
+                self.name_text[0] = COMICORO[25].render(f'{target.name} lvl {target.level}', True, BLACK)
+                self.display_surface.blit(*self.name_text)
 
                 # blits the bar
                 for sprite in self.sprites():
@@ -970,7 +976,7 @@ class Bars(pygame.sprite.Group):
                     sprite.draw(target)
 
                 # displays exp if the cursor is hovered over the name
-                if name_text_rect.collidepoint(pygame.mouse.get_pos()):
+                if self.name_text[1].collidepoint(pygame.mouse.get_pos()):
                     if target.exp_levels:
                         text = f'exp {target.exp} / {target.exp_levels[target.level - 1]}'
 
@@ -978,10 +984,10 @@ class Bars(pygame.sprite.Group):
                         text = f'exp {target.exp}'
 
 
-                    exp_text = COMICORO[25].render(text, True, BLACK)
-                    exp_text_rect = exp_text.get_rect(center=self.exp_rect.center)
+                    self.exp_text[0] = COMICORO[25].render(text, True, BLACK)
+                    self.exp_text[1] = self.exp_text[0].get_rect(center=self.exp_rect.center)
 
-                    self.exp_rect.width = exp_text_rect.width + 20
+                    self.exp_rect.width = self.exp_text[1].width + 20
                     self.exp_rect.topleft = pygame.mouse.get_pos()
 
                     pygame.draw.rect(self.display_surface,
@@ -990,7 +996,7 @@ class Bars(pygame.sprite.Group):
                     pygame.draw.rect(self.display_surface,
                                      DARK_BROWN, self.exp_rect, 3)
 
-                    self.display_surface.blit(exp_text, exp_text_rect)
+                    self.display_surface.blit(*self.exp_text)
 
 
 class Cursor(pygame.sprite.Sprite):
