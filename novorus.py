@@ -98,10 +98,7 @@ class Level:
 
     def update_lighting(self):
         global light_group
-        if self.floor_level == 1:
-            light_group.color = GREY
-
-        else:
+        if self.floor_level > 1:
             light_group.color = MIDNIGHT
 
     def create_tile_group(self, csv_file, path):
@@ -136,43 +133,43 @@ class Level:
         player.coords = player.rect.center
 
     def add_terrain(self, id, coords):
-        sprites = ('path1.png',
-                   'path2.png',
-                   'path3.png',
-                   'path4.png',
-                   'path5.png',
-                   'path6.png',
-                   'path7.png',
-                   'path8.png',
-                   'path9.png',
-                   'path10.png',
-                   'grassy1.png',
-                   'grassy2.png',
-                   'path11.png',
-                   'path12.png',
-                   'path13.png',
-                   'path14.png',
-                   'path15.png',
-                   'path16.png',
-                   'path17.png',
-                   'path18.png',
-                   'path19.png',
-                   'path20.png',
-                   'path21.png',
-                   'path22.png',
-                   'path23.png',
-                   'path24.png',
-                   'path25.png',
-                   'path26.png',
-                   'path27.png',
-                   'path28.png',
-                   'path29.png',
-                   'path30.png',
-                   'path31.png',
-                   'grassy3.png',
-                   'grassy4.png',
-                   'grassy5.png',
-                   'grassy6.png',
+        sprites = ('path1',
+                   'path2',
+                   'path3',
+                   'path4',
+                   'path5',
+                   'path6',
+                   'path7',
+                   'path8',
+                   'path9',
+                   'path10',
+                   'grassy1',
+                   'grassy2',
+                   'path11',
+                   'path12',
+                   'path13',
+                   'path14',
+                   'path15',
+                   'path16',
+                   'path17',
+                   'path18',
+                   'path19',
+                   'path20',
+                   'path21',
+                   'path22',
+                   'path23',
+                   'path24',
+                   'path25',
+                   'path26',
+                   'path27',
+                   'path28',
+                   'path29',
+                   'path30',
+                   'path31',
+                   'grassy3',
+                   'grassy4',
+                   'grassy5',
+                   'grassy6',
                    )
 
         size = (100,) * 2
@@ -187,11 +184,11 @@ class Level:
     def add_walls(self, id, coords):
         global camera_group, collision_group
 
-        images = ('brick_top.png',
-                  'brick_middle.png',
-                  'brick_bottom.png',
-                  'brick_pile.png',
-                  'brick_side.png')
+        images = ('brick_top',
+                  'brick_middle',
+                  'brick_bottom',
+                  'brick_pile',
+                  'brick_side')
 
         wall = StaticTile(
             coords,
@@ -224,37 +221,37 @@ class Level:
     def add_static_decor(self, id, coords):
         global camera_group
 
-        sprites = ({'file': 'grass1.png',
+        sprites = ({'file': 'grass1',
                     'size': 30},
 
-                   {'file': 'grass2.png',
+                   {'file': 'grass2',
                     'size': 30},
 
-                   {'file': 'grass3.png',
+                   {'file': 'grass3',
                     'size': 30},
 
-                   {'file': 'rock1.png',
+                   {'file': 'rock1',
                     'size': 50},
 
-                   {'file': 'rock2.png',
+                   {'file': 'rock2',
                     'size': 40},
 
-                   {'file': 'rock3.png',
+                   {'file': 'rock3',
                     'size': 50},
 
-                   {'file': 'rock4.png',
+                   {'file': 'rock4',
                     'size': 50},
 
-                   {'file': 'tree1.png',
+                   {'file': 'tree1',
                     'size': 120},
 
-                   {'file': 'tree2.png',
+                   {'file': 'tree2',
                     'size': 120},
 
-                   {'file': 'tree3.png',
+                   {'file': 'tree3',
                     'size': 120},
 
-                   {'file': 'tree4.png',
+                   {'file': 'tree4',
                     'size': 30})
 
         size = round(randomize(sprites[id]['size'], 0.1))
@@ -325,8 +322,14 @@ class CameraGroup(pygame.sprite.Group):
         self.center_target(player)
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.rect.bottom)):
-            if (abs(player.rect.left - sprite.rect.left) < self.half_width
-                or abs(player.rect.top - sprite.rect.top) < self.half_height):
+            if (abs(player.rect.centerx
+                    - sprite.rect.centerx 
+                    + sprite.rect.width / 2) < self.half_width
+    
+                or abs(player.rect.centery
+                       - sprite.rect.centery 
+                       + sprite.rect.height / 2) < self.half_height):
+                       
                 offset_pos = sprite.rect.topleft - self.offset
                 self.display_surface.blit(sprite.image, offset_pos)
 
@@ -363,8 +366,14 @@ class CameraGroup(pygame.sprite.Group):
         global player
 
         for sprite in self.sprites():
-            if (abs(player.rect.left - sprite.rect.left) < self.half_width
-                or abs(player.rect.top - sprite.rect.top) < self.half_height):
+            if (abs(player.rect.centerx
+                    - sprite.rect.centerx 
+                    + sprite.rect.width / 2) < self.half_width
+    
+                or abs(player.rect.centery
+                       - sprite.rect.centery 
+                       + sprite.rect.height / 2) < self.half_height):
+
                 sprite.update()
 
 
@@ -504,7 +513,7 @@ class Menu(pygame.sprite.Group):
 
         self.pause_button = Button(
             (self.display_surface.get_width(), self.display_surface.get_height()),
-            {'inactive': IMAGES['menu.png'].copy(), 'active': IMAGES['paused.png'].copy()},
+            {'inactive': IMAGES['menu'].copy(), 'active': IMAGES['paused'].copy()},
             self,
             optional_key=pygame.K_ESCAPE,
             work_paused = True)
@@ -631,7 +640,7 @@ class Inventory(pygame.sprite.Group):
 
         self.inventory_button = Button(
             (self.display_surface.get_width() - 100, self.display_surface.get_height()),
-            {'inactive': IMAGES['backpack_closed.png'].copy(), 'active': IMAGES['backpack_opened.png'].copy()},
+            {'inactive': IMAGES['backpack_closed'].copy(), 'active': IMAGES['backpack_opened'].copy()},
             self,
             optional_key=pygame.K_q)
 
@@ -647,7 +656,7 @@ class Inventory(pygame.sprite.Group):
         self.inventory_surface = pygame.Surface((self.inventory_rect.width, self.inventory_rect.height))
 
         # inventory items
-        self.item_box = IMAGES['item_box.png']
+        self.item_box = IMAGES['item_box']
         self.item_box = pygame.transform.scale(self.item_box, (60, 60))
 
         # scroll
@@ -656,7 +665,7 @@ class Inventory(pygame.sprite.Group):
         self.scroll_velocity = 0
         self.scroll_max_velocity = 7
 
-    def add_item(self, name, image, count):
+    def add_item(self, name, image, tooltip, count):
         """Adds items to the inventory, stacking if it is already present"""
         inventory = [item for item in self.sprites() if item != self.inventory_button and item.name == name]
 
@@ -666,7 +675,7 @@ class Inventory(pygame.sprite.Group):
         
         # adds a new item into the inventory
         else:
-            Item(str(name), image, count, self)
+            Item(str(name), image, tooltip, count, self)
 
     def show_inventory(self):
         """Displays inventory"""
@@ -763,7 +772,7 @@ class Inventory(pygame.sprite.Group):
 
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, name, image, count, groups):
+    def __init__(self, name, image, tooltip, count, groups):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
         self.width, self.height = 60, 60
@@ -777,7 +786,7 @@ class Item(pygame.sprite.Sprite):
         self.tooltip = ""
         self.tooltip_rect = pygame.Rect(self.rect.x, self.rect.y, 100, 100)
         
-        text = COMICORO[20].render(self.name, True, BLACK)
+        text = COMICORO[20].render(self.name.title(), True, BLACK)
         text_rect = text.get_rect(
             center=self.rect.center)
 
@@ -818,7 +827,7 @@ class HealthBar(pygame.sprite.Sprite):
         self.width, self.height = 45, 45
         self.bar_width, self.bar_height = 120, 15
 
-        self.image = IMAGES['heart.png'].copy()
+        self.image = IMAGES['heart'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
@@ -859,7 +868,7 @@ class SpeedBar(pygame.sprite.Sprite):
         self.width, self.height = 45, 45
         self.bar_width, self.bar_height = 120, 15
 
-        self.image = IMAGES['lightning.png'].copy()
+        self.image = IMAGES['lightning'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
@@ -891,7 +900,7 @@ class AttackBar(pygame.sprite.Sprite):
         self.width, self.height = 45, 45
         self.bar_width, self.bar_height = 120, 15
 
-        self.image = IMAGES['sword.png'].copy()
+        self.image = IMAGES['sword'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
 
@@ -1005,7 +1014,7 @@ class Cursor(pygame.sprite.Sprite):
         self.display_surface = pygame.display.get_surface()
         self.tile_size = tile_size
 
-        self.image = IMAGES['cursor.png'].copy()
+        self.image = IMAGES['cursor'].copy()
         self.image = pygame.transform.scale(self.image, (100, 100))
 
         self.rect = self.image.get_rect(center=(0, 0))
@@ -1213,7 +1222,7 @@ class GenericNPC:
                 dust = Particle(
                     (x, y),
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
-                    f'dust{random.randint(1, 3)}.png',
+                    f'dust{random.randint(1, 3)}',
                     camera_group)
 
                 dust.velocity.y = -2
@@ -1339,7 +1348,7 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'./sprites/player/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'knight_{type}{i + 1}.png'].copy()
+                image = IMAGES[f'knight_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -1364,18 +1373,14 @@ class Player(pygame.sprite.Sprite, GenericNPC):
         self.sprite_layer = 1
 
         self.inventory = Inventory()
-        self.inventory.add_item('Wood Sword', IMAGES['wood_sword.png'], 1)
-        #self.inventory.add_item('Leather Breastplate', IMAGES['leather_breastplate.png'], 1)
-        #self.inventory.add_item('Leather Greaves', IMAGES['leather_greaves.png'], 1)
-        #self.inventory.add_item('Baguette', IMAGES['baguette.png'], 2)
-        #self.inventory.add_item('Tidal Ring', IMAGES['tidal_ring.png'], 1)
+        #self.inventory.add_item('wood sword', IMAGES['wood_sword'], 1)
         
 
         self.light_size = pygame.math.Vector2(700, 700)
 
-        self.light = IMAGES['soft_circle.png'].copy()
+        self.light = IMAGES['soft_circle'].copy()
         self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
-        self.light = color_image(self.light, DARK_GREY, transparency=255)
+        self.light = color_image(self.light, LIGHT_GREY, transparency=255)
 
     def set_stats(self):
         '''Scales stats according to its base and bonuses'''
@@ -1580,7 +1585,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'./sprites/enemies/ghost/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'ghost_{type}{i + 1}.png'].copy()
+                image = IMAGES[f'ghost_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -1645,7 +1650,7 @@ class Ghost(pygame.sprite.Sprite, GenericNPC):
                 dust = Particle(
                     (x, y),
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
-                    f'dust{random.randint(1, 3)}.png',
+                    f'dust{random.randint(1, 3)}',
                     camera_group)
 
                 dust.velocity.y = -2
@@ -1713,7 +1718,7 @@ class Mimic(pygame.sprite.Sprite, GenericNPC):
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'./sprites/enemies/mimic/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'mimic_{type}{i + 1}.png'].copy()
+                image = IMAGES[f'mimic_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -1795,7 +1800,7 @@ class Sunflower(pygame.sprite.Sprite, GenericNPC):
             num_of_frames = len(os.listdir(
                 f'./sprites/enemies/sunflower/{type}'))
             for i in range(num_of_frames):
-                image = IMAGES[f'sunflower_{type}{i + 1}.png'].copy()
+                image = IMAGES[f'sunflower_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
                     image, (self.width, self.height))
 
@@ -1833,11 +1838,11 @@ class Chest(pygame.sprite.Sprite):
         self.width, self.height = size
 
         self.chest_sprites = {}
-        self.chest_sprites['closed'] = IMAGES['chest_closed.png'].copy()
+        self.chest_sprites['closed'] = IMAGES['chest_closed'].copy()
         self.chest_sprites['closed'] = pygame.transform.scale(
             self.chest_sprites['closed'], (self.width, self.height))
 
-        self.chest_sprites['opened'] = IMAGES['chest_opened.png'].copy()
+        self.chest_sprites['opened'] = IMAGES['chest_opened'].copy()
         self.chest_sprites['opened'] = pygame.transform.scale(
             self.chest_sprites['opened'], (self.width, self.height))
         self.image = self.chest_sprites['closed']
@@ -1855,10 +1860,8 @@ class Chest(pygame.sprite.Sprite):
             self.image = self.chest_sprites['opened']
             self.opened = True
 
-            player.inventory.add_item('Baguette', IMAGES['baguette.png'], random.randint(1, 3))
-            player.inventory.add_item('Oak Log', IMAGES['oak_log.png'], random.randint(1, 3))
-
-            
+            #player.inventory.add_item('Baguette', IMAGES['baguette'], random.randint(1, 3))
+            #player.inventory.add_item('Oak Log', IMAGES['oak_log'], random.randint(1, 3))
 
     def update(self):
         self.collision()
@@ -1869,7 +1872,7 @@ class LevelExit(pygame.sprite.Sprite):
         super().__init__(groups)
         self.width, self.height = size
 
-        self.image = IMAGES['dirt_hole.png'].copy()
+        self.image = IMAGES['dirt_hole'].copy()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
 
@@ -1907,7 +1910,7 @@ class AnimatedTile(pygame.sprite.Sprite):
             os.listdir(f'./sprites/decoration/animated/{images}'))
 
         for i in range(num_of_frames):
-            image = IMAGES[f'{images}{i + 1}.png'].copy()
+            image = IMAGES[f'{images}{i + 1}'].copy()
             image = pygame.transform.scale(image, size)
 
             self.animation_types.append(image)
@@ -1950,7 +1953,7 @@ class Torch(AnimatedTile):
 
         self.light_size = pygame.math.Vector2(500, 500)
 
-        self.light = IMAGES['soft_circle.png'].copy()
+        self.light = IMAGES['soft_circle'].copy()
         self.light = pygame.transform.scale(self.light, [int(dimension) for dimension in self.light_size])
         self.light = color_image(self.light, MELLOW_YELLOW, transparency=100)
 
@@ -1962,7 +1965,7 @@ class Torch(AnimatedTile):
             smoke = Particle(
                 self.rect.center,
                 [randomize(25, 0.1) for i in range(2)],
-                f'smoke{random.randint(1, self.smoke_frames)}.png',
+                f'smoke{random.randint(1, self.smoke_frames)}',
                 camera_group)
 
             smoke.velocity.y = -4

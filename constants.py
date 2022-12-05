@@ -33,10 +33,14 @@ game_state = {'unpaused': True,
 IMAGES = {}
 for (path, dirs, files) in os.walk('./sprites', topdown=True):
     for file in files:
-        IMAGES[file] = path
+        IMAGES[file[:-4]] = pygame.image.load(os.path.join(path, file)).convert_alpha()
 
-for file, path in IMAGES.items():
-    IMAGES[file] = pygame.image.load(os.path.join(path, file)).convert_alpha()
+ITEM_TOOLTIPS = {}
+for (path, dirs, files) in os.walk('./items', topdown=True):
+    for file in files:
+        with open(os.path.join(path, file), 'r') as item:
+            tooltip = [line.strip() for line in item.readlines()]
+            ITEM_TOOLTIPS[tooltip[0]] = tooltip
 
 # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
 COMICORO = {}

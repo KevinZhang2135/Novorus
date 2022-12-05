@@ -1,0 +1,2 @@
+blood gem
+Increases base health
