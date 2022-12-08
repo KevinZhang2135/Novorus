@@ -634,7 +634,7 @@ class Button(pygame.sprite.Sprite):
 
 
 class Inventory(pygame.sprite.Group):
-    def __init__(self):
+    def __init__(self, items):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
 
@@ -656,6 +656,10 @@ class Inventory(pygame.sprite.Group):
         self.inventory_surface = pygame.Surface((self.inventory_rect.width, self.inventory_rect.height))
 
         # inventory items
+        self.items = {}
+        for name, tooltip in items.items():
+            self.items[name] = Item(name, IMAGES[name], tooltip, 0)
+        
         self.item_box = IMAGES['item_box']
         self.item_box = pygame.transform.scale(self.item_box, (60, 60))
 
@@ -665,17 +669,19 @@ class Inventory(pygame.sprite.Group):
         self.scroll_velocity = 0
         self.scroll_max_velocity = 7
 
-    def add_item(self, name, image, tooltip, count):
+
+    def add_item(self, name, count):
         """Adds items to the inventory, stacking if it is already present"""
         inventory = [item for item in self.sprites() if item != self.inventory_button and item.name == name]
 
         # if the item already exists in inventory
         if inventory:
-            inventory[0].count += count
+            self.items[name].count += count
         
         # adds a new item into the inventory
         else:
-            Item(str(name), image, tooltip, count, self)
+            self.items[name].count = count
+            self.add(self.items[name])
 
     def show_inventory(self):
         """Displays inventory"""
@@ -772,8 +778,8 @@ class Inventory(pygame.sprite.Group):
 
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, name, image, tooltip, count, groups):
-        super().__init__(groups)
+    def __init__(self, name, image, tooltip, count):
+        super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.width, self.height = 60, 60
 
@@ -781,16 +787,18 @@ class Item(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         self.name = name
+        self.tooltip = tooltip
+        self.tooltip[0] = self.tooltip[0].title()
         self.count = count
 
-        self.tooltip = ""
-        self.tooltip_rect = pygame.Rect(self.rect.x, self.rect.y, 100, 100)
-        
-        text = COMICORO[20].render(self.name.title(), True, BLACK)
-        text_rect = text.get_rect(
-            center=self.rect.center)
+        self.tooltip_rect = pygame.Rect(self.rect.x, self.rect.y, 100, 10 + 15 * len(self.tooltip))
+        self.tooltip_text = []
 
-        self.tooltip_text = [text, text_rect]
+        for line in tooltip:
+            text = COMICORO[20].render(line, True, BLACK)
+            text_rect = text.get_rect(center=self.rect.center)
+            self.tooltip_text.append([text, text_rect])
+
 
     def show_tooltip(self):
         """Displays tooltip when hovered over"""
@@ -802,9 +810,7 @@ class Item(pygame.sprite.Sprite):
 
         if self.rect.collidepoint(mouse_coords):
             self.tooltip_rect.topleft = [i + 10 for i in pygame.mouse.get_pos()]
-
-            self.tooltip_text[1] = [i + 10 for i in self.tooltip_rect.topleft]
-
+            
             pygame.draw.rect(
                 self.display_surface,
                 DARK_BROWN,
@@ -816,7 +822,10 @@ class Item(pygame.sprite.Sprite):
                 self.tooltip_rect,
                 5)
 
-            self.display_surface.blit(*self.tooltip_text)
+            for index, line in enumerate(self.tooltip_text):
+                line[1][0] = self.tooltip_rect.topleft[0] + 10
+                line[1][1] = self.tooltip_rect.topleft[1] + 15 * index
+                self.display_surface.blit(*line)
             
 
 class HealthBar(pygame.sprite.Sprite):
@@ -1372,8 +1381,8 @@ class Player(pygame.sprite.Sprite, GenericNPC):
 
         self.sprite_layer = 1
 
-        self.inventory = Inventory()
-        #self.inventory.add_item('wood sword', IMAGES['wood_sword'], 1)
+        self.inventory = Inventory(ITEM_TOOLTIPS)
+        self.inventory.add_item('wood_sword', 1)
         
 
         self.light_size = pygame.math.Vector2(700, 700)
@@ -1860,8 +1869,8 @@ class Chest(pygame.sprite.Sprite):
             self.image = self.chest_sprites['opened']
             self.opened = True
 
-            #player.inventory.add_item('Baguette', IMAGES['baguette'], random.randint(1, 3))
-            #player.inventory.add_item('Oak Log', IMAGES['oak_log'], random.randint(1, 3))
+            player.inventory.add_item('baguette', random.randint(1, 3))
+            player.inventory.add_item('oak_log', random.randint(1, 3))
 
     def update(self):
         self.collision()

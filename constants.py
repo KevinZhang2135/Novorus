@@ -40,7 +40,7 @@ for (path, dirs, files) in os.walk('./items', topdown=True):
     for file in files:
         with open(os.path.join(path, file), 'r') as item:
             tooltip = [line.strip() for line in item.readlines()]
-            ITEM_TOOLTIPS[tooltip[0]] = tooltip
+            ITEM_TOOLTIPS[tooltip[0].replace(" ", "_")] = tooltip
 
 # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
 COMICORO = {}
