@@ -268,6 +268,7 @@ class Level:
         decor = decor_sprites[id](
             coords,
             [size] * 2,
+            self.game,
             (self.game.camera_group, self.game.light_group))
 
         decor.sprite_layer = 2
@@ -362,8 +363,9 @@ class StaticTile(pygame.sprite.Sprite):
 
 
 class AnimatedTile(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, images, groups):
+    def __init__(self, coords: list, size: list, images, game, groups):
         super().__init__(groups)
+        self.game = game
         self.width, self.height = size
         self.frame = 0
 
@@ -401,8 +403,8 @@ class AnimatedTile(pygame.sprite.Sprite):
 
 
 class Torch(AnimatedTile):
-    def __init__(self, coords: list, size: list, groups):
-        super().__init__(coords, size, 'torch', groups)
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, 'torch', game, groups)
         self.sprite_layer = 2
         self.rect.centerx += random.randint(-1, 1) * 25
         self.rect.centery += 25
@@ -429,7 +431,7 @@ class Torch(AnimatedTile):
                 self.rect.center,
                 [randomize(25, 0.1) for i in range(2)],
                 f'smoke{random.randint(1, self.smoke_frames)}',
-                camera_group)
+                self.game.camera_group)
 
             smoke.velocity.y = -4
             smoke.expiration_time = 500

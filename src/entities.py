@@ -168,7 +168,7 @@ class Entity(pygame.sprite.Sprite):
             self.health['current'] = 0
             self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
-            self.cooldown = player.animation_cooldown
+            self.cooldown = self.game.player.animation_cooldown
 
             for i in range(5):
                 x_offset = round((self.rect.right - self.rect.left) / 4)
@@ -185,7 +185,7 @@ class Entity(pygame.sprite.Sprite):
                     (x, y),
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
                     f'dust{random.randint(1, 3)}',
-                    camera_group)
+                    self.game.camera_group)
 
                 dust.velocity.y = -2
 
@@ -214,7 +214,7 @@ class Entity(pygame.sprite.Sprite):
                 text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
-                camera_group.texts.append(text)
+                self.game.camera_group.texts.append(text)
 
             else:
                 text = COMICORO[25].render(str(damage), True, RED)
@@ -222,7 +222,7 @@ class Entity(pygame.sprite.Sprite):
                 text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
-                camera_group.texts.append(text)
+                self.game.camera_group.texts.append(text)
 
             self.health['current'] -= damage
 
@@ -232,7 +232,7 @@ class Entity(pygame.sprite.Sprite):
             text = TextPopUp(text, text_rect)
             text.velocity.y = -5
 
-            camera_group.texts.append(text)
+            self.game.camera_group.texts.append(text)
 
     def animation(self):
         '''Handles animation'''
@@ -456,7 +456,7 @@ class Player(Entity):
                 text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
-                camera_group.texts.append(text)
+                self.game.camera_group.texts.append(text)
 
             else:
                 text = COMICORO[25].render(str(damage), True, TANGERINE)
@@ -464,7 +464,7 @@ class Player(Entity):
                 text = TextPopUp(text, text_rect)
                 text.velocity.y = -5
 
-                camera_group.texts.append(text)
+                self.game.camera_group.texts.append(text)
 
             self.health['current'] -= damage
 
@@ -474,14 +474,14 @@ class Player(Entity):
             text = TextPopUp(text, text_rect)
             text.velocity.y = -5
 
-            camera_group.texts.append(text)
+            self.game.camera_group.texts.append(text)
 
         if self.health['current'] < 0:
             # sprite dies
             self.health['current'] = 0
             self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
-            self.cooldown = player.animation_cooldown
+            self.cooldown = self.game.player.animation_cooldown
 
     def update(self):
         '''Handles events'''
@@ -602,7 +602,7 @@ class Ghost(Entity):
             self.health['current'] = 0
             self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
-            self.cooldown = player.animation_cooldown
+            self.cooldown = self.game.player.animation_cooldown
 
             for i in range(5):
                 x_offset = round((self.rect.right - self.rect.left) / 4)
@@ -619,7 +619,7 @@ class Ghost(Entity):
                     (x, y),
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
                     f'dust{random.randint(1, 3)}',
-                    camera_group)
+                    self.game.camera_group)
 
                 dust.velocity.y = -2
 

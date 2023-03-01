@@ -163,7 +163,7 @@ class Inventory(pygame.sprite.Group):
         # inventory items
         self.items = {}
         for name, tooltip in items.items():
-            self.items[name] = Item(name, IMAGES[name], tooltip, 0)
+            self.items[name] = Item(name, IMAGES[name], tooltip, 0, self.game)
 
         self.item_box = IMAGES['item_box']
         self.item_box = pygame.transform.scale(self.item_box, (60, 60))
@@ -288,9 +288,10 @@ class Inventory(pygame.sprite.Group):
 
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, name, image, tooltip, count):
+    def __init__(self, name, image, tooltip, count, game):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
+        self.game = game
         self.width, self.height = 60, 60
 
         self.image = pygame.transform.scale(image, (self.width, self.height))
@@ -313,12 +314,10 @@ class Item(pygame.sprite.Sprite):
 
     def show_tooltip(self):
         """Displays tooltip when hovered over"""
-        global player
-
         # hard coded fixed margin of 5
         mouse_coords = list(pygame.mouse.get_pos())
         mouse_coords[0] -= 5
-        mouse_coords[1] += player.inventory.inventory_rect.height - \
+        mouse_coords[1] += self.game.player.inventory.inventory_rect.height - \
             self.display_surface.get_height() + 5
 
         # when mouse is hovered over item
@@ -491,7 +490,7 @@ class Bars(pygame.sprite.Group):
         if len(targets) > 0:
             if len(targets) > 1:
                 for target in targets:
-                    if (target.in_combat or target.rect.collidepoint(Cursor.offset_mouse_pos(self.game.player))):
+                    if (target.in_combat or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
                         break
 
                     else:
@@ -553,23 +552,22 @@ class Cursor(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(0, 0))
 
         self.sprite_layer = 4
+        
+    def offset_mouse_pos(self):
+        display_surface = pygame.display.get_surface()
+        mouse_pos = list(pygame.mouse.get_pos())
+        mouse_pos[0] += self.game.player.rect.centerx - display_surface.get_width() / 2
+        mouse_pos[1] += self.game.player.rect.centery - display_surface.get_height() / 2
 
-    def update(target, self):
+        return mouse_pos
+    
+    def update(self):
         coords = self.offset_mouse_pos()
         coords[0] = round(coords[0] / TILE_SIZE) * TILE_SIZE
-        coords[0] -= target.rect.centerx - self.display_surface.get_width() / 2
+        coords[0] -= self.game.player.rect.centerx - self.display_surface.get_width() / 2
 
         coords[1] = round(coords[1] / TILE_SIZE) * TILE_SIZE
-        coords[1] -= target.rect.centery - \
+        coords[1] -= self.game.player.rect.centery - \
             self.display_surface.get_height() / 2
 
         self.rect.center = coords
-
-    @staticmethod
-    def offset_mouse_pos(target):
-        display_surface = pygame.display.get_surface()
-        mouse_pos = list(pygame.mouse.get_pos())
-        mouse_pos[0] += target.rect.centerx - display_surface.get_width() / 2
-        mouse_pos[1] += target.rect.centery - display_surface.get_height() / 2
-
-        return mouse_pos
