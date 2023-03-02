@@ -5,8 +5,6 @@ from ui import *
 from entities import Player
 
 import pygame
-import random
-import os
 
 class App:
     def __init__(self):

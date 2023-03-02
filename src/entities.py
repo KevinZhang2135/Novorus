@@ -4,6 +4,7 @@ from ui import Inventory
 
 import pygame
 
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, game, groups):
         super().__init__(groups)
@@ -11,8 +12,6 @@ class Entity(pygame.sprite.Sprite):
 
     def movement(self):
         '''Handles movement'''
-        global player, collision_group
-
         self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
                                                 self.game.player.rect.centery - self.rect.centery)
 
@@ -113,18 +112,16 @@ class Entity(pygame.sprite.Sprite):
             self.facing = 'left'
 
     def attack_enemy(self, target_group):
-        global camera_group
-
         # checks if the player mask overlaps an enemy mask
         if (pygame.sprite.spritecollide(self, target_group, False)
             and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)
                 and self.health['current'] > 0):
 
             distance = pygame.math.Vector2(self.rect.center)
-            def closest_distance(enemy): return distance.distance_to(
-                enemy.rect.center)
             enemies = target_group.sprites()
-            enemy = sorted(enemies, key=closest_distance)[0]  # closest enemy
+            enemy = sorted(enemies, key=lambda enemy: distance.distance_to(
+                enemy.rect.center))[0]  # closest enemy
+            
             self.face_enemy(enemy)
 
             if not self.in_combat and enemy.health['current'] > 0:
@@ -144,6 +141,7 @@ class Entity(pygame.sprite.Sprite):
                     if pygame.time.get_ticks() - self.animation_time > self.cooldown:
                         enemy.hurt(self.attack['current'],
                                    self.crit_chance['current'])
+
                         if enemy.health['current'] <= 0:
                             self.in_combat = False
                             self.exp += enemy.exp
@@ -799,8 +797,3 @@ class Sunflower(Entity):
         self.attack_enemy(self.game.player_group)
         self.check_state()
         self.animation()
-
-
-
-
-
