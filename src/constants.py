@@ -4,7 +4,7 @@ import os
 import random
 
 pygame.init()
-pygame.display.set_mode((1920, 1080), pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
+pygame.display.set_mode()
 
 # colors
 RED = (211, 47, 47)

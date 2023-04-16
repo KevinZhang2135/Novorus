@@ -11,8 +11,8 @@ class Menu(pygame.sprite.Group):
 
         self.pause_button = Button(
             (self.display_surface.get_width(), self.display_surface.get_height()),
-            {'inactive': IMAGES['menu'].copy(
-            ), 'active': IMAGES['paused'].copy()},
+            {'inactive': IMAGES['menu'].copy(), 
+             'active': IMAGES['paused'].copy()},
             self.game,
             self,
             optional_key=pygame.K_ESCAPE,
