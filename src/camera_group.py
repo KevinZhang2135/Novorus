@@ -1,5 +1,6 @@
 import pygame
 
+
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, game):
         super().__init__()
@@ -14,37 +15,43 @@ class CameraGroup(pygame.sprite.Group):
         self.texts = []
 
     def center_target(self, target):
-        self.offset.x = target.rect.centerx - self.half_width
-        self.offset.y = target.rect.centery - self.half_height
+        self.offset.x = 0
+        self.offset.y = 0
+
+        if (target.rect.centerx >= self.game.level.size.x - self.half_width):
+            self.offset.x = self.game.level.size.x - self.display_surface.get_width()
+            pass
+
+        elif (target.rect.centerx > self.half_width):
+            self.offset.x = target.rect.centerx - self.half_width
+
+        if (target.rect.centery >= self.game.level.size.y - self.half_height):
+            self.offset.y = self.game.level.size.y - self.display_surface.get_height()
+            pass
+
+        elif (target.rect.centery > self.half_height):
+            self.offset.y = target.rect.centery - self.half_height
 
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.rect.bottom)):
-            if (abs(player.rect.centerx
-                    - sprite.rect.centerx
-                    + sprite.rect.width / 2) < self.half_width
+            offset_pos = sprite.rect.topleft - self.offset
+            self.display_surface.blit(sprite.image, offset_pos)
 
-                or abs(player.rect.centery
-                       - sprite.rect.centery
-                       + sprite.rect.height / 2) < self.half_height):
+            if show_hitboxes:
+                hitbox = pygame.Rect(
+                    sprite.rect.x - self.offset.x,
+                    sprite.rect.y - self.offset.y,
+                    sprite.rect.width,
+                    sprite.rect.height)
 
-                offset_pos = sprite.rect.topleft - self.offset
-                self.display_surface.blit(sprite.image, offset_pos)
-
-                if show_hitboxes:
-                    hitbox = pygame.Rect(
-                        sprite.rect.x - self.offset.x,
-                        sprite.rect.y - self.offset.y,
-                        sprite.rect.width,
-                        sprite.rect.height)
-
-                    pygame.draw.rect(
-                        self.display_surface,
-                        (255, 0, 0),
-                        hitbox,
-                        1)
+                pygame.draw.rect(
+                    self.display_surface,
+                    (255, 0, 0),
+                    hitbox,
+                    1)
 
         expired_texts = []
         for index, text in enumerate(self.texts):
@@ -66,11 +73,10 @@ class CameraGroup(pygame.sprite.Group):
         for sprite in self.sprites():
             if (abs(self.game.player.rect.centerx
                     - sprite.rect.centerx
-                    + sprite.rect.width / 2) < self.half_width
+                    + sprite.rect.width) < self.half_width
 
                 or abs(self.game.player.rect.centery
                        - sprite.rect.centery
-                       + sprite.rect.height / 2) < self.half_height):
+                       + sprite.rect.height) < self.half_height):
 
                 sprite.update()
-

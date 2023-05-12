@@ -487,56 +487,56 @@ class Bars(pygame.sprite.Group):
         self.exp_text = [exp_text, exp_text_rect]
 
     def draw(self, targets):
-        if len(targets) > 0:
-            if len(targets) > 1:
-                for target in targets:
-                    if (target.in_combat or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
-                        break
+        target = None
+        if len(targets) > 1:
+            for target in targets:
+                if (target.in_combat or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
+                    break
 
-                    else:
-                        target = False
+                else:
+                    target = None
 
-            else:
-                target = targets.sprites()[0]
+        elif len(targets) == 1:
+            target = targets.sprites()[0]
 
-            # draws the card of the target's health, speed, and attack
-            if target and target.show_stats:
-                pygame.draw.rect(self.display_surface, BROWN, self.rect, 0, 3)
+        # draws the card of the target's health, speed, and attack
+        if target and target.show_stats:
+            pygame.draw.rect(self.display_surface, BROWN, self.rect, 0, 3)
+            pygame.draw.rect(self.display_surface,
+                                DARK_BROWN, self.rect, 3, 3)
+
+            self.name_text[0] = COMICORO[25].render(
+                f'{target.name} lvl {target.level}', True, BLACK)
+            self.display_surface.blit(*self.name_text)
+
+            # blits the bar
+            for sprite in self.sprites():
+                self.display_surface.blit(
+                    sprite.image, sprite.rect.topleft)
+                sprite.draw(target)
+
+            # displays exp if the cursor is hovered over the name
+            if self.name_text[1].collidepoint(pygame.mouse.get_pos()):
+                if target.exp_levels:
+                    text = f'exp {target.exp} / {target.exp_levels[target.level - 1]}'
+
+                else:
+                    text = f'exp {target.exp}'
+
+                self.exp_text[0] = COMICORO[25].render(text, True, BLACK)
+                self.exp_text[1] = self.exp_text[0].get_rect(
+                    center=self.exp_rect.center)
+
+                self.exp_rect.width = self.exp_text[1].width + 20
+                self.exp_rect.topleft = pygame.mouse.get_pos()
+
                 pygame.draw.rect(self.display_surface,
-                                 DARK_BROWN, self.rect, 3, 3)
+                                    BROWN, self.exp_rect)
 
-                self.name_text[0] = COMICORO[25].render(
-                    f'{target.name} lvl {target.level}', True, BLACK)
-                self.display_surface.blit(*self.name_text)
+                pygame.draw.rect(self.display_surface,
+                                    DARK_BROWN, self.exp_rect, 3)
 
-                # blits the bar
-                for sprite in self.sprites():
-                    self.display_surface.blit(
-                        sprite.image, sprite.rect.topleft)
-                    sprite.draw(target)
-
-                # displays exp if the cursor is hovered over the name
-                if self.name_text[1].collidepoint(pygame.mouse.get_pos()):
-                    if target.exp_levels:
-                        text = f'exp {target.exp} / {target.exp_levels[target.level - 1]}'
-
-                    else:
-                        text = f'exp {target.exp}'
-
-                    self.exp_text[0] = COMICORO[25].render(text, True, BLACK)
-                    self.exp_text[1] = self.exp_text[0].get_rect(
-                        center=self.exp_rect.center)
-
-                    self.exp_rect.width = self.exp_text[1].width + 20
-                    self.exp_rect.topleft = pygame.mouse.get_pos()
-
-                    pygame.draw.rect(self.display_surface,
-                                     BROWN, self.exp_rect)
-
-                    pygame.draw.rect(self.display_surface,
-                                     DARK_BROWN, self.exp_rect, 3)
-
-                    self.display_surface.blit(*self.exp_text)
+                self.display_surface.blit(*self.exp_text)
 
 
 class Cursor(pygame.sprite.Sprite):
@@ -554,20 +554,15 @@ class Cursor(pygame.sprite.Sprite):
         self.sprite_layer = 4
         
     def offset_mouse_pos(self):
-        display_surface = pygame.display.get_surface()
         mouse_pos = list(pygame.mouse.get_pos())
-        mouse_pos[0] += self.game.player.rect.centerx - display_surface.get_width() / 2
-        mouse_pos[1] += self.game.player.rect.centery - display_surface.get_height() / 2
-
+        mouse_pos[0] += self.game.camera_group.offset.x
+        mouse_pos[1] += self.game.camera_group.offset.y
+        
         return mouse_pos
     
     def update(self):
-        coords = self.offset_mouse_pos()
-        coords[0] = round(coords[0] / TILE_SIZE) * TILE_SIZE
-        coords[0] -= self.game.player.rect.centerx - self.display_surface.get_width() / 2
+        mouse_pos = list(pygame.mouse.get_pos())
+        mouse_pos[0] = round(mouse_pos[0] / TILE_SIZE) * TILE_SIZE
+        mouse_pos[1] = round(mouse_pos[1] / TILE_SIZE) * TILE_SIZE
 
-        coords[1] = round(coords[1] / TILE_SIZE) * TILE_SIZE
-        coords[1] -= self.game.player.rect.centery - \
-            self.display_surface.get_height() / 2
-
-        self.rect.center = coords
+        self.rect.center = mouse_pos
