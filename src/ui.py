@@ -251,13 +251,13 @@ class Inventory(pygame.sprite.Group):
 
     def scroll_inventory(self):
         """Scrolls the inventory with the mouse wheel"""
-        event = pygame.event.get(eventtype=pygame.MOUSEWHEEL)
+        events = pygame.event.get(eventtype=pygame.MOUSEWHEEL) # gets a list of filtered events
         
         # scrolls when mouse is colliding with the inventory
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
             if len(self.sprites()) > 3:
-                if event:
-                    mousewheel_event = event[0] # gets mouse wheel event
+                if events:
+                    mousewheel_event = events[0] # gets mouse wheel event
                     self.scroll_acceleration = self.scroll_max_velocity * \
                         -mousewheel_event.y / abs(mousewheel_event.y)
 
@@ -359,7 +359,7 @@ class Item(pygame.sprite.Sprite):
                 self.display_surface.blit(*line)
 
 
-class HealthBar(pygame.sprite.Sprite):
+class Bar(pygame.sprite.Sprite):
     def __init__(self, coords, groups):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
@@ -367,9 +367,7 @@ class HealthBar(pygame.sprite.Sprite):
         self.width, self.height = 45, 45
         self.bar_width, self.bar_height = 120, 15
 
-        self.image = IMAGES['heart'].copy()
-        self.image = pygame.transform.scale(
-            self.image, (self.width, self.height))
+        self.image = pygame.Surface((self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=coords)
         self.bar = pygame.Rect(
@@ -385,83 +383,63 @@ class HealthBar(pygame.sprite.Sprite):
         text_rect.left += self.total_bar.width * 0.25
         self.stat_text = [text, text_rect]
 
+class HealthBar(Bar):
+    def __init__(self, coords, groups):
+        super().__init__(coords, groups)
+        self.image = IMAGES['heart'].copy()
+        self.image = pygame.transform.scale(
+            self.image, (self.width, self.height))
+
     def draw(self, target):
         pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2, 3)
+
+        # gets health / total bar ratio
         ratio = target.health['current'] / target.health['total']
         if ratio > 1:
             ratio = 1
 
         self.bar.width = self.bar_width * ratio
-        if ratio > 0:  # only display the bar when  the player has health
+
+        # only display the bar when the player has health
+        if ratio > 0:  
             pygame.draw.rect(self.display_surface, RED, self.bar, 0, 2)
             pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2, 3)
 
+        # displays health text
         self.stat_text[0] = COMICORO[20].render(
             str(target.health['current']), True, BLACK)
         self.display_surface.blit(*self.stat_text)
 
 
-class SpeedBar(pygame.sprite.Sprite):
+class SpeedBar(Bar):
     def __init__(self, coords, groups):
-        super().__init__(groups)
-        self.display_surface = pygame.display.get_surface()
-
-        self.width, self.height = 45, 45
-        self.bar_width, self.bar_height = 120, 15
-
+        super().__init__(coords, groups)
         self.image = IMAGES['lightning'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
-
-        self.rect = self.image.get_rect(topleft=coords)
-        self.bar = pygame.Rect(
-            self.rect.right,
-            self.rect.centery - self.bar_height / 2,
-            self.bar_width,
-            self.bar_height)
-
-        text = COMICORO[20].render(str(""), True, BLACK)
-        text_rect = text.get_rect(midleft=self.bar.midleft)
-        text_rect.left += self.bar.width * 0.25
-        self.stat_text = [text, text_rect]
 
     def draw(self, target):
         pygame.draw.rect(self.display_surface, YELLOW, self.bar, 0, 3)
         pygame.draw.rect(self.display_surface, GOLD, self.bar, 2, 3)
 
+        # displays speed text
         self.stat_text[0] = COMICORO[20].render(
             str(target.speed['current']), True, BLACK)
         self.display_surface.blit(*self.stat_text)
 
 
-class AttackBar(pygame.sprite.Sprite):
+class AttackBar(Bar):
     def __init__(self, coords, groups):
-        super().__init__(groups)
-        self.display_surface = pygame.display.get_surface()
-
-        self.width, self.height = 45, 45
-        self.bar_width, self.bar_height = 120, 15
-
+        super().__init__(coords, groups)
         self.image = IMAGES['sword'].copy()
         self.image = pygame.transform.scale(
             self.image, (self.width, self.height))
-
-        self.rect = self.image.get_rect(topleft=coords)
-        self.bar = pygame.Rect(
-            self.rect.right,
-            self.rect.centery - self.bar_height / 2,
-            self.bar_width,
-            self.bar_height)
-
-        text = COMICORO[20].render(str(""), True, BLACK)
-        text_rect = text.get_rect(midleft=self.bar.midleft)
-        text_rect.left += self.bar.width * 0.25
-        self.stat_text = [text, text_rect]
 
     def draw(self, target):
         pygame.draw.rect(self.display_surface, GREY, self.bar, 0, 3)
         pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2, 3)
 
+        # displays attack text
         self.stat_text[0] = COMICORO[20].render(
             str(target.attack['current']), True, BLACK)
         self.display_surface.blit(*self.stat_text)
