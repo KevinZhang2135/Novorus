@@ -3,6 +3,7 @@ from constants import *
 import pygame
 import math
 
+
 class Menu(pygame.sprite.Group):
     def __init__(self, game):
         super().__init__()
@@ -11,7 +12,7 @@ class Menu(pygame.sprite.Group):
 
         self.pause_button = Button(
             (self.display_surface.get_width(), self.display_surface.get_height()),
-            {'inactive': IMAGES['menu'].copy(), 
+            {'inactive': IMAGES['menu'].copy(),
              'active': IMAGES['paused'].copy()},
             self.game,
             self,
@@ -41,9 +42,11 @@ class Menu(pygame.sprite.Group):
                     self.display_surface.get_height() / 2 + 120))
 
         self.exit_text = text, text_rect
-        self.yellow_exit_text = color_image(self.exit_text[0], YELLOW)
+        self.yellow_exit_text = color_image(
+            self.exit_text[0], YELLOW)  # turns yellow upon hover
 
     def menu_popup(self):
+        # only displays menu when the game is paused
         if self.pause_button.active:
             self.game.state['unpaused'] = False
             pygame.draw.rect(
@@ -58,13 +61,18 @@ class Menu(pygame.sprite.Group):
                 5)
 
             self.display_surface.blit(*self.menu_text)
+
+            # exit text turns yellow when hovered upon
             if self.exit_text[1].collidepoint(pygame.mouse.get_pos()):
                 self.display_surface.blit(
                     self.yellow_exit_text, self.exit_text[1])
+
+                # clicking the exit text leaves the game
                 if pygame.mouse.get_pressed()[0]:
                     self.game.state['runtime'] = False
 
             else:
+                # exit text when not hovered upon
                 self.display_surface.blit(*self.exit_text)
 
         else:
@@ -103,10 +111,11 @@ class Button(pygame.sprite.Sprite):
         self.active = False
 
     def press_button(self):
-        left_click = pygame.mouse.get_pressed(
-        )[0] and self.rect.collidepoint(pygame.mouse.get_pos())
-        button_disabled = not self.game.state['unpaused']
+        left_click = (pygame.mouse.get_pressed()[0]
+                      and self.rect.collidepoint(pygame.mouse.get_pos()))
 
+        # work_paused determines whether the button is disabled when the game is paused
+        button_disabled = not self.game.state['unpaused']
         if self.work_paused:
             button_disabled = False
 
@@ -114,11 +123,12 @@ class Button(pygame.sprite.Sprite):
         if self.optional_key:
             key_press = pygame.key.get_pressed()[self.optional_key]
 
-        # checks for left click or optional to popup menu
+        # checks for left click or optional key to popup menu
         if (left_click or key_press) and not self.pressed and not button_disabled:
             self.pressed = True
             self.active = not self.active
 
+        # prevents the button from being held
         elif not (left_click or key_press) and self.pressed and not button_disabled:
             self.pressed = False
 
@@ -172,7 +182,7 @@ class Inventory(pygame.sprite.Group):
         self.scroll = 0
         self.scroll_acceleration = 0
         self.scroll_velocity = 0
-        self.scroll_max_velocity = 7
+        self.scroll_max_velocity = 30
 
     def add_item(self, name, count):
         """Adds items to the inventory, stacking if it is already present"""
@@ -206,13 +216,14 @@ class Inventory(pygame.sprite.Group):
         row = 0
         for item in self.sprites():
             if item != self.inventory_button:
+                # displays item box
                 self.inventory_surface.blit(
                     self.item_box,
                     (column * (self.item_box.get_width() + 15) + 20,
-                     row * (self.item_box.get_height() + 15) + 20 - self.scroll))  # self.inventory_rect.top
+                     row * (self.item_box.get_height() + 15) + 20 - self.scroll))
 
+                # displays item
                 item.rect.x = column * (self.item_box.get_width() + 15) + 20
-                # self.inventory_rect.top
                 item.rect.y = row * \
                     (self.item_box.get_height() + 15) + 20 - self.scroll
 
@@ -220,6 +231,7 @@ class Inventory(pygame.sprite.Group):
                     item.image,
                     item.rect.topleft)
 
+                # show tooltip on hover
                 item.show_tooltip()
 
                 # displays item count when the player has multiple copies
@@ -239,39 +251,43 @@ class Inventory(pygame.sprite.Group):
 
     def scroll_inventory(self):
         """Scrolls the inventory with the mouse wheel"""
-        global event
-
+        event = pygame.event.get(eventtype=pygame.MOUSEWHEEL)
+        
+        # scrolls when mouse is colliding with the inventory
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
-            if len(self.sprites()) > 30:
-                if event.type == pygame.MOUSEWHEEL:
-                    if event.type:
-                        self.scroll_acceleration = self.scroll_max_velocity * \
-                            event.y / abs(event.y)
+            if len(self.sprites()) > 3:
+                if event:
+                    mousewheel_event = event[0] # gets mouse wheel event
+                    self.scroll_acceleration = self.scroll_max_velocity * \
+                        -mousewheel_event.y / abs(mousewheel_event.y)
 
-                        self.scroll_velocity += self.scroll_acceleration
-                        self.scroll_velocity *= 0.5
+                    self.scroll_velocity += self.scroll_acceleration
+                    self.scroll_velocity *= 0.5
 
-                    else:
-                        # movement decay when input is not received
-                        self.scroll_velocity *= 0.7
-                        self.scroll_acceleration = 0
+                else:
+                    # movement decay when input is not received
+                    self.scroll_velocity *= 0.9
+                    self.scroll_acceleration = 0
 
-                    # movement decay when the speed is low
-                    if abs(self.scroll_velocity) < 0.1:
-                        self.scroll_velocity = 0
+                # movement decay when the speed is low
+                if abs(self.scroll_velocity) < 0.1:
+                    self.scroll_velocity = 0
 
-                    if abs(self.scroll_velocity) < 0.1:
-                        self.scroll_velocity = 0
+                if abs(self.scroll_velocity) < 0.1:
+                    self.scroll_velocity = 0
 
-                    self.scroll += self.scroll_velocity
+                # scrolls
+                self.scroll += self.scroll_velocity
+                
+                # prevents scrolling beyond the inventory
+                max_scroll = (math.ceil(
+                    (len(self.sprites()) - 1) / 5) - 6) * (self.item_box.get_height() + 15)
+                
+                if self.scroll < 0:
+                    self.scroll = 0
 
-                    max_scroll = (math.ceil(
-                        (len(self.sprites()) - 1) / 5) - 6) * (self.item_box.get_height() + 15)
-                    if self.scroll < 0:
-                        self.scroll = 0
-
-                    elif self.scroll > max_scroll:
-                        self.scroll = max_scroll
+                elif self.scroll > max_scroll:
+                    self.scroll = max_scroll
 
     def draw(self):
         if self.inventory_button.active:
@@ -503,7 +519,7 @@ class Bars(pygame.sprite.Group):
         if target and target.show_stats:
             pygame.draw.rect(self.display_surface, BROWN, self.rect, 0, 3)
             pygame.draw.rect(self.display_surface,
-                                DARK_BROWN, self.rect, 3, 3)
+                             DARK_BROWN, self.rect, 3, 3)
 
             self.name_text[0] = COMICORO[25].render(
                 f'{target.name} lvl {target.level}', True, BLACK)
@@ -531,10 +547,10 @@ class Bars(pygame.sprite.Group):
                 self.exp_rect.topleft = pygame.mouse.get_pos()
 
                 pygame.draw.rect(self.display_surface,
-                                    BROWN, self.exp_rect)
+                                 BROWN, self.exp_rect)
 
                 pygame.draw.rect(self.display_surface,
-                                    DARK_BROWN, self.exp_rect, 3)
+                                 DARK_BROWN, self.exp_rect, 3)
 
                 self.display_surface.blit(*self.exp_text)
 
@@ -552,14 +568,14 @@ class Cursor(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(0, 0))
 
         self.sprite_layer = 4
-        
+
     def offset_mouse_pos(self):
         mouse_pos = list(pygame.mouse.get_pos())
         mouse_pos[0] += self.game.camera_group.offset.x
         mouse_pos[1] += self.game.camera_group.offset.y
-        
+
         return mouse_pos
-    
+
     def update(self):
         mouse_pos = list(pygame.mouse.get_pos())
         mouse_pos[0] = round(mouse_pos[0] / TILE_SIZE) * TILE_SIZE
