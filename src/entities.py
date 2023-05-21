@@ -142,6 +142,7 @@ class Entity(pygame.sprite.Sprite):
                         enemy.hurt(self.attack['current'],
                                    self.crit_chance['current'])
 
+                        # gains exp if player is victorious
                         if enemy.health['current'] <= 0:
                             self.in_combat = False
                             self.exp += enemy.exp

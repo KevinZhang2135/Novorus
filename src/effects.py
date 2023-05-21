@@ -13,25 +13,22 @@ class TextPopUp:
         self.velocity = pygame.math.Vector2(0, 0)
 
         self.time = pygame.time.get_ticks()
-        self.expiration_time = randomize(1000, 0.1)
+        self.fade_time = randomize(1000, 0.1)
 
     def movement(self):
-        '''Moves the text vertically'''
+        '''Moves the text'''
         self.velocity += self.acceleration
         self.velocity *= 0.9
 
         # movement decay when the speed is low
-        if abs(self.velocity.x) < 0.25:
-            self.velocity.x = 0
-
         if abs(self.velocity.y) < 0.25:
             self.velocity.y = 0
 
         self.rect.center += self.velocity
 
     def expire(self):
-        '''Fades text after its expiration time'''
-        if pygame.time.get_ticks() - self.time > self.expiration_time:
+        '''Fades text after its fade time'''
+        if pygame.time.get_ticks() - self.time > self.fade_time:
             self.alpha -= 10
             if self.alpha > 0:
                 self.text.set_alpha(self.alpha)
@@ -56,7 +53,7 @@ class Particle(pygame.sprite.Sprite):
         self.velocity = pygame.math.Vector2(0, 0)
 
         self.time = pygame.time.get_ticks()
-        self.expiration_time = randomize(1000, 0.1)
+        self.fade_time = randomize(1000, 0.1) # time for the particle to fade 10 alpha
 
         self.sprite_layer = 3
 
@@ -75,8 +72,9 @@ class Particle(pygame.sprite.Sprite):
         self.rect.center += self.velocity
 
     def expire(self):
-        '''Deletes particle after its expiration time'''
-        if pygame.time.get_ticks() - self.time > self.expiration_time:
+        '''Fades particle after its fade time
+           Deletes the particle if it has no alpha'''
+        if pygame.time.get_ticks() - self.time > self.fade_time:
             self.alpha -= 10
             if self.alpha > 0:
                 self.image.set_alpha(self.alpha)
@@ -91,13 +89,12 @@ class Particle(pygame.sprite.Sprite):
         self.expire()
 
 
-class LightSources(pygame.sprite.Group):
-    def __init__(self, resolution):
+class LightGroup(pygame.sprite.Group):
+    def __init__(self, game):
         super().__init__()
+        self.game = game
         self.display_surface = pygame.display.get_surface()
-        self.half_width = self.display_surface.get_width() / 2
-        self.half_height = self.display_surface.get_height() / 2
-        self.resolution = resolution
+        self.resolution = self.game.resolution
 
         self.filter = pygame.surface.Surface(self.resolution)
 
@@ -105,23 +102,18 @@ class LightSources(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
         self.sprite_layer = 3
         self.color = LIGHT_GREY
-
-    def center_target(self, target):
-        self.offset.x = target.rect.centerx - self.half_width
-        self.offset.y = target.rect.centery - self.half_height
-
-    def render_lighting(self, player):
+        
+    def render_lighting(self):
         self.filter.fill(self.color)
-        self.center_target(player)
-        for sprite in self.sprites():
-            if (abs(player.rect.left - sprite.rect.left) < self.half_width
-                    or abs(player.rect.top - sprite.rect.top) < self.half_height):
-                offset_pos = sprite.rect.topleft \
-                    - self.offset \
-                    + list(map(lambda x: x / 2, sprite.rect.size)) \
-                    - sprite.light_size / 2
 
-                self.filter.blit(sprite.light, offset_pos)
+        for sprite in self.sprites():
+            # centers light on sprite according to player view
+            offset_pos = sprite.rect.topleft \
+                - self.game.camera_group.offset \
+                + list(map(lambda x: x / 2, sprite.rect.size)) \
+                - sprite.light_size / 2
+
+            self.filter.blit(sprite.light, offset_pos)
 
         self.display_surface.blit(
             self.filter,

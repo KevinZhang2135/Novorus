@@ -32,12 +32,12 @@ class App:
         self.player_group = pygame.sprite.GroupSingle()
         self.enemy_group = pygame.sprite.Group()
         self.cursor_group = pygame.sprite.GroupSingle()
-        self.light_group = LightSources(self.resolution)
+        self.light_group = LightGroup(self)
 
         self.menu = Menu(self)
 
-        self.player_bars = Bars((2, 2), self)
-        self.enemy_bars = Bars((2, self.player_bars.height + 4), self)
+        self.player_bars = BarGroup((2, 2), self)
+        self.enemy_bars = BarGroup((2, self.player_bars.height + 4), self)
 
         # hud
         self.cursor = Cursor(TILE_SIZE, self, self.cursor_group)
@@ -63,9 +63,9 @@ class App:
             # redraws sprites and images
             self.camera_group.custom_draw(self.player, show_hitboxes=False)
             self.cursor_group.draw(self.screen)
-            self.light_group.render_lighting(self.player)
+            self.light_group.render_lighting()
 
-            self.player_bars.draw(self.player_group)
+            self.player_bars.draw(self.player_group, always_show=True)
             self.enemy_bars.draw(self.enemy_group)
 
             self.menu.draw()

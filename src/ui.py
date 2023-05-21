@@ -251,13 +251,14 @@ class Inventory(pygame.sprite.Group):
 
     def scroll_inventory(self):
         """Scrolls the inventory with the mouse wheel"""
-        events = pygame.event.get(eventtype=pygame.MOUSEWHEEL) # gets a list of filtered events
-        
+        events = pygame.event.get(
+            eventtype=pygame.MOUSEWHEEL)  # gets a list of filtered events
+
         # scrolls when mouse is colliding with the inventory
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
             if len(self.sprites()) > 3:
                 if events:
-                    mousewheel_event = events[0] # gets mouse wheel event
+                    mousewheel_event = events[0]  # gets mouse wheel event
                     self.scroll_acceleration = self.scroll_max_velocity * \
                         -mousewheel_event.y / abs(mousewheel_event.y)
 
@@ -278,11 +279,11 @@ class Inventory(pygame.sprite.Group):
 
                 # scrolls
                 self.scroll += self.scroll_velocity
-                
+
                 # prevents scrolling beyond the inventory
                 max_scroll = (math.ceil(
                     (len(self.sprites()) - 1) / 5) - 6) * (self.item_box.get_height() + 15)
-                
+
                 if self.scroll < 0:
                     self.scroll = 0
 
@@ -383,6 +384,7 @@ class Bar(pygame.sprite.Sprite):
         text_rect.left += self.total_bar.width * 0.25
         self.stat_text = [text, text_rect]
 
+
 class HealthBar(Bar):
     def __init__(self, coords, groups):
         super().__init__(coords, groups)
@@ -401,7 +403,7 @@ class HealthBar(Bar):
         self.bar.width = self.bar_width * ratio
 
         # only display the bar when the player has health
-        if ratio > 0:  
+        if ratio > 0:
             pygame.draw.rect(self.display_surface, RED, self.bar, 0, 2)
             pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2, 3)
 
@@ -445,17 +447,17 @@ class AttackBar(Bar):
         self.display_surface.blit(*self.stat_text)
 
 
-class Bars(pygame.sprite.Group):
+class BarGroup(pygame.sprite.Group):
     def __init__(self, coords, game):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.game = game
         self.coords = pygame.math.Vector2(coords)
 
+        # margins between bars
         padding = 40
         self.padding_step = 30
-        bars = (HealthBar, SpeedBar, AttackBar)
-        for bar in bars:
+        for bar in (HealthBar, SpeedBar, AttackBar):
             bar = bar(
                 (self.coords[0], self.coords[1] + padding),
                 self)
@@ -480,18 +482,18 @@ class Bars(pygame.sprite.Group):
 
         self.exp_text = [exp_text, exp_text_rect]
 
-    def draw(self, targets):
+    def draw(self, targets, always_show=False):
         target = None
-        if len(targets) > 1:
+        if (always_show):
+            # selects the first sprite
+            target = targets.sprites()[0]
+
+        else:
             for target in targets:
                 if (target.in_combat or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
                     break
 
-                else:
-                    target = None
-
-        elif len(targets) == 1:
-            target = targets.sprites()[0]
+                target = None
 
         # draws the card of the target's health, speed, and attack
         if target and target.show_stats:
@@ -499,6 +501,7 @@ class Bars(pygame.sprite.Group):
             pygame.draw.rect(self.display_surface,
                              DARK_BROWN, self.rect, 3, 3)
 
+            # displays target level
             self.name_text[0] = COMICORO[25].render(
                 f'{target.name} lvl {target.level}', True, BLACK)
             self.display_surface.blit(*self.name_text)
@@ -511,16 +514,14 @@ class Bars(pygame.sprite.Group):
 
             # displays exp if the cursor is hovered over the name
             if self.name_text[1].collidepoint(pygame.mouse.get_pos()):
+                text = f'exp {target.exp}'
                 if target.exp_levels:
-                    text = f'exp {target.exp} / {target.exp_levels[target.level - 1]}'
-
-                else:
-                    text = f'exp {target.exp}'
+                    text += f' / {target.exp_levels[target.level - 1]}'
 
                 self.exp_text[0] = COMICORO[25].render(text, True, BLACK)
                 self.exp_text[1] = self.exp_text[0].get_rect(
                     center=self.exp_rect.center)
-
+                
                 self.exp_rect.width = self.exp_text[1].width + 20
                 self.exp_rect.topleft = pygame.mouse.get_pos()
 
@@ -548,6 +549,7 @@ class Cursor(pygame.sprite.Sprite):
         self.sprite_layer = 4
 
     def offset_mouse_pos(self):
+        """Returns the mouse position in relation to the offset screen"""
         mouse_pos = list(pygame.mouse.get_pos())
         mouse_pos[0] += self.game.camera_group.offset.x
         mouse_pos[1] += self.game.camera_group.offset.y
