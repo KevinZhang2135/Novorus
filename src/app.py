@@ -14,7 +14,7 @@ class App:
 
         # sets the size of the screen; defaults to full screen
         self.resolution = self.width, self.height = 1920, 1080
-        self.screen = pygame.display.set_mode(self.resolution, pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
+        self.screen = pygame.display.set_mode(self.resolution, pygame.DOUBLEBUF, 16)
         self.clock = pygame.time.Clock()
 
         self.state = {

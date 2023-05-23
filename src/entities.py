@@ -81,26 +81,26 @@ class Entity(pygame.sprite.Sprite):
                         self.velocity.y = 0
 
             # left edge map
-            if self.rect.left < self.game.level.rect.left + margin.x:
-                self.rect.left = self.game.level.rect.left + margin.x
+            if self.rect.left < self.game.level.rect.left:
+                self.rect.left = self.game.level.rect.left
                 self.coords[0] = self.rect.centerx
                 self.velocity.x = 0
 
             # right edge map
-            elif self.rect.right > self.game.level.rect.right - margin.x:
-                self.rect.right = self.game.level.rect.right - margin.x
+            elif self.rect.right > self.game.level.rect.right:
+                self.rect.right = self.game.level.rect.right
                 self.coords[0] = self.rect.centerx
                 self.velocity.x = 0
 
             # top edge map
-            if self.rect.bottom < self.game.level.rect.top - margin.y:
-                self.rect.bottom = self.game.level.rect.top - margin.y
+            if self.rect.bottom < self.game.level.rect.top:
+                self.rect.bottom = self.game.level.rect.top
                 self.coords[1] = self.rect.centery
                 self.velocity.y = 0
 
             # bottom edge map
-            elif self.rect.top > self.game.level.rect.bottom + margin.y:
-                self.rect.top = self.game.level.rect.bottom + margin.y
+            elif self.rect.top > self.game.level.rect.bottom:
+                self.rect.top = self.game.level.rect.bottom
                 self.coords[1] = self.rect.centery
                 self.velocity.y = 0
 

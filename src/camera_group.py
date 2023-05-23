@@ -1,4 +1,5 @@
 import pygame
+from constants import *
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -15,24 +16,30 @@ class CameraGroup(pygame.sprite.Group):
         self.texts = []
 
     def center_target(self, target):
-        self.offset.x = 0
-        self.offset.y = 0
+        self.offset.x = TILE_SIZE / 2
+        self.offset.y = -TILE_SIZE / 2
 
         # stops scrolling screen when the player is past right edge of the screen
-        if (target.rect.centerx >= self.game.level.size.x - self.half_width):
-            self.offset.x = self.game.level.size.x - self.display_surface.get_width()
-        
+        if (target.rect.centerx >= self.game.level.size.x - self.half_width - TILE_SIZE / 2):
+            self.offset.x = self.game.level.size.x \
+                - self.display_surface.get_width() \
+                - TILE_SIZE / 2
+
         # starts scrolling screen when the player is in the middle of the screen
-        elif (target.rect.centerx > self.half_width):
-            self.offset.x = target.rect.centerx - self.half_width
+        elif (target.rect.centerx > self.half_width + TILE_SIZE / 2):
+            self.offset.x = target.rect.centerx \
+                - self.half_width
 
         # stops scrolling screen when the player is past bottom edge of the screen
-        if (target.rect.centery >= self.game.level.size.y - self.half_height):
-            self.offset.y = self.game.level.size.y - self.display_surface.get_height()
+        if (target.rect.centery >= self.game.level.size.y - self.half_height - TILE_SIZE / 2):
+            self.offset.y = self.game.level.size.y \
+                - self.display_surface.get_height() \
+                - TILE_SIZE / 2
 
         # starts scrolling screen when the player is in the middle of the screen
-        elif (target.rect.centery > self.half_height):
-            self.offset.y = target.rect.centery - self.half_height
+        elif (target.rect.centery > self.half_height - TILE_SIZE / 2):
+            self.offset.y = target.rect.centery \
+                - self.half_height \
 
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
