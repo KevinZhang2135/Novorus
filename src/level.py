@@ -275,9 +275,9 @@ class Level:
 
     def add_exit(self, id, coords):
         exit = LevelExit(
-            coords,
-            [round(self.tile_size * 0.8)] * 2,
-            self.game,
+            coords, 
+            [round(self.tile_size * 0.8)] * 2, 
+            self.game, 
             self.game.camera_group
         )
 

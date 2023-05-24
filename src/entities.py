@@ -30,10 +30,10 @@ class Entity(pygame.sprite.Sprite):
             self.acceleration.y = 0
 
         # movement decay when the speed is low
-        if abs(self.velocity.x) < self.max_velocity / 100:
+        if abs(self.velocity.x) < self.max_velocity / 10:
             self.velocity.x = 0
 
-        if abs(self.velocity.y) < self.max_velocity / 100:
+        if abs(self.velocity.y) < self.max_velocity / 10:
             self.velocity.y = 0
 
         self.coords += self.velocity
@@ -42,65 +42,67 @@ class Entity(pygame.sprite.Sprite):
     def collision(self):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
-            margin = pygame.math.Vector2(self.width / 8, self.height / 2.5)
+            margin = pygame.math.Vector2(0, 0)#self.width / 8, self.height // 2.5)
             for sprite in self.game.collision_group:
-                collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
-                                                         (self.rect.height + sprite.rect.height) / 2)
+                collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) // 2,
+                                                         (self.rect.height + sprite.rect.height) // 2)
 
                 distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
                                                self.rect.centery - sprite.rect.centery)
 
                 # checks if the distance of the sprites are within collision distance
-                if (abs(distance.x) + margin.x <= collision_distance.x
-                        and abs(distance.y) + margin.y <= collision_distance.y):
+                if (abs(distance.x) - margin.x < collision_distance.x
+                        and abs(distance.y) - margin.y < collision_distance.y):
 
                     # horizontal collision
                     if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
                         # left collision
-                        if distance.x > 0 and self.velocity.x < 0:
+                        if distance.x > 0:
                             self.rect.left = sprite.rect.right - margin.x
 
                         # right collision
-                        elif distance.x < 0 and self.velocity.x > 0:
+                        elif distance.x < 0:
                             self.rect.right = sprite.rect.left + margin.x
 
                         self.coords[0] = self.rect.centerx
                         self.velocity.x = 0
+                        
 
                     # vertical collision
                     if abs(distance.y) + margin.y > abs(distance.x) + margin.x:
                         # bottom collision
-                        if distance.y < 0 and self.velocity.y > 0:
+                        if distance.y < 0:
                             self.rect.bottom = sprite.rect.top + margin.y
-
+                            
                         # top collision
-                        elif distance.y > 0 and self.velocity.y < 0:
+                        elif distance.y > 0:
                             self.rect.top = sprite.rect.bottom - margin.y
 
                         self.coords[1] = self.rect.centery
                         self.velocity.y = 0
+                        
 
             # left edge map
-            if self.rect.left < self.game.level.rect.left:
-                self.rect.left = self.game.level.rect.left
+            if self.rect.left < TILE_SIZE / 2 - margin.x:
+                self.rect.left = TILE_SIZE / 2 - margin.x
                 self.coords[0] = self.rect.centerx
                 self.velocity.x = 0
 
             # right edge map
-            elif self.rect.right > self.game.level.rect.right:
-                self.rect.right = self.game.level.rect.right
+            elif self.rect.right > self.game.level.rect.right - TILE_SIZE / 2 + margin.x:
+                self.rect.right = self.game.level.rect.right - TILE_SIZE / 2 + margin.x
                 self.coords[0] = self.rect.centerx
                 self.velocity.x = 0
 
             # top edge map
-            if self.rect.bottom < self.game.level.rect.top:
-                self.rect.bottom = self.game.level.rect.top
+            if self.rect.top < -TILE_SIZE / 2 - margin.y:
+                self.rect.top = -TILE_SIZE / 2 - margin.y
                 self.coords[1] = self.rect.centery
                 self.velocity.y = 0
 
             # bottom edge map
-            elif self.rect.top > self.game.level.rect.bottom:
-                self.rect.top = self.game.level.rect.bottom
+            elif self.rect.bottom > self.game.level.rect.bottom - TILE_SIZE / 2 + margin.y:
+                self.rect.bottom = self.game.level.rect.bottom - TILE_SIZE / 2 + margin.y
                 self.coords[1] = self.rect.centery
                 self.velocity.y = 0
 
@@ -269,7 +271,7 @@ class Player(Entity):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 4
+        self.max_velocity = 14
 
         # stats
         self.exp = 0  # max exp is 9900
