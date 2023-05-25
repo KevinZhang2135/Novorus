@@ -5,26 +5,31 @@ import pygame
 class TextPopUp:
     def __init__(self, text, rect):
         self.text = text
+
         self.rect = rect
+        self.hitbox = pygame.Rect(self.rect)
 
         self.alpha = 255
 
-        self.acceleration = pygame.math.Vector2(0, 0)
-        self.velocity = pygame.math.Vector2(0, 0)
+        self.acceleration = pygame.math.Vector2()
+        self.velocity = pygame.math.Vector2()
+        self.coords = pygame.math.Vector2()
 
         self.time = pygame.time.get_ticks()
         self.fade_time = randomize(1000, 0.1)
 
     def movement(self):
         '''Moves the text'''
-        self.velocity += self.acceleration
-        self.velocity *= 0.9
+        self.velocity.y += self.acceleration.y
+        self.velocity.y *= 0.9
 
         # movement decay when the speed is low
         if abs(self.velocity.y) < 0.25:
             self.velocity.y = 0
 
-        self.rect.center += self.velocity
+        self.coords += self.velocity
+        self.rect.center = self.coords
+        self.hitbox.center = self.coords
 
     def expire(self):
         '''Fades text after its fade time'''
@@ -42,15 +47,17 @@ class TextPopUp:
 class Particle(pygame.sprite.Sprite):
     def __init__(self, coords, size, image, groups):
         super().__init__(groups)
-        self.width, self.height = size
 
         self.alpha = 255
+
         self.image = IMAGES[image].copy()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect(center=coords)
+        self.hitbox = pygame.Rect(self.rect)
 
-        self.acceleration = pygame.math.Vector2(0, 0)
-        self.velocity = pygame.math.Vector2(0, 0)
+        self.acceleration = pygame.math.Vector2()
+        self.velocity = pygame.math.Vector2()
+        self.coords = pygame.math.Vector2()
 
         self.time = pygame.time.get_ticks()
         self.fade_time = randomize(1000, 0.1) # time for the particle to fade 10 alpha
@@ -69,7 +76,9 @@ class Particle(pygame.sprite.Sprite):
         if abs(self.velocity.y) < 0.25:
             self.velocity.y = 0
 
-        self.rect.center += self.velocity
+        self.coords += self.velocity
+        self.rect.center = self.coords
+        self.hitbox.center = self.coords
 
     def expire(self):
         '''Fades particle after its fade time

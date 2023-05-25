@@ -1,5 +1,6 @@
 from constants import *
 from entities import *
+from tiles import *
 
 import pygame
 import os
@@ -128,70 +129,37 @@ class Level:
                             f'Unexpected value was found in csv file "{path}".')
 
     def set_player_coords(self, id, coords):
-        self.game.player.rect.center = coords
+        self.game.player.rect.center = pygame.math.Vector2(coords)
         self.game.player.coords = self.game.player.rect.center
 
     def add_terrain(self, id, coords):
-        sprites = ('path1',
-                   'path2',
-                   'path3',
-                   'path4',
-                   'path5',
-                   'path6',
-                   'path7',
-                   'path8',
-                   'path9',
-                   'path10',
-                   'grassy1',
-                   'grassy2',
-                   'path11',
-                   'path12',
-                   'path13',
-                   'path14',
-                   'path15',
-                   'path16',
-                   'path17',
-                   'path18',
-                   'path19',
-                   'path20',
-                   'path21',
-                   'path22',
-                   'path23',
-                   'path24',
-                   'path25',
-                   'path26',
-                   'path27',
-                   'path28',
-                   'path29',
-                   'path30',
-                   'path31',
-                   'grassy3',
-                   'grassy4',
-                   'grassy5',
-                   'grassy6',
-                   )
+        sprites = [f'grassy{i + 1}' for i in range(0, 6)] \
+            + [f'path{i + 1}' for i in range(0, 31)]
 
         size = (100,) * 2
         terrain_tile = StaticTile(
             coords,
             size,
-            sprites[id],
             self.game.camera_group)
 
+        terrain_tile.setImage(sprites[id], size)
         terrain_tile.sprite_layer = -1
 
     def add_walls(self, id, coords):
-        images = ('brick_top',
+        sprites = ('brick_top',
                   'brick_middle',
                   'brick_bottom',
                   'brick_pile',
                   'brick_side')
 
-        wall = StaticTile(
+        size = (100,) * 2
+        terrain_tile = StaticTile(
             coords,
-            (100, 100),
-            images[id],
-            (self.game.camera_group, self.game.collision_group))
+            size,
+            self.game.camera_group)
+
+        terrain_tile.setImage(sprites[id], size)
+        terrain_tile.sprite_layer = -1
 
     def add_enemies(self, id, coords):
         enemies = (Ghost,
@@ -206,10 +174,12 @@ class Level:
         enemy.rect.centerx += random.randint(-25, 25)
         enemy.rect.centery += random.randint(-25, 25)
 
+
     def add_chests(self, id, coords):
+        size = (60, ) * 2
         chest = Chest(
             coords,
-            (60, 60),
+            size,
             self.game,
             (self.game.camera_group, self.game.collision_group))
 
@@ -261,23 +231,22 @@ class Level:
             decor.image = pygame.transform.flip(decor.image, True, False)
 
     def add_animated_decor(self, id, coords):
-        decor_sprites = (Torch,)
-        sprite_size = (50,)
-        size = round(randomize(sprite_size[id], 0.1))
+        match id:
+            # torch
+            case 0:
+                decor = Torch(
+                    coords,
+                    round(randomize(100, 0.2)),
+                    self.game,
+                    (self.game.camera_group, self.game.light_group))
 
-        decor = decor_sprites[id](
-            coords,
-            [size] * 2,
-            self.game,
-            (self.game.camera_group, self.game.light_group))
-
-        decor.sprite_layer = 2
+                decor.sprite_layer = 2
 
     def add_exit(self, id, coords):
         exit = LevelExit(
-            coords, 
-            [round(self.tile_size * 0.8)] * 2, 
-            self.game, 
+            coords,
+            [round(self.tile_size * 0.8)] * 2,
+            self.game,
             self.game.camera_group
         )
 
@@ -293,149 +262,3 @@ class Level:
     def update(self):
         """Handles events"""
         self.transition_level()
-
-
-class Chest(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(groups)
-        self.game = game
-        self.width, self.height = size
-
-        self.chest_sprites = {}
-        self.chest_sprites['closed'] = IMAGES['chest_closed'].copy()
-        self.chest_sprites['closed'] = pygame.transform.scale(
-            self.chest_sprites['closed'], (self.width, self.height))
-
-        self.chest_sprites['opened'] = IMAGES['chest_opened'].copy()
-        self.chest_sprites['opened'] = pygame.transform.scale(
-            self.chest_sprites['opened'], (self.width, self.height))
-        self.image = self.chest_sprites['closed']
-
-        self.rect = self.image.get_rect(center=coords)
-        self.opened = False
-
-        self.sprite_layer = 1
-
-    def collision(self):
-        # checks if the distance of the sprites are within collision distance
-        if pygame.Rect.colliderect(self.rect, self.game.player.rect) and not self.opened:
-            self.image = self.chest_sprites['opened']
-            self.opened = True
-
-            self.game.player.inventory.add_item(
-                'baguette', random.randint(1, 3))
-            self.game.player.inventory.add_item(
-                'oak_log', random.randint(1, 3))
-
-    def update(self):
-        self.collision()
-
-
-class LevelExit(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(groups)
-        self.game = game
-        self.width, self.height = size
-
-        self.image = IMAGES['dirt_hole'].copy()
-        self.image = pygame.transform.scale(self.image, size)
-        self.rect = self.image.get_rect(center=coords)
-
-        self.sprite_layer = 1
-
-    def update(self):
-        if pygame.sprite.spritecollide(self, self.game.player_group, False):
-            # checks if the player mask overlaps an enemy mask
-            if pygame.sprite.spritecollide(self, self.game.player_group, False, pygame.sprite.collide_mask):
-                self.game.level.floor_level += 1
-
-
-class StaticTile(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, image: str, groups):
-        super().__init__(groups)
-        self.width, self.height = size
-
-        self.image = IMAGES[image].copy()
-        self.image = pygame.transform.scale(self.image, size)
-        self.rect = self.image.get_rect(center=coords)
-
-        self.sprite_layer = 1
-
-
-class AnimatedTile(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, images, game, groups):
-        super().__init__(groups)
-        self.game = game
-        self.width, self.height = size
-        self.frame = 0
-
-        self.animation_types = []
-        num_of_frames = len(
-            os.listdir(f'{SPRITE_PATH}/decoration/animated/{images}'))
-
-        for i in range(num_of_frames):
-            image = IMAGES[f'{images}{i + 1}'].copy()
-            image = pygame.transform.scale(image, size)
-
-            self.animation_types.append(image)
-
-        self.image = self.animation_types[self.frame]
-        self.rect = self.image.get_rect(center=coords)
-
-        self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1200 / len(self.animation_types)
-
-        self.sprite_layer = 1
-
-    def animation(self):
-        '''Handles animation'''
-        # loops frames
-        if self.frame >= len(self.animation_types):
-            self.frame = 0
-
-        # set image
-        self.image = self.animation_types[self.frame]
-
-        # determines whether the animation cooldown is over
-        if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
-            self.animation_time = pygame.time.get_ticks()
-            self.frame += 1
-
-
-class Torch(AnimatedTile):
-    def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(coords, size, 'torch', game, groups)
-        self.sprite_layer = 2
-        self.rect.centerx += random.randint(-1, 1) * 25
-        self.rect.centery += 25
-
-        self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
-        self.smoke_cooldown = randomize(4000, 0.2)
-
-        self.smoke_frames = len(
-            os.listdir(f'{SPRITE_PATH}/particles/smoke'))
-
-        self.light_size = pygame.math.Vector2(500, 500)
-
-        self.light = IMAGES['soft_circle'].copy()
-        self.light = pygame.transform.scale(
-            self.light, [int(dimension) for dimension in self.light_size])
-        self.light = color_image(self.light, MELLOW_YELLOW, transparency=100)
-
-    def draw_smoke(self):
-        if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
-            self.smoke_time = pygame.time.get_ticks()
-            self.smoke_cooldown = randomize(4000, 0.2)
-
-            smoke = Particle(
-                self.rect.center,
-                [randomize(25, 0.1) for i in range(2)],
-                f'smoke{random.randint(1, self.smoke_frames)}',
-                self.game.camera_group)
-
-            smoke.velocity.y = -4
-            smoke.expiration_time = 500
-
-    def update(self):
-        self.animation()
-        self.draw_smoke()

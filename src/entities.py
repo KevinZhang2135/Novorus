@@ -10,6 +10,22 @@ class Entity(pygame.sprite.Sprite):
         super().__init__(groups)
         self.game = game
 
+        self.in_combat = False
+        self.attacking = False
+        self.show_stats = False
+
+        self.action = 'idle'
+        self.facing = 'right'
+        self.name = ''
+
+        self.exp = 0
+        self.level = 0
+
+        # movement
+        self.acceleration = pygame.math.Vector2()
+        self.velocity = pygame.math.Vector2()
+        self.max_velocity = 0
+
     def movement(self):
         '''Handles movement'''
         self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
@@ -42,7 +58,8 @@ class Entity(pygame.sprite.Sprite):
     def collision(self):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
-            margin = pygame.math.Vector2(self.width / 3, self.height / 3)
+            margin = pygame.math.Vector2(
+                self.rect.width / 3, self.rect.height / 3)
             for sprite in self.game.collision_group:
                 collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
                                                          (self.rect.height + sprite.rect.height) / 2)
@@ -256,20 +273,12 @@ class Entity(pygame.sprite.Sprite):
 class Player(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(game, groups)
-        self.width, self.height = size
 
-        self.in_combat = False
-        self.attacking = False
         self.show_stats = True
-
-        self.action = 'idle'
-        self.facing = 'right'
         self.name = 'Player'
 
         # movement
-        self.acceleration = pygame.math.Vector2(0, 0)
-        self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 5
+        self.max_velocity = 15
 
         # stats
         self.exp = 0  # max exp is 9900
@@ -311,7 +320,7 @@ class Player(Entity):
             for i in range(num_of_frames):
                 image = IMAGES[f'knight_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, (self.width, self.height))
+                    image, size)
 
                 self.animation_types[type].append(image)
 
@@ -495,7 +504,6 @@ class Player(Entity):
 class Ghost(Entity):
     def __init__(self, coords: list, size: list, level, game, groups):
         super().__init__(game, groups)
-        self.width, self.height = size
 
         self.in_combat = False
         self.attacking = False
@@ -507,13 +515,11 @@ class Ghost(Entity):
 
         # movement
         self.detection_distance = 350
-        self.acceleration = pygame.math.Vector2(0, 0)
-        self.velocity = pygame.math.Vector2(0, 0)
         self.max_velocity = 2
 
         # stats
         self.exp = 15
-        self.exp_levels = False
+        self.exp_levels = None
         self.level = level
 
         self.health = {'current': round(30 * (1.1**(self.level - 1)))}
@@ -553,7 +559,7 @@ class Ghost(Entity):
             for i in range(num_of_frames):
                 image = IMAGES[f'ghost_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, (self.width, self.height))
+                    image, size)
 
                 self.animation_types[type].append(image)
 
@@ -637,7 +643,6 @@ class Ghost(Entity):
 class Mimic(Entity):
     def __init__(self, coords: list, size: list, level, game, groups):
         super().__init__(game, groups)
-        self.width, self.height = size
 
         self.in_combat = False
         self.attacking = False
@@ -688,7 +693,7 @@ class Mimic(Entity):
             for i in range(num_of_frames):
                 image = IMAGES[f'mimic_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, (self.width, self.height))
+                    image, size)
 
                 self.animation_types[type].append(image)
 
@@ -720,7 +725,6 @@ class Mimic(Entity):
 class Sunflower(Entity):
     def __init__(self, coords: list, size: list, level, game, groups):
         super().__init__(game, groups)
-        self.width, self.height = size
 
         self.in_combat = False
         self.attacking = False
@@ -771,7 +775,7 @@ class Sunflower(Entity):
             for i in range(num_of_frames):
                 image = IMAGES[f'sunflower_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, (self.width, self.height))
+                    image, size)
 
                 self.animation_types[type].append(image)
 
