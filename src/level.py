@@ -234,12 +234,14 @@ class Level:
         match id:
             # torch
             case 0:
+                size = (round(randomize(100, 0.2)), ) * 2
                 decor = Torch(
                     coords,
                     round(randomize(100, 0.2)),
                     self.game,
                     (self.game.camera_group, self.game.light_group))
 
+                decor.getImages('torch', size)
                 decor.sprite_layer = 2
 
     def add_exit(self, id, coords):
