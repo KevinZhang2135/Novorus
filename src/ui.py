@@ -256,7 +256,7 @@ class Inventory(pygame.sprite.Group):
 
         # scrolls when mouse is colliding with the inventory
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
-            if len(self.sprites()) > 3:
+            if len(self.sprites()) > 30:
                 if events:
                     mousewheel_event = events[0]  # gets mouse wheel event
                     self.scroll_acceleration = self.scroll_max_velocity * \

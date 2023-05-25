@@ -14,7 +14,7 @@ class App:
 
         # sets the size of the screen; defaults to full screen
         self.resolution = self.width, self.height = 1920, 1080
-        self.screen = pygame.display.set_mode(self.resolution, pygame.DOUBLEBUF, 16)
+        self.screen = pygame.display.set_mode(self.resolution, pygame.DOUBLEBUF | pygame.FULLSCREEN, 16)
         self.clock = pygame.time.Clock()
 
         self.state = {
@@ -61,7 +61,7 @@ class App:
             self.screen.fill((105, 162, 97))  # fills a surface with the rgb color
 
             # redraws sprites and images
-            self.camera_group.custom_draw(self.player, show_hitboxes=True)
+            self.camera_group.custom_draw(self.player, show_hitboxes=False)
             self.cursor_group.draw(self.screen)
             self.light_group.render_lighting()
 

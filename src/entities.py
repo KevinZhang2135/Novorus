@@ -42,45 +42,43 @@ class Entity(pygame.sprite.Sprite):
     def collision(self):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
-            margin = pygame.math.Vector2(0, 0)#self.width / 8, self.height // 2.5)
+            margin = pygame.math.Vector2(self.width / 3, self.height / 3)
             for sprite in self.game.collision_group:
-                collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) // 2,
-                                                         (self.rect.height + sprite.rect.height) // 2)
+                collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
+                                                         (self.rect.height + sprite.rect.height) / 2)
 
-                distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
-                                               self.rect.centery - sprite.rect.centery)
+                center_distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
+                                                      self.rect.centery - sprite.rect.centery)
 
                 # checks if the distance of the sprites are within collision distance
-                if (abs(distance.x) - margin.x < collision_distance.x
-                        and abs(distance.y) - margin.y < collision_distance.y):
+                if (abs(center_distance.x) + margin.x < collision_distance.x
+                        and abs(center_distance.y) + margin.y < collision_distance.y):
 
                     # horizontal collision
-                    if abs(distance.x) + margin.x > abs(distance.y) + margin.y:
+                    if (abs(center_distance.x) > abs(center_distance.y)):
                         # left collision
-                        if distance.x > 0:
+                        if center_distance.x > 0:
                             self.rect.left = sprite.rect.right - margin.x
 
                         # right collision
-                        elif distance.x < 0:
+                        elif center_distance.x < 0:
                             self.rect.right = sprite.rect.left + margin.x
 
                         self.coords[0] = self.rect.centerx
                         self.velocity.x = 0
-                        
 
                     # vertical collision
-                    if abs(distance.y) + margin.y > abs(distance.x) + margin.x:
+                    elif (abs(center_distance.y) > abs(center_distance.x)):
                         # bottom collision
-                        if distance.y < 0:
+                        if center_distance.y < 0:
                             self.rect.bottom = sprite.rect.top + margin.y
-                            
+
                         # top collision
-                        elif distance.y > 0:
+                        elif center_distance.y > 0:
                             self.rect.top = sprite.rect.bottom - margin.y
 
                         self.coords[1] = self.rect.centery
                         self.velocity.y = 0
-                        
 
             # left edge map
             if self.rect.left < TILE_SIZE / 2 - margin.x:
@@ -123,7 +121,7 @@ class Entity(pygame.sprite.Sprite):
             enemies = target_group.sprites()
             enemy = sorted(enemies, key=lambda enemy: distance.distance_to(
                 enemy.rect.center))[0]  # closest enemy
-            
+
             self.face_enemy(enemy)
 
             if not self.in_combat and enemy.health['current'] > 0:
@@ -271,7 +269,7 @@ class Player(Entity):
         # movement
         self.acceleration = pygame.math.Vector2(0, 0)
         self.velocity = pygame.math.Vector2(0, 0)
-        self.max_velocity = 14
+        self.max_velocity = 5
 
         # stats
         self.exp = 0  # max exp is 9900
@@ -284,7 +282,7 @@ class Player(Entity):
                         'speed': 0,
                         'attack': 0}
 
-        self.health = {'current': 100,
+        self.health = {'current': 00,
                        'total': 100,
                        'base': 100}
 
