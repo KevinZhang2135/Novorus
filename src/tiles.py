@@ -16,7 +16,7 @@ class Chest(Sprite):
         self.chest_sprites['opened'] = IMAGES['chest_opened'].copy()
         self.chest_sprites['opened'] = pygame.transform.scale(
             self.chest_sprites['opened'], size)
-        
+
         self.image = self.chest_sprites['closed']
 
         self.opened = False
@@ -58,11 +58,9 @@ class StaticTile(Sprite):
         super().__init__(coords, size, game, groups)
         self.sprite_layer = 1
 
-    def setImage(self, image, size: list):
-        self.image = IMAGES[image].copy()
+    def setImage(self, image_file, size: list):
+        self.image = IMAGES[image_file].copy()
         self.image = pygame.transform.scale(self.image, size)
-        self.rect = self.image.get_rect(center=self.coords)
-        self.hitbox = pygame.Rect(self.rect)
 
 
 class AnimatedTile(Sprite):
@@ -71,24 +69,27 @@ class AnimatedTile(Sprite):
         self.frame = 0
 
         self.animation_types = []
-        num_of_frames = 0
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 0 if len(self.animation_types) == 0 else 1200 / len(self.animation_types)
+        self.animation_cooldown = 0 if len(
+            self.animation_types) == 0 else 1200 / len(self.animation_types)
 
         self.sprite_layer = 1
 
-    def getImages(self, image, size): 
+    def setImages(self, image_file, size):
         num_of_frames = len(
-            os.listdir(f'{SPRITE_PATH}/decoration/animated/{image}'))
+            os.listdir(f'{SPRITE_PATH}/decoration/animated/{image_file}'))
 
         for i in range(num_of_frames):
-            image = IMAGES[f'{image}{i + 1}'].copy()
+            print(i)
+            image = IMAGES[f'{image_file}{i + 1}'].copy()
             image = pygame.transform.scale(image, size)
 
             self.animation_types.append(image)
 
         self.image = self.animation_types[self.frame]
+        self.animation_cooldown = 0 if len(
+            self.animation_types) == 0 else 1200 / len(self.animation_types)
 
     def animation(self):
         '''Handles animation'''
@@ -104,12 +105,10 @@ class AnimatedTile(Sprite):
             self.animation_time = pygame.time.get_ticks()
             self.frame += 1
 
-    
-
 
 class Torch(AnimatedTile):
     def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(coords, size, 'torch', game, groups)
+        super().__init__(coords, size, game, groups)
         self.sprite_layer = 2
 
         self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)

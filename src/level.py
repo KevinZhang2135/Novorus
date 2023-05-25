@@ -121,7 +121,7 @@ class Level:
                 if id != -1 and id >= 0:
                     x = col_index * self.tile_size
                     y = row_index * self.tile_size
-                    create_tile[path[:-4]](id, (x, y))
+                    create_tile[path[:-4]](id, [x, y])
 
                 else:
                     if id < -1:
@@ -133,13 +133,16 @@ class Level:
         self.game.player.coords = self.game.player.rect.center
 
     def add_terrain(self, id, coords):
-        sprites = [f'grassy{i + 1}' for i in range(0, 6)] \
-            + [f'path{i + 1}' for i in range(0, 31)]
+        sprites = [f'path{i + 1}' for i in range(0, 10)] \
+            + [f'grassy{i + 1}' for i in range(0, 2)] \
+            + [f'path{i + 1}' for i in range(10, 31)] \
+            + [f'grassy{i + 1}' for i in range(2, 6)]
 
         size = (100,) * 2
         terrain_tile = StaticTile(
             coords,
             size,
+            self.game,
             self.game.camera_group)
 
         terrain_tile.setImage(sprites[id], size)
@@ -147,15 +150,16 @@ class Level:
 
     def add_walls(self, id, coords):
         sprites = ('brick_top',
-                  'brick_middle',
-                  'brick_bottom',
-                  'brick_pile',
-                  'brick_side')
+                   'brick_middle',
+                   'brick_bottom',
+                   'brick_pile',
+                   'brick_side')
 
         size = (100,) * 2
         terrain_tile = StaticTile(
             coords,
             size,
+            self.game,
             self.game.camera_group)
 
         terrain_tile.setImage(sprites[id], size)
@@ -174,7 +178,6 @@ class Level:
         enemy.rect.centerx += random.randint(-25, 25)
         enemy.rect.centery += random.randint(-25, 25)
 
-
     def add_chests(self, id, coords):
         size = (60, ) * 2
         chest = Chest(
@@ -184,64 +187,183 @@ class Level:
             (self.game.camera_group, self.game.collision_group))
 
     def add_static_decor(self, id, coords):
-        sprites = ({'file': 'grass1',
-                    'size': 30},
+        match id:
+            # grass1
+            case 0:
+                size = (round(randomize(30, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
 
-                   {'file': 'grass2',
-                    'size': 30},
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('grass1', size)
 
-                   {'file': 'grass3',
-                    'size': 30},
+                if random.randint(0, 1):
+                    decor.image = pygame.transform.flip(decor.image, True, False)
 
-                   {'file': 'rock1',
-                    'size': 50},
+            # grass2
+            case 1:
+                size = (round(randomize(30, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
 
-                   {'file': 'rock2',
-                    'size': 40},
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('grass2', size)
 
-                   {'file': 'rock3',
-                    'size': 50},
+                if random.randint(0, 1):
+                    decor.image = pygame.transform.flip(decor.image, True, False)
 
-                   {'file': 'rock4',
-                    'size': 50},
+            # grass3
+            case 2:
+                size = (round(randomize(30, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
 
-                   {'file': 'tree1',
-                    'size': 120},
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('grass3', size)
 
-                   {'file': 'tree2',
-                    'size': 120},
+            # rock1
+            case 3:
+                size = (round(randomize(50, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
 
-                   {'file': 'tree3',
-                    'size': 120},
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('rock1', size)
 
-                   {'file': 'tree4',
-                    'size': 30})
+            # rock2
+            case 4:
+                size = (round(randomize(40, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
 
-        size = round(randomize(sprites[id]['size'], 0.1))
-        decor = StaticTile(
-            coords,
-            [size] * 2,
-            sprites[id]['file'],
-            self.game.camera_group)
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('rock2', size)
 
-        decor.rect.centerx += random.randint(-25, 25)
-        decor.rect.centery += random.randint(-25, 25)
+            # rock3
+            case 5:
+                size = (round(randomize(30, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
+
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('rock3', size)
+
+            # rock4
+            case 6:
+                size = (round(randomize(50, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
+
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('rock4', size)
+
+            # tree1
+            case 7:
+                size = (round(randomize(120, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
+
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('tree1', size)
+
+            # tree2
+            case 8:
+                size = (round(randomize(120, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
+
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('tree2', size)
+
+            # tree3
+            case 9:
+                size = (round(randomize(120, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
+
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('tree3', size)
+
+            # tree4
+            case 10:
+                size = (round(randomize(120, 0.1)), ) * 2
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
+
+                decor = StaticTile(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+                
+                decor.setImage('tree4', size)
 
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
+
 
     def add_animated_decor(self, id, coords):
         match id:
             # torch
             case 0:
-                size = (round(randomize(100, 0.2)), ) * 2
+                size = (round(randomize(50, 0.1)), ) * 2
                 decor = Torch(
                     coords,
-                    round(randomize(100, 0.2)),
+                    size,
                     self.game,
                     (self.game.camera_group, self.game.light_group))
 
-                decor.getImages('torch', size)
+                decor.setImages('torch', size)
                 decor.sprite_layer = 2
 
     def add_exit(self, id, coords):

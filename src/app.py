@@ -13,7 +13,7 @@ class App:
         pygame.display.set_caption('Novorus') 
 
         # sets the size of the screen; defaults to full screen
-        self.resolution = 800, 600#1920, 1080
+        self.resolution = 1920, 1080
         self.screen = pygame.display.set_mode(self.resolution, pygame.DOUBLEBUF, 16) # | pygame.FULLSCREEN
         self.clock = pygame.time.Clock()
 

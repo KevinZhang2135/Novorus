@@ -58,8 +58,6 @@ class Entity(pygame.sprite.Sprite):
     def collision(self):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
-            margin = pygame.math.Vector2(
-                self.rect.width / 3, self.rect.height / 3)
             for sprite in self.game.collision_group:
                 collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
                                                          (self.rect.height + sprite.rect.height) / 2)
@@ -68,18 +66,18 @@ class Entity(pygame.sprite.Sprite):
                                                       self.rect.centery - sprite.rect.centery)
 
                 # checks if the distance of the sprites are within collision distance
-                if (abs(center_distance.x) + margin.x < collision_distance.x
-                        and abs(center_distance.y) + margin.y < collision_distance.y):
+                if (abs(center_distance.x) < collision_distance.x
+                        and abs(center_distance.y) < collision_distance.y):
 
                     # horizontal collision
                     if (abs(center_distance.x) > abs(center_distance.y)):
                         # left collision
                         if center_distance.x > 0:
-                            self.rect.left = sprite.rect.right - margin.x
+                            self.rect.left = sprite.rect.right
 
                         # right collision
                         elif center_distance.x < 0:
-                            self.rect.right = sprite.rect.left + margin.x
+                            self.rect.right = sprite.rect.left
 
                         self.coords[0] = self.rect.centerx
                         self.velocity.x = 0
@@ -88,36 +86,36 @@ class Entity(pygame.sprite.Sprite):
                     elif (abs(center_distance.y) > abs(center_distance.x)):
                         # bottom collision
                         if center_distance.y < 0:
-                            self.rect.bottom = sprite.rect.top + margin.y
+                            self.rect.bottom = sprite.rect.top
 
                         # top collision
                         elif center_distance.y > 0:
-                            self.rect.top = sprite.rect.bottom - margin.y
+                            self.rect.top = sprite.rect.bottom
 
                         self.coords[1] = self.rect.centery
                         self.velocity.y = 0
 
             # left edge map
-            if self.rect.left < TILE_SIZE / 2 - margin.x:
-                self.rect.left = TILE_SIZE / 2 - margin.x
+            if self.rect.left < TILE_SIZE / 2:
+                self.rect.left = TILE_SIZE / 2
                 self.coords[0] = self.rect.centerx
                 self.velocity.x = 0
 
             # right edge map
-            elif self.rect.right > self.game.level.rect.right - TILE_SIZE / 2 + margin.x:
-                self.rect.right = self.game.level.rect.right - TILE_SIZE / 2 + margin.x
+            elif self.rect.right > self.game.level.rect.right - TILE_SIZE / 2:
+                self.rect.right = self.game.level.rect.right - TILE_SIZE / 2
                 self.coords[0] = self.rect.centerx
                 self.velocity.x = 0
 
             # top edge map
-            if self.rect.top < -TILE_SIZE / 2 - margin.y:
-                self.rect.top = -TILE_SIZE / 2 - margin.y
+            if self.rect.top < -TILE_SIZE / 2:
+                self.rect.top = -TILE_SIZE / 2
                 self.coords[1] = self.rect.centery
                 self.velocity.y = 0
 
             # bottom edge map
-            elif self.rect.bottom > self.game.level.rect.bottom - TILE_SIZE / 2 + margin.y:
-                self.rect.bottom = self.game.level.rect.bottom - TILE_SIZE / 2 + margin.y
+            elif self.rect.bottom > self.game.level.rect.bottom - TILE_SIZE / 2:
+                self.rect.bottom = self.game.level.rect.bottom - TILE_SIZE / 2
                 self.coords[1] = self.rect.centery
                 self.velocity.y = 0
 
