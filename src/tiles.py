@@ -1,7 +1,8 @@
-import pygame
 from constants import *
 from effects import *
 from sprite import Sprite
+
+import pygame
 
 
 class Chest(Sprite):
@@ -20,7 +21,8 @@ class Chest(Sprite):
         self.image = self.chest_sprites['closed']
 
         self.opened = False
-        self.sprite_layer = 1
+        self.sprite_layer = 0
+
 
     def collision(self):
         # checks if the distance of the sprites are within collision distance
@@ -30,6 +32,7 @@ class Chest(Sprite):
 
             self.game.player.inventory.add_item(
                 'baguette', random.randint(1, 3))
+            
             self.game.player.inventory.add_item(
                 'oak_log', random.randint(1, 3))
 
@@ -44,7 +47,7 @@ class LevelExit(Sprite):
         self.image = IMAGES['dirt_hole'].copy()
         self.image = pygame.transform.scale(self.image, size)
 
-        self.sprite_layer = 1
+        self.sprite_layer = 0
 
     def update(self):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):
@@ -56,7 +59,6 @@ class LevelExit(Sprite):
 class StaticTile(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.sprite_layer = 1
 
     def setImage(self, image_file, size: list):
         self.image = IMAGES[image_file].copy()
@@ -74,14 +76,11 @@ class AnimatedTile(Sprite):
         self.animation_cooldown = 0 if len(
             self.animation_types) == 0 else 1200 / len(self.animation_types)
 
-        self.sprite_layer = 1
-
     def setImages(self, image_file, size):
         num_of_frames = len(
             os.listdir(f'{SPRITE_PATH}/decoration/animated/{image_file}'))
 
         for i in range(num_of_frames):
-            print(i)
             image = IMAGES[f'{image_file}{i + 1}'].copy()
             image = pygame.transform.scale(image, size)
 
@@ -109,7 +108,7 @@ class AnimatedTile(Sprite):
 class Torch(AnimatedTile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.sprite_layer = 2
+        self.sprite_layer = 3
 
         self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
         self.smoke_cooldown = randomize(4000, 0.2)

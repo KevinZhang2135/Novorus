@@ -396,7 +396,7 @@ class HealthBar(Bar):
         pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2, 3)
 
         # gets health / total bar ratio
-        ratio = target.health['current'] / target.health['total']
+        ratio = target.stats.health / target.stats.base_health
         if ratio > 1:
             ratio = 1
 
@@ -409,7 +409,7 @@ class HealthBar(Bar):
 
         # displays health text
         self.stat_text[0] = COMICORO[20].render(
-            str(target.health['current']), True, BLACK)
+            str(target.stats.health), True, BLACK)
         self.display_surface.blit(*self.stat_text)
 
 
@@ -426,7 +426,7 @@ class SpeedBar(Bar):
 
         # displays speed text
         self.stat_text[0] = COMICORO[20].render(
-            str(target.speed['current']), True, BLACK)
+            str(target.stats.speed), True, BLACK)
         self.display_surface.blit(*self.stat_text)
 
 
@@ -443,7 +443,7 @@ class AttackBar(Bar):
 
         # displays attack text
         self.stat_text[0] = COMICORO[20].render(
-            str(target.attack['current']), True, BLACK)
+            str(target.stats.attack), True, BLACK)
         self.display_surface.blit(*self.stat_text)
 
 
@@ -503,7 +503,7 @@ class BarGroup(pygame.sprite.Group):
 
             # displays target level
             self.name_text[0] = COMICORO[25].render(
-                f'{target.name} lvl {target.level}', True, BLACK)
+                f'{target.name}', True, BLACK)
             self.display_surface.blit(*self.name_text)
 
             # blits the bar

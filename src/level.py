@@ -129,8 +129,7 @@ class Level:
                             f'Unexpected value was found in csv file "{path}".')
 
     def set_player_coords(self, id, coords):
-        self.game.player.rect.center = pygame.math.Vector2(coords)
-        self.game.player.coords = self.game.player.rect.center
+        self.game.player.set_coords(*coords)
 
     def add_terrain(self, id, coords):
         sprites = [f'path{i + 1}' for i in range(0, 10)] \
@@ -146,7 +145,6 @@ class Level:
             self.game.camera_group)
 
         terrain_tile.setImage(sprites[id], size)
-        terrain_tile.sprite_layer = -1
 
     def add_walls(self, id, coords):
         sprites = ('brick_top',
@@ -163,7 +161,7 @@ class Level:
             self.game.camera_group)
 
         terrain_tile.setImage(sprites[id], size)
-        terrain_tile.sprite_layer = -1
+        terrain_tile.sprite_layer = 1
 
     def add_enemies(self, id, coords):
         enemies = (Ghost,
@@ -172,8 +170,7 @@ class Level:
 
         sprite_size = (50, 60, 30)
 
-        enemy = enemies[id](coords, [sprite_size[id]] * 2,
-                            self.floor_level, self.game, (self.game.camera_group, self.game.enemy_group))
+        enemy = enemies[id](coords, [sprite_size[id]] * 2, self.game, (self.game.camera_group, self.game.enemy_group))
 
         enemy.rect.centerx += random.randint(-25, 25)
         enemy.rect.centery += random.randint(-25, 25)
@@ -294,9 +291,9 @@ class Level:
 
             # tree1
             case 7:
-                size = (round(randomize(120, 0.1)), ) * 2
-                coords[0] += random.randint(-25, 25)
-                coords[1] += random.randint(-25, 25)
+                size = (round(randomize(180, 0.1)), ) * 2
+                coords[0] += random.randint(-10, 10)
+                coords[1] += random.randint(-10, 10)
 
                 decor = StaticTile(
                     coords,
@@ -308,9 +305,9 @@ class Level:
 
             # tree2
             case 8:
-                size = (round(randomize(120, 0.1)), ) * 2
-                coords[0] += random.randint(-25, 25)
-                coords[1] += random.randint(-25, 25)
+                size = (round(randomize(190, 0.1)), ) * 2
+                coords[0] += random.randint(-10, 10)
+                coords[1] += random.randint(-10, 10)
 
                 decor = StaticTile(
                     coords,
@@ -336,7 +333,7 @@ class Level:
 
             # tree4
             case 10:
-                size = (round(randomize(120, 0.1)), ) * 2
+                size = (round(randomize(50, 0.1)), ) * 2
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
@@ -348,6 +345,7 @@ class Level:
                 
                 decor.setImage('tree4', size)
 
+        decor.sprite_layer = 1
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
 

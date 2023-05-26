@@ -1,30 +1,29 @@
 from constants import *
 from effects import *
 from ui import Inventory
+from sprite import Sprite
 
 import pygame
 
 
-class Entity(pygame.sprite.Sprite):
-    def __init__(self, game, groups):
-        super().__init__(groups)
-        self.game = game
+class Entity(Sprite):
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
 
         self.in_combat = False
         self.attacking = False
         self.show_stats = False
 
-        self.action = 'idle'
-        self.facing = 'right'
-        self.name = ''
-
-        self.exp = 0
-        self.level = 0
+        self.stats = None
 
         # movement
         self.acceleration = pygame.math.Vector2()
         self.velocity = pygame.math.Vector2()
         self.max_velocity = 0
+
+        # render
+        self.mask = pygame.mask.from_surface(self.image)
+        self.sprite_layer = 1
 
     def movement(self):
         '''Handles movement'''
@@ -52,8 +51,9 @@ class Entity(pygame.sprite.Sprite):
         if abs(self.velocity.y) < self.max_velocity / 10:
             self.velocity.y = 0
 
-        self.coords += self.velocity
-        self.rect.center = self.coords
+        self.set_coords(
+            self.coords.x + self.velocity.x,
+            self.coords.y + self.velocity.y)
 
     def collision(self):
         '''Handles collision'''
@@ -73,26 +73,24 @@ class Entity(pygame.sprite.Sprite):
                     if (abs(center_distance.x) > abs(center_distance.y)):
                         # left collision
                         if center_distance.x > 0:
-                            self.rect.left = sprite.rect.right
+                            self.set_coords(sprite.rect.right + self.rect.width, self.coords.y)
 
                         # right collision
                         elif center_distance.x < 0:
-                            self.rect.right = sprite.rect.left
+                            self.set_coords(sprite.rect.left - self.rect.width, self.coords.y)
 
-                        self.coords[0] = self.rect.centerx
                         self.velocity.x = 0
 
                     # vertical collision
                     elif (abs(center_distance.y) > abs(center_distance.x)):
                         # bottom collision
                         if center_distance.y < 0:
-                            self.rect.bottom = sprite.rect.top
+                            self.set_coords(self.coords.x, sprite.rect.top - self.rect.height)
 
                         # top collision
                         elif center_distance.y > 0:
-                            self.rect.top = sprite.rect.bottom
+                            self.set_coords(self.coords.x, sprite.rect.bottom + self.rect.height)
 
-                        self.coords[1] = self.rect.centery
                         self.velocity.y = 0
 
             # left edge map
@@ -130,7 +128,7 @@ class Entity(pygame.sprite.Sprite):
         # checks if the player mask overlaps an enemy mask
         if (pygame.sprite.spritecollide(self, target_group, False)
             and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)
-                and self.health['current'] > 0):
+                and self.stats.health > 0):
 
             distance = pygame.math.Vector2(self.rect.center)
             enemies = target_group.sprites()
@@ -139,7 +137,7 @@ class Entity(pygame.sprite.Sprite):
 
             self.face_enemy(enemy)
 
-            if not self.in_combat and enemy.health['current'] > 0:
+            if not self.in_combat and enemy.stats.health > 0:
                 self.in_combat = True
                 self.show_stats = True
                 self.animation_time = pygame.time.get_ticks()
@@ -154,11 +152,11 @@ class Entity(pygame.sprite.Sprite):
                 # only deal damage when animation ends
                 if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
                     if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                        enemy.hurt(self.attack['current'],
-                                   self.crit_chance['current'])
+                        enemy.hurt(self.stats.attack,
+                                   self.stats.crit_chance)
 
                         # gains exp if player is victorious
-                        if enemy.health['current'] <= 0:
+                        if enemy.stats.health <= 0:
                             self.in_combat = False
                             self.exp += enemy.exp
         else:
@@ -177,9 +175,9 @@ class Entity(pygame.sprite.Sprite):
             else:
                 self.action = 'idle'
 
-        if self.health['current'] < 0:
+        if self.stats.health < 0:
             # sprite dies
-            self.health['current'] = 0
+            self.stats.health = 0
             self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.game.player.animation_cooldown
@@ -213,7 +211,7 @@ class Entity(pygame.sprite.Sprite):
                 round((self.rect.right + self.rect.centerx) / 2)),
             self.rect.top)
 
-        dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
+        dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
         if not dodge:
             # randomizes damage between 0.9 and 1.1
             damage = randomize(attack, 0.15)
@@ -238,7 +236,7 @@ class Entity(pygame.sprite.Sprite):
 
                 self.game.camera_group.texts.append(text)
 
-            self.health['current'] -= damage
+            self.stats.health -= damage
 
         else:
             text = COMICORO[20].render('Dodged', True, GOLD)
@@ -250,7 +248,6 @@ class Entity(pygame.sprite.Sprite):
 
     def animation(self):
         '''Handles animation'''
-
         # loops frames
         if self.frame >= len(self.animation_types[self.action]):
             self.frame = 0
@@ -268,11 +265,30 @@ class Entity(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
 
 
+class Stats:
+    def __init__(self, health, speed, attack, crit_chance, dodge_chance):
+        self.health = self.base_health = health
+        self.speed = self.base_speed = speed
+        self.attack = self.base_attack = attack
+
+        self.base_crit_chance = crit_chance
+        self.crit_chance = round(self.base_crit_chance + self.speed / 500, 2)
+        if self.crit_chance > 0.5:
+            self.crit_chance = 0.5
+
+        self.base_dodge_chance = dodge_chance
+        self.dodge_chance = round(self.base_dodge_chance + self.speed / 750, 2)
+        if self.dodge_chance > 0.33:
+            self.dodge_chance = 0.33
+
+
 class Player(Entity):
     def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(game, groups)
+        super().__init__(coords, size, game, groups)
 
         self.show_stats = True
+        self.action = 'idle'
+        self.facing = 'right'
         self.name = 'Player'
 
         # movement
@@ -285,27 +301,7 @@ class Player(Entity):
         while self.exp > self.exp_levels[self.level - 1]:
             self.level += 1
 
-        self.bonuses = {'health': 0,
-                        'speed': 0,
-                        'attack': 0}
-
-        self.health = {'current': 00,
-                       'total': 100,
-                       'base': 100}
-
-        self.speed = {'current': 10,
-                      'total': 10,
-                      'base': 10}
-
-        self.attack = {'current': 20,
-                       'total': 20,
-                       'base': 20}
-
-        self.crit_chance = {'current': 0.05,
-                            'base': 0.05}
-
-        self.dodge_chance = {'current': 0.01,
-                             'base': 0.01}
+        self.stats = Stats(100, 10, 20, 0.05, 0.01)
 
         # sprites
         self.frame = 0
@@ -323,8 +319,6 @@ class Player(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.rect = self.image.get_rect(center=coords)
-        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -332,14 +326,11 @@ class Player(Entity):
 
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
-            1200 - self.speed['current']) / len(self.animation_types['attack'])
+            1200 - self.stats.speed) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
         self.cooldown = self.animation_cooldown
-        self.set_stats()
-
-        self.sprite_layer = 1
 
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
         self.inventory.add_item('wood_sword', 1)
@@ -350,36 +341,6 @@ class Player(Entity):
         self.light = pygame.transform.scale(
             self.light, [int(dimension) for dimension in self.light_size])
         self.light = color_image(self.light, LIGHT_GREY, transparency=255)
-
-    def set_stats(self):
-        '''Scales stats according to its base and bonuses'''
-        stats = {'health': self.health,
-                 'speed': self.speed,
-                 'attack': self.attack}
-
-        for type in stats:
-            ratio = stats[type]['current'] / stats[type]['total']
-
-            stats[type]['total'] = round(stats[type]['base']
-                                         * (1 + self.bonuses[type])
-                                         * (1.05**(self.level - 1)))
-
-            stats[type]['current'] = round(ratio * stats[type]['total'])
-
-            self.crit_chance['current'] = round(
-                self.crit_chance['base'] + self.speed['current'] / 500, 2)
-            if self.crit_chance['current'] > 0.5:  # crit chance caps at 50%
-                self.crit_chance['current'] = 0.5
-
-            self.dodge_chance['current'] = round(
-                self.dodge_chance['base'] + self.speed['current'] / 750, 2)
-            if self.dodge_chance['current'] > 0.33:  # dodge chance caps at 33%
-                self.dodge_chance['current'] = 0.33
-
-            self.attack_cooldown = (
-                1200 - self.speed['current']) / len(self.animation_types['attack'])
-            if self.attack_cooldown < 200:
-                self.attack_cooldown = 200
 
     def movement(self):
         '''Handles movement'''
@@ -411,8 +372,9 @@ class Player(Entity):
             if abs(self.velocity.y) < self.max_velocity / 100:
                 self.velocity.y = 0
 
-            self.coords += self.velocity
-            self.rect.center = self.coords
+            self.set_coords(
+                self.coords.x + self.velocity.x,
+                self.coords.y + self.velocity.y)
 
     def leveling_up(self):
         '''Increases player level when they reach exp cap'''
@@ -447,7 +409,7 @@ class Player(Entity):
                 round((self.rect.right + self.rect.centerx) / 2)),
             self.rect.top)
 
-        dodge = self.dodge_chance['current'] >= random.randint(0, 100) / 100
+        dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
         if not dodge:
             # randomizes damage between 0.9 and 1.1
             damage = randomize(attack, 0.15)
@@ -472,7 +434,7 @@ class Player(Entity):
 
                 self.game.camera_group.texts.append(text)
 
-            self.health['current'] -= damage
+            self.stats.health -= damage
 
         else:
             text = COMICORO[20].render('Dodged', True, GOLD)
@@ -482,9 +444,9 @@ class Player(Entity):
 
             self.game.camera_group.texts.append(text)
 
-        if self.health['current'] < 0:
+        if self.stats.health < 0:
             # sprite dies
-            self.health['current'] = 0
+            self.stats.health = 0
             self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.game.player.animation_cooldown
@@ -500,13 +462,10 @@ class Player(Entity):
 
 
 class Ghost(Entity):
-    def __init__(self, coords: list, size: list, level, game, groups):
-        super().__init__(game, groups)
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
 
-        self.in_combat = False
-        self.attacking = False
         self.show_stats = True
-
         self.action = 'idle'
         self.facing = random.choice(('left', 'right'))
         self.name = 'Ghost'
@@ -518,32 +477,8 @@ class Ghost(Entity):
         # stats
         self.exp = 15
         self.exp_levels = None
-        self.level = level
 
-        self.health = {'current': round(30 * (1.1**(self.level - 1)))}
-        self.health['total'] = self.health['current']
-
-        self.attack = {'current': round(10 * (1.1**(self.level - 1)))}
-        self.attack['total'] = self.attack['current']
-
-        self.speed = {'current': round(6 * (1.1**(self.level - 1)))}
-        self.speed['total'] = self.speed['current']
-
-        self.crit_chance = {'current': 0.05,
-                            'base': 0.05}
-
-        self.dodge_chance = {'current': 0.1,
-                             'base': 0.1}
-
-        self.crit_chance['current'] = round(
-            self.crit_chance['base'] + self.speed['current'] / 500, 2)
-        if self.crit_chance['current'] > 0.5:
-            self.crit_chance['current'] = 0.5
-
-        self.dodge_chance['current'] = round(
-            self.dodge_chance['base'] + self.speed['current'] / 750, 2)
-        if self.dodge_chance['current'] > 0.33:
-            self.dodge_chance['current'] = 0.33
+        self.stats = Stats(30, 10, 6, 0.05, 0.1)
 
         # sprites
         self.frame = 0
@@ -562,8 +497,6 @@ class Ghost(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.rect = self.image.get_rect(center=coords)
-        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -571,13 +504,11 @@ class Ghost(Entity):
 
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
-            1200 - self.speed['current']) / len(self.animation_types['attack'])
+            1200 - self.stats.speed) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
         self.cooldown = self.animation_cooldown
-
-        self.sprite_layer = 1
 
     def check_state(self):
         if not self.in_combat:
@@ -600,9 +531,9 @@ class Ghost(Entity):
             else:
                 self.action = 'idle'
 
-        if self.health['current'] < 0:
+        if self.stats.health < 0:
             # sprite dies
-            self.health['current'] = 0
+            self.stats.health = 0
             self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.game.player.animation_cooldown
@@ -639,8 +570,8 @@ class Ghost(Entity):
 
 
 class Mimic(Entity):
-    def __init__(self, coords: list, size: list, level, game, groups):
-        super().__init__(game, groups)
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
 
         self.in_combat = False
         self.attacking = False
@@ -653,32 +584,8 @@ class Mimic(Entity):
         # stats
         self.exp = 50
         self.exp_levels = False
-        self.level = level
 
-        self.health = {'current': round(100 * (1.2**(self.level - 1)))}
-        self.health['total'] = self.health['current']
-
-        self.attack = {'current': round(20 * (1.15**(self.level - 1)))}
-        self.attack['total'] = self.attack['current']
-
-        self.speed = {'current': round(7 * (1.05**(self.level - 1)))}
-        self.speed['total'] = self.speed['current']
-
-        self.crit_chance = {'current': 0.15,
-                            'base': 0.15}
-
-        self.dodge_chance = {'current': 0,
-                             'base': 0}
-
-        self.crit_chance['current'] = round(
-            self.crit_chance['base'] + self.speed['current'] / 500, 2)
-        if self.crit_chance['current'] > 0.5:
-            self.crit_chance['current'] = 0.5
-
-        self.dodge_chance['current'] = round(
-            self.dodge_chance['base'] + self.speed['current'] / 750, 2)
-        if self.dodge_chance['current'] > 0.33:
-            self.dodge_chance['current'] = 0.33
+        self.stats = Stats(100, 20, 7, 0.15, 0)
 
         # sprites
         self.frame = 0
@@ -696,8 +603,6 @@ class Mimic(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.rect = self.image.get_rect(center=coords)
-        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -705,13 +610,11 @@ class Mimic(Entity):
 
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
-            1200 - self.speed['current']) / len(self.animation_types['attack'])
+            1200 - self.stats.speed) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
         self.cooldown = self.animation_cooldown
-
-        self.sprite_layer = 1
 
     def update(self):
         '''Handles events'''
@@ -721,8 +624,8 @@ class Mimic(Entity):
 
 
 class Sunflower(Entity):
-    def __init__(self, coords: list, size: list, level, game, groups):
-        super().__init__(game, groups)
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
 
         self.in_combat = False
         self.attacking = False
@@ -735,32 +638,8 @@ class Sunflower(Entity):
         # stats
         self.exp = 5
         self.exp_levels = False
-        self.level = level
 
-        self.health = {'current': round(25 * (1.05**(self.level - 1)))}
-        self.health['total'] = self.health['current']
-
-        self.attack = {'current': round(7 * (1.05**(self.level - 1)))}
-        self.attack['total'] = self.attack['current']
-
-        self.speed = {'current': round(5 * (1.025**(self.level - 1)))}
-        self.speed['total'] = self.speed['current']
-
-        self.crit_chance = {'current': 0.05,
-                            'base': 0.05}
-
-        self.dodge_chance = {'current': 0,
-                             'base': 0}
-
-        self.crit_chance['current'] = round(
-            self.crit_chance['base'] + self.speed['current'] / 500, 2)
-        if self.crit_chance['current'] > 0.5:
-            self.crit_chance['current'] = 0.5
-
-        self.dodge_chance['current'] = round(
-            self.dodge_chance['base'] + self.speed['current'] / 750, 2)
-        if self.dodge_chance['current'] > 0.33:
-            self.dodge_chance['current'] = 0.33
+        self.stats = Stats(20, 5, 4, 0.05, 0)
 
         # sprites
         self.frame = 0
@@ -778,8 +657,6 @@ class Sunflower(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.rect = self.image.get_rect(center=coords)
-        self.coords = self.rect.center
         self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
@@ -787,13 +664,11 @@ class Sunflower(Entity):
 
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
-            1200 - self.speed['current']) / len(self.animation_types['attack'])
+            1200 - self.stats.speed) / len(self.animation_types['attack'])
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
         self.cooldown = self.animation_cooldown
-
-        self.sprite_layer = 1
 
     def update(self):
         '''Handles events'''

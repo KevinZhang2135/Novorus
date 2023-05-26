@@ -61,7 +61,7 @@ class App:
             self.screen.fill((105, 162, 97))  # fills a surface with the rgb color
 
             # redraws sprites and images
-            self.camera_group.custom_draw(self.player, show_hitboxes=False)
+            self.camera_group.custom_draw(self.player, show_hitboxes=True)
             self.cursor_group.draw(self.screen)
             self.light_group.render_lighting()
 
