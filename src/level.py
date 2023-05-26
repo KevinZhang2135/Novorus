@@ -233,7 +233,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('grass3', size)
+                decor.setImage('bush1', size)
 
             # rock1
             case 3:
