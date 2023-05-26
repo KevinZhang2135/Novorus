@@ -2,7 +2,7 @@ from constants import *
 from level import *
 from camera_group import *
 from ui import *
-from entities import Player
+from player import Player
 
 import pygame
 

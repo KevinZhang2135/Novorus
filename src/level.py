@@ -1,6 +1,7 @@
 from constants import *
 from entities import *
 from tiles import *
+from enemies import *
 from sprite import Sprite
 
 import pygame
@@ -302,7 +303,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('tree1', size)
+                decor.setImage('oak_tree', size)
 
             # tree2
             case 8:
@@ -316,11 +317,11 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('tree2', size)
+                decor.setImage('pine_tree', size)
 
             # tree3
             case 9:
-                size = (round(randomize(120, 0.1)), ) * 2
+                size = (round(randomize(160, 0.1)), ) * 2
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
@@ -330,11 +331,11 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('tree3', size)
+                decor.setImage('sakura_tree', size)
 
             # tree4
             case 10:
-                size = (round(randomize(50, 0.1)), ) * 2
+                size = (round(randomize(150, 0.1)), ) * 2
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
@@ -344,7 +345,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('tree4', size)
+                decor.setImage('dead_tree', size)
 
         decor.sprite_layer = 1
         if random.randint(0, 1):
