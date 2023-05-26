@@ -1,3 +1,5 @@
+from constants import *
+
 import pygame
 
 class Sprite(pygame.sprite.Sprite):
@@ -11,6 +13,10 @@ class Sprite(pygame.sprite.Sprite):
         self.hitbox = pygame.Rect(self.rect)
 
         self.sprite_layer = 0
+
+    def setImage(self, image_file, size: list):
+        self.image = IMAGES[image_file].copy()
+        self.image = pygame.transform.scale(self.image, size)
 
     def set_coords(self, x, y):
         self.coords.xy = x, y

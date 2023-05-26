@@ -9,25 +9,24 @@ class Chest(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
-        self.chest_sprites = {}
-        self.chest_sprites['closed'] = IMAGES['chest_closed'].copy()
-        self.chest_sprites['closed'] = pygame.transform.scale(
-            self.chest_sprites['closed'], size)
+        self.chest_closed = IMAGES['chest_closed'].copy()
+        self.chest_closed = pygame.transform.scale(
+            self.chest_closed, size)
 
-        self.chest_sprites['opened'] = IMAGES['chest_opened'].copy()
-        self.chest_sprites['opened'] = pygame.transform.scale(
-            self.chest_sprites['opened'], size)
+        self.chest_opened = IMAGES['chest_opened'].copy()
+        self.chest_opened = pygame.transform.scale(
+            self.chest_opened, size)
 
-        self.image = self.chest_sprites['closed']
+        self.image = self.chest_closed
 
         self.opened = False
-        self.sprite_layer = 0
+        self.sprite_layer = 1
 
 
     def collision(self):
         # checks if the distance of the sprites are within collision distance
         if pygame.Rect.colliderect(self.rect, self.game.player.rect) and not self.opened:
-            self.image = self.chest_sprites['opened']
+            self.image = self.chest_opened
             self.opened = True
 
             self.game.player.inventory.add_item(
@@ -54,15 +53,6 @@ class LevelExit(Sprite):
             # checks if the player mask overlaps an enemy mask
             if pygame.sprite.spritecollide(self, self.game.player_group, False, pygame.sprite.collide_mask):
                 self.game.level.floor_level += 1
-
-
-class StaticTile(Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(coords, size, game, groups)
-
-    def setImage(self, image_file, size: list):
-        self.image = IMAGES[image_file].copy()
-        self.image = pygame.transform.scale(self.image, size)
 
 
 class AnimatedTile(Sprite):

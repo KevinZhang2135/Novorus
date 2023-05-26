@@ -68,16 +68,15 @@ class Entity(Sprite):
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
                         and abs(center_distance.y) < collision_distance.y):
-
                     # horizontal collision
                     if (abs(center_distance.x) > abs(center_distance.y)):
                         # left collision
                         if center_distance.x > 0:
-                            self.set_coords(sprite.rect.right + self.rect.width, self.coords.y)
+                            self.set_coords(sprite.rect.right + self.rect.width / 2, self.coords.y)
 
                         # right collision
                         elif center_distance.x < 0:
-                            self.set_coords(sprite.rect.left - self.rect.width, self.coords.y)
+                            self.set_coords(sprite.rect.left - self.rect.width / 2, self.coords.y)
 
                         self.velocity.x = 0
 
@@ -85,11 +84,11 @@ class Entity(Sprite):
                     elif (abs(center_distance.y) > abs(center_distance.x)):
                         # bottom collision
                         if center_distance.y < 0:
-                            self.set_coords(self.coords.x, sprite.rect.top - self.rect.height)
+                            self.set_coords(self.coords.x, sprite.rect.top - self.rect.height / 2)
 
                         # top collision
                         elif center_distance.y > 0:
-                            self.set_coords(self.coords.x, sprite.rect.bottom + self.rect.height)
+                            self.set_coords(self.coords.x, sprite.rect.bottom + self.rect.height / 2)
 
                         self.velocity.y = 0
 
@@ -301,7 +300,7 @@ class Player(Entity):
         while self.exp > self.exp_levels[self.level - 1]:
             self.level += 1
 
-        self.stats = Stats(100, 10, 20, 0.05, 0.01)
+        self.stats = Stats(100, 10000, 200, 0.05, 0.01)
 
         # sprites
         self.frame = 0
@@ -327,8 +326,9 @@ class Player(Entity):
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
             1200 - self.stats.speed) / len(self.animation_types['attack'])
-        if self.attack_cooldown < 200:
-            self.attack_cooldown = 200
+        
+        if self.attack_cooldown < 100:
+            self.attack_cooldown = 100
 
         self.cooldown = self.animation_cooldown
 

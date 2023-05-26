@@ -1,6 +1,7 @@
 from constants import *
 from entities import *
 from tiles import *
+from sprite import Sprite
 
 import pygame
 import os
@@ -138,7 +139,7 @@ class Level:
             + [f'grassy{i + 1}' for i in range(2, 6)]
 
         size = (100,) * 2
-        terrain_tile = StaticTile(
+        terrain_tile = Sprite(
             coords,
             size,
             self.game,
@@ -154,7 +155,7 @@ class Level:
                    'brick_side')
 
         size = (100,) * 2
-        terrain_tile = StaticTile(
+        terrain_tile = Sprite(
             coords,
             size,
             self.game,
@@ -191,7 +192,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -208,7 +209,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -225,7 +226,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -239,7 +240,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -253,7 +254,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -267,7 +268,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -281,7 +282,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -295,7 +296,7 @@ class Level:
                 coords[0] += random.randint(-10, 10)
                 coords[1] += random.randint(-10, 10)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -309,7 +310,7 @@ class Level:
                 coords[0] += random.randint(-10, 10)
                 coords[1] += random.randint(-10, 10)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -323,7 +324,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
@@ -337,7 +338,7 @@ class Level:
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
-                decor = StaticTile(
+                decor = Sprite(
                     coords,
                     size,
                     self.game,
