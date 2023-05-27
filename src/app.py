@@ -6,15 +6,17 @@ from player import Player
 
 import pygame
 
+
 class App:
     def __init__(self):
         pygame.init()
         pygame.font.init()
-        pygame.display.set_caption('Novorus') 
+        pygame.display.set_caption('Novorus')
 
         # sets the size of the screen; defaults to full screen
         self.resolution = 1920, 1080
-        self.screen = pygame.display.set_mode(self.resolution, pygame.DOUBLEBUF, 16) # | pygame.FULLSCREEN
+        self.screen = pygame.display.set_mode(
+            self.resolution, pygame.DOUBLEBUF, 16)  # | pygame.FULLSCREEN
         self.clock = pygame.time.Clock()
 
         self.state = {
@@ -43,8 +45,8 @@ class App:
         self.cursor = Cursor(TILE_SIZE, self, self.cursor_group)
 
         # player
-        self.player = Player((0, 0), 
-                             (75, 75), 
+        self.player = Player((0, 0),
+                             (75, 75),
                              self,
                              (self.camera_group, self.player_group, self.light_group))
 
@@ -58,7 +60,8 @@ class App:
                 if event.type == pygame.QUIT:
                     self.state['runtime'] = False
 
-            self.screen.fill((105, 162, 97))  # fills a surface with the rgb color
+            # fills a surface with the rgb color
+            self.screen.fill((105, 162, 97))
 
             # redraws sprites and images
             self.camera_group.custom_draw(self.player, show_hitboxes=True)
@@ -92,4 +95,3 @@ class App:
 
 if __name__ == "__main__":
     App().run()
-

@@ -172,7 +172,8 @@ class Level:
 
         sprite_size = (50, 60, 30)
 
-        enemy = enemies[id](coords, [sprite_size[id]] * 2, self.game, (self.game.camera_group, self.game.enemy_group))
+        enemy = enemies[id](coords, [sprite_size[id]] * 2, self.game,
+                            (self.game.camera_group, self.game.enemy_group))
 
         enemy.rect.centerx += random.randint(-25, 25)
         enemy.rect.centery += random.randint(-25, 25)
@@ -198,11 +199,12 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('grass1', size)
 
                 if random.randint(0, 1):
-                    decor.image = pygame.transform.flip(decor.image, True, False)
+                    decor.image = pygame.transform.flip(
+                        decor.image, True, False)
 
             # grass2
             case 1:
@@ -215,11 +217,12 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('grass2', size)
 
                 if random.randint(0, 1):
-                    decor.image = pygame.transform.flip(decor.image, True, False)
+                    decor.image = pygame.transform.flip(
+                        decor.image, True, False)
 
             # grass3
             case 2:
@@ -232,7 +235,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('bush1', size)
 
             # rock1
@@ -246,7 +249,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('rock1', size)
 
             # rock2
@@ -260,7 +263,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('rock2', size)
 
             # rock3
@@ -274,7 +277,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('rock3', size)
 
             # rock4
@@ -288,7 +291,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('rock4', size)
 
             # tree1
@@ -302,7 +305,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('oak_tree', size)
 
             # tree2
@@ -316,7 +319,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('pine_tree', size)
 
             # tree3
@@ -330,7 +333,7 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('sakura_tree', size)
 
             # tree4
@@ -344,13 +347,12 @@ class Level:
                     size,
                     self.game,
                     self.game.camera_group)
-                
+
                 decor.set_image('dead_tree', size)
 
         decor.sprite_layer = 1
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
-
 
     def add_animated_decor(self, id, coords):
         match id:

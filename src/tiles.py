@@ -46,7 +46,7 @@ class LevelExit(Sprite):
         self.image = IMAGES['dirt_hole'].copy()
         self.image = pygame.transform.scale(self.image, size)
 
-        self.sprite_layer = 0
+        self.sprite_layer = 1
 
     def update(self):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):
@@ -121,9 +121,10 @@ class Torch(AnimatedTile):
             smoke = Particle(
                 self.rect.center,
                 [randomize(25, 0.1) for i in range(2)],
-                f'smoke{random.randint(1, self.smoke_frames)}',
+                self.game,
                 self.game.camera_group)
-
+            
+            smoke.set_image(f'smoke{random.randint(1, self.smoke_frames)}')
             smoke.velocity.y = -4
             smoke.expiration_time = 500
 

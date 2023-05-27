@@ -2,6 +2,7 @@ from effects import *
 from entity import *
 from ui import *
 
+
 class Player(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
@@ -47,7 +48,7 @@ class Player(Entity):
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
             1200 - self.stats.speed) / len(self.animation_types['attack'])
-        
+
         if self.attack_cooldown < 100:
             self.attack_cooldown = 100
 
@@ -56,7 +57,7 @@ class Player(Entity):
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
         self.inventory.add_item('wood_sword', 1)
 
-        self.light_size = pygame.math.Vector2(700, 700)
+        self.light_size = pygame.math.Vector2(900, 900)
 
         self.light = IMAGES['soft_circle'].copy()
         self.light = pygame.transform.scale(
@@ -140,13 +141,16 @@ class Player(Entity):
             if crit:
                 damage *= 2
 
-                text = TextPopUp(text_coords, self.game, self.game.camera_group)
+                text = TextPopUp(text_coords, self.game,
+                                 self.game.camera_group)
                 text.set_text(COMICORO[35].render(str(damage), True, ORANGE))
                 text.velocity.y = -5
 
             else:
-                text = TextPopUp(text_coords, self.game, self.game.camera_group)
-                text.set_text(COMICORO[25].render(str(damage), True, TANGERINE))
+                text = TextPopUp(text_coords, self.game,
+                                 self.game.camera_group)
+                text.set_text(COMICORO[25].render(
+                    str(damage), True, TANGERINE))
                 text.velocity.y = -5
 
             self.stats.health -= damage
@@ -171,5 +175,3 @@ class Player(Entity):
         self.check_state()
         self.animation()
         self.leveling_up()
-
-

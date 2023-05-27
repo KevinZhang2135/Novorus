@@ -39,6 +39,7 @@ class CameraGroup(pygame.sprite.Group):
             self.offset.y = target.rect.centery \
                 - self.half_height \
 
+
     def custom_draw(self, player, show_hitboxes=False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
@@ -59,7 +60,6 @@ class CameraGroup(pygame.sprite.Group):
                     (255, 0, 0),
                     hitbox,
                     1)
-                
 
     def update(self):
         "Updates all sprites"

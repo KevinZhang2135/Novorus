@@ -71,11 +71,13 @@ class Entity(Sprite):
                     if (abs(center_distance.x) > abs(center_distance.y)):
                         # left collision
                         if center_distance.x > 0:
-                            self.set_coords(sprite.rect.right + self.rect.width / 2, self.coords.y)
+                            self.set_coords(
+                                sprite.rect.right + self.rect.width / 2, self.coords.y)
 
                         # right collision
                         elif center_distance.x < 0:
-                            self.set_coords(sprite.rect.left - self.rect.width / 2, self.coords.y)
+                            self.set_coords(sprite.rect.left -
+                                            self.rect.width / 2, self.coords.y)
 
                         self.velocity.x = 0
 
@@ -83,11 +85,13 @@ class Entity(Sprite):
                     elif (abs(center_distance.y) > abs(center_distance.x)):
                         # bottom collision
                         if center_distance.y < 0:
-                            self.set_coords(self.coords.x, sprite.rect.top - self.rect.height / 2)
+                            self.set_coords(
+                                self.coords.x, sprite.rect.top - self.rect.height / 2)
 
                         # top collision
                         elif center_distance.y > 0:
-                            self.set_coords(self.coords.x, sprite.rect.bottom + self.rect.height / 2)
+                            self.set_coords(
+                                self.coords.x, sprite.rect.bottom + self.rect.height / 2)
 
                         self.velocity.y = 0
 
@@ -196,7 +200,7 @@ class Entity(Sprite):
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
                     self.game,
                     self.game.camera_group)
-                
+
                 dust.set_image(f'dust{random.randint(1, 3)}')
                 dust.velocity.y = -2
 
@@ -220,15 +224,17 @@ class Entity(Sprite):
             if crit:
                 damage *= 2
 
-                text = TextPopUp(text_coords, self.game, self.game.camera_group)
-                text.set_text(COMICORO[35].render(str(damage), True, BLOOD_RED))
+                text = TextPopUp(text_coords, self.game,
+                                 self.game.camera_group)
+                text.set_text(COMICORO[35].render(
+                    str(damage), True, BLOOD_RED))
                 text.velocity.y = -5
 
             else:
-                text = TextPopUp(text_coords, self.game, self.game.camera_group)
+                text = TextPopUp(text_coords, self.game,
+                                 self.game.camera_group)
                 text.set_text(COMICORO[25].render(str(damage), True, RED))
                 text.velocity.y = -5
-
 
             self.stats.health -= damage
 
@@ -236,7 +242,6 @@ class Entity(Sprite):
             text = TextPopUp(text_coords, self.game, self.game.camera_group)
             text.set_text(COMICORO[20].render('Dodged', True, GOLD))
             text.velocity.y = -5
-
 
     def animation(self):
         '''Handles animation'''
@@ -272,5 +277,3 @@ class Stats:
         self.dodge_chance = round(self.base_dodge_chance + self.speed / 750, 2)
         if self.dodge_chance > 0.33:
             self.dodge_chance = 0.33
-
-

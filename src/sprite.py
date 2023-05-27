@@ -2,6 +2,7 @@ from constants import *
 
 import pygame
 
+
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(groups)
@@ -24,4 +25,3 @@ class Sprite(pygame.sprite.Sprite):
         self.coords.xy = x, y
         self.rect.center = self.coords
         self.hitbox.center = self.coords
-        

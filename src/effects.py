@@ -13,7 +13,8 @@ class Particle(Sprite):
         self.velocity = pygame.math.Vector2()
 
         self.time = pygame.time.get_ticks()
-        self.fade_time = randomize(1000, 0.1) # time for the particle to fade 10 alpha
+        # time for the particle to fade 10 alpha
+        self.fade_time = randomize(1000, 0.1)
 
         self.alpha = 255
         self.sprite_layer = 3
@@ -30,7 +31,8 @@ class Particle(Sprite):
         if abs(self.velocity.y) < 0.25:
             self.velocity.y = 0
 
-        self.set_coords(self.coords.x + self.velocity.x, self.coords.y + self.velocity.y)
+        self.set_coords(self.coords.x + self.velocity.x,
+                        self.coords.y + self.velocity.y)
 
     def set_image(self, image):
         super().set_image(image, self.size)
@@ -51,6 +53,7 @@ class Particle(Sprite):
         '''Handles events'''
         self.movement()
         self.expire()
+
 
 class TextPopUp(Particle):
     def __init__(self, coords: list, game, groups):
@@ -75,7 +78,7 @@ class LightGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
         self.sprite_layer = 3
         self.color = LIGHT_GREY
-        
+
     def render_lighting(self):
         self.filter.fill(self.color)
 
@@ -92,4 +95,3 @@ class LightGroup(pygame.sprite.Group):
             self.filter,
             (0, 0),
             special_flags=pygame.BLEND_RGBA_MULT)
-

@@ -2,6 +2,7 @@ from constants import *
 from effects import *
 from entity import *
 
+
 class Ghost(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
@@ -95,7 +96,7 @@ class Ghost(Entity):
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
                     self.game,
                     self.game.camera_group)
-                
+
                 dust.set_image(f'dust{random.randint(1, 3)}')
                 dust.velocity.y = -2
 

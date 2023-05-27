@@ -43,7 +43,8 @@ ITEM_PATH = '../items'
 IMAGES = {}
 for (path, dirs, files) in os.walk(SPRITE_PATH, topdown=True):
     for file in files:
-        IMAGES[file[:-4]] = pygame.image.load(os.path.join(path, file)).convert_alpha()
+        IMAGES[file[:-4]
+               ] = pygame.image.load(os.path.join(path, file)).convert_alpha()
 
 # retrieving text files for tooltips
 ITEM_TOOLTIPS = {}
@@ -81,4 +82,3 @@ def color_image(image, color, transparency=255):
         image.set_alpha(transparency)
 
     return image
-
