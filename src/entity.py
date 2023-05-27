@@ -1,3 +1,4 @@
+from constants import *
 from effects import *
 from sprite import Sprite
 from random import randint
@@ -52,17 +53,22 @@ class Entity(Sprite):
 
         self.set_coords(
             self.coords.x + self.velocity.x,
-            self.coords.y + self.velocity.y)
+            self.coords.y + self.velocity.y
+        )
 
     def collision(self):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
             for sprite in self.game.collision_group:
-                collision_distance = pygame.math.Vector2((self.hitbox.width + sprite.hitbox.width) / 2,
-                                                         (self.hitbox.height + sprite.hitbox.height) / 2)
+                collision_distance = pygame.math.Vector2(
+                    (self.hitbox.width + sprite.hitbox.width) / 2,
+                    (self.hitbox.height + sprite.hitbox.height) / 2
+                )
 
-                center_distance = pygame.math.Vector2(self.hitbox.centerx - sprite.hitbox.centerx,
-                                                      self.hitbox.centery - sprite.hitbox.centery)
+                center_distance = pygame.math.Vector2(
+                    self.hitbox.centerx - sprite.hitbox.centerx,
+                    self.hitbox.centery - sprite.hitbox.centery
+                )
 
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
@@ -72,12 +78,16 @@ class Entity(Sprite):
                         # left collision
                         if center_distance.x > 0:
                             self.set_coords(
-                                sprite.hitbox.right + self.hitbox.width / 2, self.coords.y)
+                                sprite.hitbox.right + self.hitbox.width / 2,
+                                self.coords.y
+                            )
 
                         # right collision
                         elif center_distance.x < 0:
-                            self.set_coords(sprite.hitbox.left -
-                                            self.hitbox.width / 2, self.coords.y)
+                            self.set_coords(
+                                sprite.hitbox.left - self.hitbox.width / 2,
+                                self.coords.y
+                            )
 
                         self.velocity.x = 0
 
@@ -86,38 +96,50 @@ class Entity(Sprite):
                         # bottom collision
                         if center_distance.y < 0:
                             self.set_coords(
-                                self.coords.x, sprite.hitbox.top - self.hitbox.height / 2)
+                                self.coords.x,
+                                sprite.hitbox.top - self.hitbox.height / 2
+                            )
 
                         # top collision
                         elif center_distance.y > 0:
                             self.set_coords(
-                                self.coords.x, sprite.hitbox.bottom + self.hitbox.height / 2)
+                                self.coords.x,
+                                sprite.hitbox.bottom + self.hitbox.height / 2
+                            )
 
                         self.velocity.y = 0
 
             # left edge map
             if self.hitbox.left < TILE_SIZE / 2:
-                self.set_coords(self.hitbox.width / 2 + TILE_SIZE / 2, self.coords.y)
                 self.velocity.x = 0
+                self.set_coords(
+                    self.hitbox.width / 2 + TILE_SIZE / 2,
+                    self.coords.y
+                )
 
             # right edge map
             elif self.hitbox.right > self.game.level.rect.right - TILE_SIZE / 2:
-                self.set_coords(
-                    self.game.level.rect.right - TILE_SIZE / 2 - self.hitbox.width / 2, 
-                    self.coords.y)
                 self.velocity.x = 0
+                self.set_coords(
+                    self.game.level.rect.right - TILE_SIZE / 2 - self.hitbox.width / 2,
+                    self.coords.y
+                )
 
             # top edge map
             if self.hitbox.top < -TILE_SIZE / 2:
-                self.hitbox.top = -TILE_SIZE / 2
-                self.coords[1] = self.rect.centery
                 self.velocity.y = 0
+                self.set_coords(
+                    self.coords.x,
+                    self.hitbox.height / 2 - TILE_SIZE / 2
+                )
 
             # bottom edge map
             elif self.hitbox.bottom > self.game.level.rect.bottom - TILE_SIZE / 2:
-                self.hitbox.bottom = self.game.level.rect.bottom - TILE_SIZE / 2
-                self.coords[1] = self.hitbox.centery
                 self.velocity.y = 0
+                self.set_coords(
+                    self.coords.x,
+                    self.game.level.rect.bottom - TILE_SIZE / 2 + self.hitbox.height / 2
+                )
 
     def face_enemy(self, target):
         if self.rect.centerx < target.rect.centerx:
@@ -134,8 +156,12 @@ class Entity(Sprite):
 
             distance = pygame.math.Vector2(self.rect.center)
             enemies = target_group.sprites()
-            enemy = sorted(enemies, key=lambda enemy: distance.distance_to(
-                enemy.rect.center))[0]  # closest enemy
+
+            # closest enemy
+            enemy = sorted(
+                enemies,
+                key=lambda enemy: distance.distance_to(enemy.rect.center)
+            )[0]
 
             self.face_enemy(enemy)
 
@@ -154,8 +180,10 @@ class Entity(Sprite):
                 # only deal damage when animation ends
                 if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
                     if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                        enemy.hurt(self.stats.attack,
-                                   self.stats.crit_chance)
+                        enemy.hurt(
+                            self.stats.attack,
+                            self.stats.crit_chance
+                        )
 
                         # gains exp if player is victorious
                         if enemy.stats.health <= 0:
@@ -184,22 +212,26 @@ class Entity(Sprite):
             self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.game.player.animation_cooldown
 
+            # creates dust particles on death
             for i in range(5):
                 x_offset = round((self.rect.right - self.rect.left) / 4)
                 x = randint(
                     self.rect.centerx - x_offset,
-                    self.rect.centerx + x_offset)
+                    self.rect.centerx + x_offset
+                )
 
                 y_offset = round((self.rect.bottom - self.rect.top) / 4)
                 y = randint(
                     self.rect.centery - y_offset,
-                    self.rect.centery + y_offset)
+                    self.rect.centery + y_offset
+                )
 
                 dust = Particle(
                     (x, y),
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 dust.set_image(f'dust{random.randint(1, 3)}')
                 dust.velocity.y = -2

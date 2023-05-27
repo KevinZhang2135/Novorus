@@ -16,7 +16,11 @@ class App:
         # sets the size of the screen; defaults to full screen
         self.resolution = 1920, 1080
         self.screen = pygame.display.set_mode(
-            self.resolution, pygame.DOUBLEBUF, 16)  # | pygame.FULLSCREEN
+            self.resolution,
+            pygame.DOUBLEBUF | pygame.FULLSCREEN,
+            16
+        )
+
         self.clock = pygame.time.Clock()
 
         self.state = {
@@ -36,8 +40,10 @@ class App:
         self.cursor_group = pygame.sprite.GroupSingle()
         self.light_group = LightGroup(self)
 
+        # menu
         self.menu = Menu(self)
 
+        # ui bars
         self.player_bars = BarGroup((2, 2), self)
         self.enemy_bars = BarGroup((2, self.player_bars.height + 4), self)
 
@@ -45,10 +51,12 @@ class App:
         self.cursor = Cursor(TILE_SIZE, self, self.cursor_group)
 
         # player
-        self.player = Player((0, 0),
-                             (75, 75),
-                             self,
-                             (self.camera_group, self.player_group, self.light_group))
+        self.player = Player(
+            (0, 0),
+            (75, 75),
+            self,
+            (self.camera_group, self.player_group, self.light_group)
+        )
 
         # levels and map
         self.level = Level(STARTING_FLOOR, TILE_SIZE, self)

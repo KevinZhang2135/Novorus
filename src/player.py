@@ -38,7 +38,9 @@ class Player(Entity):
             for i in range(num_of_frames):
                 image = IMAGES[f'knight_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, size)
+                    image,
+                    size
+                )
 
                 self.animation_types[type].append(image)
 
@@ -67,7 +69,10 @@ class Player(Entity):
 
         self.light = IMAGES['soft_circle'].copy()
         self.light = pygame.transform.scale(
-            self.light, [int(dimension) for dimension in self.light_size])
+            self.light,
+            [int(dimension) for dimension in self.light_size]
+        )
+
         self.light = color_image(self.light, LIGHT_GREY, transparency=255)
 
     def movement(self):
@@ -102,7 +107,8 @@ class Player(Entity):
 
             self.set_coords(
                 self.coords.x + self.velocity.x,
-                self.coords.y + self.velocity.y)
+                self.coords.y + self.velocity.y
+            )
 
     def leveling_up(self):
         '''Increases player level when they reach exp cap'''
@@ -134,8 +140,10 @@ class Player(Entity):
         text_coords = (
             random.randint(
                 round((self.rect.left + self.rect.centerx) / 2),
-                round((self.rect.right + self.rect.centerx) / 2)),
-            self.rect.top)
+                round((self.rect.right + self.rect.centerx) / 2)
+            ),
+            self.rect.top
+        )
 
         dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
         if not dodge:
@@ -147,16 +155,28 @@ class Player(Entity):
             if crit:
                 damage *= 2
 
-                text = TextPopUp(text_coords, self.game,
-                                 self.game.camera_group)
+                text = TextPopUp(
+                    text_coords,
+                    self.game,
+                    self.game.camera_group
+                )
+
                 text.set_text(COMICORO[35].render(str(damage), True, ORANGE))
                 text.velocity.y = -5
 
             else:
-                text = TextPopUp(text_coords, self.game,
-                                 self.game.camera_group)
+                text = TextPopUp(
+                    text_coords,
+                    self.game,
+                    self.game.camera_group
+                )
+
                 text.set_text(COMICORO[25].render(
-                    str(damage), True, TANGERINE))
+                    str(damage), 
+                    True, 
+                    TANGERINE
+                ))
+
                 text.velocity.y = -5
 
             self.stats.health -= damage

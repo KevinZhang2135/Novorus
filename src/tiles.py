@@ -15,11 +15,15 @@ class Chest(Sprite):
         # sprites
         self.chest_closed = IMAGES['chest_closed'].copy()
         self.chest_closed = pygame.transform.scale(
-            self.chest_closed, size)
+            self.chest_closed,
+            size
+        )
 
         self.chest_opened = IMAGES['chest_opened'].copy()
         self.chest_opened = pygame.transform.scale(
-            self.chest_opened, size)
+            self.chest_opened,
+            size
+        )
 
         self.image = self.chest_closed
 
@@ -33,10 +37,14 @@ class Chest(Sprite):
             self.opened = True
 
             self.game.player.inventory.add_item(
-                'baguette', random.randint(1, 3))
-            
+                'baguette',
+                random.randint(1, 3)
+            )
+
             self.game.player.inventory.add_item(
-                'oak_log', random.randint(1, 3))
+                'oak_log',
+                random.randint(1, 3)
+            )
 
     def update(self):
         self.collision()
@@ -66,12 +74,13 @@ class AnimatedTile(Sprite):
         self.animation_types = []
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 0 if len(
-            self.animation_types) == 0 else 1200 / len(self.animation_types)
+        self.animation_cooldown = 0 if len(self.animation_types) == 0 \
+            else 1200 / len(self.animation_types)
 
     def set_images(self, image_file, size):
-        num_of_frames = len(
-            os.listdir(f'{SPRITE_PATH}/decoration/animated/{image_file}'))
+        num_of_frames = len(os.listdir(
+            f'{SPRITE_PATH}/decoration/animated/{image_file}'
+        ))
 
         for i in range(num_of_frames):
             image = IMAGES[f'{image_file}{i + 1}'].copy()
@@ -80,8 +89,8 @@ class AnimatedTile(Sprite):
             self.animation_types.append(image)
 
         self.image = self.animation_types[self.frame]
-        self.animation_cooldown = 0 if len(
-            self.animation_types) == 0 else 1200 / len(self.animation_types)
+        self.animation_cooldown = 0 if len(self.animation_types) == 0 \
+            else 1200 / len(self.animation_types)
 
     def animation(self):
         '''Handles animation'''
@@ -113,10 +122,14 @@ class Torch(AnimatedTile):
 
         self.light = IMAGES['soft_circle'].copy()
         self.light = pygame.transform.scale(
-            self.light, [int(dimension) for dimension in self.light_size])
+            self.light, 
+            [int(dimension) for dimension in self.light_size]
+        )
+
         self.light = color_image(self.light, MELLOW_YELLOW, transparency=100)
 
     def draw_smoke(self):
+        "Creates smoke every interval"
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
             self.smoke_cooldown = randomize(4000, 0.2)
@@ -125,8 +138,9 @@ class Torch(AnimatedTile):
                 self.rect.center,
                 [randomize(25, 0.1) for i in range(2)],
                 self.game,
-                self.game.camera_group)
-            
+                self.game.camera_group
+            )
+
             smoke.set_image(f'smoke{random.randint(1, self.smoke_frames)}')
             smoke.velocity.y = -4
             smoke.expiration_time = 500

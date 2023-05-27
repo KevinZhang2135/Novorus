@@ -24,17 +24,23 @@ class Ghost(Entity):
 
         # general animation
         self.frame = 0
-        self.animation_types = {'idle': [],
-                                'run': [],
-                                'attack': []}
+        self.animation_types = {
+            'idle': [],
+            'run': [],
+            'attack': []
+        }
 
         for type in self.animation_types:
             num_of_frames = len(os.listdir(
-                f'{SPRITE_PATH}/enemies/ghost/{type}'))
+                f'{SPRITE_PATH}/enemies/ghost/{type}'
+            ))
+
             for i in range(num_of_frames):
                 image = IMAGES[f'ghost_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, size)
+                    image, 
+                    size
+                )
 
                 self.animation_types[type].append(image)
 
@@ -47,7 +53,9 @@ class Ghost(Entity):
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
-            1200 - self.stats.speed) / len(self.animation_types['attack'])
+            1200 - self.stats.speed) / len(self.animation_types['attack']
+        )
+
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
@@ -85,18 +93,21 @@ class Ghost(Entity):
                 x_offset = round((self.rect.right - self.rect.left) / 4)
                 x = random.randint(
                     self.rect.centerx - x_offset,
-                    self.rect.centerx + x_offset)
+                    self.rect.centerx + x_offset
+                )
 
                 y_offset = round((self.rect.bottom - self.rect.top) / 4)
                 y = random.randint(
                     self.rect.centery - y_offset,
-                    self.rect.centery + y_offset)
+                    self.rect.centery + y_offset
+                )
 
                 dust = Particle(
                     (x, y),
                     [randomize(self.rect.width / 2, 0.05) for i in range(2)],
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 dust.set_image(f'dust{random.randint(1, 3)}')
                 dust.velocity.y = -2
@@ -127,18 +138,22 @@ class Mimic(Entity):
 
         self.stats = Stats(100, 20, 7, 0.15, 0)
 
-        # sprites
+        # animation
         self.frame = 0
         self.animation_types = {'idle': [],
                                 'attack': []}
 
         for type in self.animation_types:
             num_of_frames = len(os.listdir(
-                f'{SPRITE_PATH}/enemies/mimic/{type}'))
+                f'{SPRITE_PATH}/enemies/mimic/{type}'
+            ))
+
             for i in range(num_of_frames):
                 image = IMAGES[f'mimic_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, size)
+                    image, 
+                    size
+                )
 
                 self.animation_types[type].append(image)
 
@@ -148,9 +163,12 @@ class Mimic(Entity):
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
+        # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
-            1200 - self.stats.speed) / len(self.animation_types['attack'])
+            1200 - self.stats.speed) / len(self.animation_types['attack']
+        )
+
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
@@ -177,18 +195,22 @@ class Sunflower(Entity):
 
         self.stats = Stats(20, 5, 4, 0.05, 0)
 
-        # sprites
+        # general animation
         self.frame = 0
         self.animation_types = {'idle': [],
                                 'attack': []}
 
         for type in self.animation_types:
             num_of_frames = len(os.listdir(
-                f'{SPRITE_PATH}/enemies/sunflower/{type}'))
+                f'{SPRITE_PATH}/enemies/sunflower/{type}'
+            ))
+
             for i in range(num_of_frames):
                 image = IMAGES[f'sunflower_{type}{i + 1}'].copy()
                 image = pygame.transform.scale(
-                    image, size)
+                    image, 
+                    size
+                )
 
                 self.animation_types[type].append(image)
 
@@ -198,9 +220,12 @@ class Sunflower(Entity):
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
+        # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
-            1200 - self.stats.speed) / len(self.animation_types['attack'])
+            1200 - self.stats.speed) / len(self.animation_types['attack']                                  
+        )
+        
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 

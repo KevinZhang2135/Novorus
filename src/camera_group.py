@@ -1,6 +1,6 @@
-import pygame
 from constants import *
 
+import pygame
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, game):
@@ -47,19 +47,22 @@ class CameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
-
+            
+            # draws hitboxes
             if show_hitboxes:
                 hitbox = pygame.Rect(
                     sprite.hitbox.x - self.offset.x,
                     sprite.hitbox.y - self.offset.y,
                     sprite.hitbox.width,
-                    sprite.hitbox.height)
+                    sprite.hitbox.height
+                )
 
                 pygame.draw.rect(
                     self.display_surface,
                     (255, 0, 0),
                     hitbox,
-                    1)
+                    1
+                )
 
     def update(self):
         "Updates all sprites"

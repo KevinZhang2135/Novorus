@@ -13,8 +13,7 @@ class Particle(Sprite):
         self.velocity = pygame.math.Vector2()
 
         self.time = pygame.time.get_ticks()
-        # time for the particle to fade 10 alpha
-        self.fade_time = randomize(1000, 0.1)
+        self.fade_time = randomize(1000, 0.1) # time for the particle to fade 10 alpha
 
         self.alpha = 255
         self.sprite_layer = 3
@@ -31,8 +30,10 @@ class Particle(Sprite):
         if abs(self.velocity.y) < 0.25:
             self.velocity.y = 0
 
-        self.set_coords(self.coords.x + self.velocity.x,
-                        self.coords.y + self.velocity.y)
+        self.set_coords(
+            self.coords.x + self.velocity.x,
+            self.coords.y + self.velocity.y
+        )
 
     def set_image(self, image):
         super().set_image(image, self.size)
@@ -72,6 +73,7 @@ class LightGroup(pygame.sprite.Group):
         self.display_surface = pygame.display.get_surface()
         self.resolution = self.game.resolution
 
+        # screen color filter
         self.filter = pygame.surface.Surface(self.resolution)
 
         # light offset
@@ -91,7 +93,9 @@ class LightGroup(pygame.sprite.Group):
 
             self.filter.blit(sprite.light, offset_pos)
 
+        # darws screen filter
         self.display_surface.blit(
             self.filter,
             (0, 0),
-            special_flags=pygame.BLEND_RGBA_MULT)
+            special_flags=pygame.BLEND_RGBA_MULT
+        )

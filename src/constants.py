@@ -43,8 +43,9 @@ ITEM_PATH = '../items'
 IMAGES = {}
 for (path, dirs, files) in os.walk(SPRITE_PATH, topdown=True):
     for file in files:
-        IMAGES[file[:-4]
-               ] = pygame.image.load(os.path.join(path, file)).convert_alpha()
+        IMAGES[file[:-4]] = pygame.image.load(
+            os.path.join(path, file)
+        ).convert_alpha()
 
 # retrieving text files for tooltips
 ITEM_TOOLTIPS = {}
@@ -66,7 +67,8 @@ def randomize(value: int, offset: float):
     '''Randomizes the value with a +- deviation of the offset'''
     return random.randint(
         round(value * (1 - offset)),
-        round(value * (1 + offset)))
+        round(value * (1 + offset))
+    )
 
 
 def color_image(image, color, transparency=255):
