@@ -1,5 +1,5 @@
 from effects import *
-from entities import *
+from entity import *
 from ui import *
 
 class Player(Entity):
@@ -140,30 +140,21 @@ class Player(Entity):
             if crit:
                 damage *= 2
 
-                text = COMICORO[35].render(str(damage), True, ORANGE)
-                text_rect = text.get_rect(center=text_coords)
-                text = TextPopUp(text, text_rect)
+                text = TextPopUp(text_coords, self.game, self.game.camera_group)
+                text.set_text(COMICORO[35].render(str(damage), True, ORANGE))
                 text.velocity.y = -5
-
-                self.game.camera_group.texts.append(text)
 
             else:
-                text = COMICORO[25].render(str(damage), True, TANGERINE)
-                text_rect = text.get_rect(center=text_coords)
-                text = TextPopUp(text, text_rect)
+                text = TextPopUp(text_coords, self.game, self.game.camera_group)
+                text.set_text(COMICORO[25].render(str(damage), True, TANGERINE))
                 text.velocity.y = -5
-
-                self.game.camera_group.texts.append(text)
 
             self.stats.health -= damage
 
         else:
-            text = COMICORO[20].render('Dodged', True, GOLD)
-            text_rect = text.get_rect(center=text_coords)
-            text = TextPopUp(text, text_rect)
+            text = TextPopUp(text_coords, self.game, self.game.camera_group)
+            text.set_text(COMICORO[20].render('Dodged', True, GOLD))
             text.velocity.y = -5
-
-            self.game.camera_group.texts.append(text)
 
         if self.stats.health < 0:
             # sprite dies

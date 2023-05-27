@@ -66,7 +66,7 @@ class AnimatedTile(Sprite):
         self.animation_cooldown = 0 if len(
             self.animation_types) == 0 else 1200 / len(self.animation_types)
 
-    def setImages(self, image_file, size):
+    def set_images(self, image_file, size):
         num_of_frames = len(
             os.listdir(f'{SPRITE_PATH}/decoration/animated/{image_file}'))
 

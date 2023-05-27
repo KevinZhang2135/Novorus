@@ -13,8 +13,6 @@ class CameraGroup(pygame.sprite.Group):
         self.half_width = self.display_surface.get_width() / 2
         self.half_height = self.display_surface.get_height() / 2
 
-        self.texts = []
-
     def center_target(self, target):
         self.offset.x = TILE_SIZE / 2
         self.offset.y = -TILE_SIZE / 2
@@ -61,21 +59,7 @@ class CameraGroup(pygame.sprite.Group):
                     (255, 0, 0),
                     hitbox,
                     1)
-
-        expired_texts = []
-        for index, text in enumerate(self.texts):
-            if text.alpha <= 0:
-                expired_texts.append(index)
-
-            text.update()
-            offset_pos = text.rect.topleft - self.offset
-            self.display_surface.blit(text.text, offset_pos)
-
-        # removes texts that have expired
-        expired_texts.sort(reverse=True)
-        for index in expired_texts:
-            expired_text = self.texts.pop(index)
-            del expired_text
+                
 
     def update(self):
         "Updates all sprites"

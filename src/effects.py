@@ -1,67 +1,21 @@
 from constants import *
+from entity import *
+from sprite import Sprite
 
 import pygame
 
-class TextPopUp:
-    def __init__(self, text, rect):
-        self.text = text
 
-        self.rect = rect
-        self.hitbox = pygame.Rect(self.rect)
-
-        self.alpha = 255
+class Particle(Sprite):
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
 
         self.acceleration = pygame.math.Vector2()
         self.velocity = pygame.math.Vector2()
-        self.coords = pygame.math.Vector2()
-
-        self.time = pygame.time.get_ticks()
-        self.fade_time = randomize(1000, 0.1)
-
-    def movement(self):
-        '''Moves the text'''
-        self.velocity.y += self.acceleration.y
-        self.velocity.y *= 0.9
-
-        # movement decay when the speed is low
-        if abs(self.velocity.y) < 0.25:
-            self.velocity.y = 0
-
-        self.coords += self.velocity
-        self.rect.center = self.coords
-        self.hitbox.center = self.coords
-
-    def expire(self):
-        '''Fades text after its fade time'''
-        if pygame.time.get_ticks() - self.time > self.fade_time:
-            self.alpha -= 10
-            if self.alpha > 0:
-                self.text.set_alpha(self.alpha)
-
-    def update(self):
-        '''Handles events'''
-        self.movement()
-        self.expire()
-
-
-class Particle(pygame.sprite.Sprite):
-    def __init__(self, coords, size, image, groups):
-        super().__init__(groups)
-
-        self.alpha = 255
-
-        self.image = IMAGES[image].copy()
-        self.image = pygame.transform.scale(self.image, size)
-        self.rect = self.image.get_rect(center=coords)
-        self.hitbox = pygame.Rect(self.rect)
-
-        self.acceleration = pygame.math.Vector2()
-        self.velocity = pygame.math.Vector2()
-        self.coords = pygame.math.Vector2()
 
         self.time = pygame.time.get_ticks()
         self.fade_time = randomize(1000, 0.1) # time for the particle to fade 10 alpha
 
+        self.alpha = 255
         self.sprite_layer = 3
 
     def movement(self):
@@ -76,9 +30,10 @@ class Particle(pygame.sprite.Sprite):
         if abs(self.velocity.y) < 0.25:
             self.velocity.y = 0
 
-        self.coords += self.velocity
-        self.rect.center = self.coords
-        self.hitbox.center = self.coords
+        self.set_coords(self.coords.x + self.velocity.x, self.coords.y + self.velocity.y)
+
+    def set_image(self, image):
+        super().set_image(image, self.size)
 
     def expire(self):
         '''Fades particle after its fade time
@@ -96,6 +51,15 @@ class Particle(pygame.sprite.Sprite):
         '''Handles events'''
         self.movement()
         self.expire()
+
+class TextPopUp(Particle):
+    def __init__(self, coords: list, game, groups):
+        super().__init__(coords, [0, 0], game, groups)
+
+    def set_text(self, text):
+        self.image = text
+        self.rect = self.image.get_rect(center=self.coords)
+        self.hitbox = pygame.Rect(self.rect)
 
 
 class LightGroup(pygame.sprite.Group):

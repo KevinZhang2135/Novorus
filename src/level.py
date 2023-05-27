@@ -1,5 +1,5 @@
 from constants import *
-from entities import *
+from entity import *
 from tiles import *
 from enemies import *
 from sprite import Sprite
@@ -146,7 +146,7 @@ class Level:
             self.game,
             self.game.camera_group)
 
-        terrain_tile.setImage(sprites[id], size)
+        terrain_tile.set_image(sprites[id], size)
 
     def add_walls(self, id, coords):
         sprites = ('brick_top',
@@ -162,7 +162,7 @@ class Level:
             self.game,
             self.game.camera_group)
 
-        terrain_tile.setImage(sprites[id], size)
+        terrain_tile.set_image(sprites[id], size)
         terrain_tile.sprite_layer = 1
 
     def add_enemies(self, id, coords):
@@ -199,7 +199,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('grass1', size)
+                decor.set_image('grass1', size)
 
                 if random.randint(0, 1):
                     decor.image = pygame.transform.flip(decor.image, True, False)
@@ -216,14 +216,14 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('grass2', size)
+                decor.set_image('grass2', size)
 
                 if random.randint(0, 1):
                     decor.image = pygame.transform.flip(decor.image, True, False)
 
             # grass3
             case 2:
-                size = (round(randomize(30, 0.1)), ) * 2
+                size = (round(randomize(80, 0.1)), ) * 2
                 coords[0] += random.randint(-25, 25)
                 coords[1] += random.randint(-25, 25)
 
@@ -233,7 +233,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('bush1', size)
+                decor.set_image('bush1', size)
 
             # rock1
             case 3:
@@ -247,7 +247,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('rock1', size)
+                decor.set_image('rock1', size)
 
             # rock2
             case 4:
@@ -261,7 +261,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('rock2', size)
+                decor.set_image('rock2', size)
 
             # rock3
             case 5:
@@ -275,7 +275,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('rock3', size)
+                decor.set_image('rock3', size)
 
             # rock4
             case 6:
@@ -289,7 +289,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('rock4', size)
+                decor.set_image('rock4', size)
 
             # tree1
             case 7:
@@ -303,7 +303,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('oak_tree', size)
+                decor.set_image('oak_tree', size)
 
             # tree2
             case 8:
@@ -317,7 +317,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('pine_tree', size)
+                decor.set_image('pine_tree', size)
 
             # tree3
             case 9:
@@ -331,7 +331,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('sakura_tree', size)
+                decor.set_image('sakura_tree', size)
 
             # tree4
             case 10:
@@ -345,7 +345,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
                 
-                decor.setImage('dead_tree', size)
+                decor.set_image('dead_tree', size)
 
         decor.sprite_layer = 1
         if random.randint(0, 1):
@@ -363,7 +363,7 @@ class Level:
                     self.game,
                     (self.game.camera_group, self.game.light_group))
 
-                decor.setImages('torch', size)
+                decor.set_images('torch', size)
                 decor.sprite_layer = 2
 
     def add_exit(self, id, coords):
