@@ -100,7 +100,7 @@ class Menu(pygame.sprite.Group):
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, coords, images: dict, game, groups, optional_key=False, work_paused=False):
+    def __init__(self, coords: list, images: dict, game, groups: pygame.sprite.Group, optional_key=False, work_paused=False):
         super().__init__(groups)
         self.game = game
         self.width, self.height = 100, 100
@@ -157,7 +157,7 @@ class Button(pygame.sprite.Sprite):
 
 
 class Inventory(pygame.sprite.Group):
-    def __init__(self, items, game):
+    def __init__(self, items: dict, game):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.game = game
@@ -199,7 +199,7 @@ class Inventory(pygame.sprite.Group):
         self.scroll_velocity = 0
         self.scroll_max_velocity = 30
 
-    def add_item(self, name, count):
+    def add_item(self, name: str, count: int):
         """Adds items to the inventory, stacking if it is already present"""
         inventory = [item for item in self.sprites()
                      if item != self.inventory_button and item.name == name]
@@ -330,7 +330,7 @@ class Inventory(pygame.sprite.Group):
 
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, name, image, tooltip, count, game):
+    def __init__(self, name: str, image:pygame.Surface, tooltip: str, count: int, game):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.game = game
@@ -389,7 +389,7 @@ class Item(pygame.sprite.Sprite):
 
 
 class Bar(pygame.sprite.Sprite):
-    def __init__(self, coords, groups):
+    def __init__(self, coords: list, groups: pygame.sprite.Group):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
 
@@ -415,7 +415,7 @@ class Bar(pygame.sprite.Sprite):
 
 
 class HealthBar(Bar):
-    def __init__(self, coords, groups):
+    def __init__(self, coords: list, groups: pygame.sprite.Group):
         super().__init__(coords, groups)
         self.image = IMAGES['heart'].copy()
         self.image = pygame.transform.scale(
@@ -423,7 +423,7 @@ class HealthBar(Bar):
             (self.width, self.height)
         )
 
-    def draw(self, target):
+    def draw(self, target: pygame.sprite.Sprite):
         pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2, 3)
 
         # gets health / total bar ratio
@@ -449,7 +449,7 @@ class HealthBar(Bar):
 
 
 class SpeedBar(Bar):
-    def __init__(self, coords, groups):
+    def __init__(self, coords: list, groups: pygame.sprite.Group):
         super().__init__(coords, groups)
         self.image = IMAGES['lightning'].copy()
         self.image = pygame.transform.scale(
@@ -472,7 +472,7 @@ class SpeedBar(Bar):
 
 
 class AttackBar(Bar):
-    def __init__(self, coords, groups):
+    def __init__(self, coords: list, groups: pygame.sprite.Group):
         super().__init__(coords, groups)
         self.image = IMAGES['sword'].copy()
         self.image = pygame.transform.scale(
@@ -495,7 +495,7 @@ class AttackBar(Bar):
 
 
 class BarGroup(pygame.sprite.Group):
-    def __init__(self, coords, game):
+    def __init__(self, coords: list, game):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.game = game
@@ -531,7 +531,7 @@ class BarGroup(pygame.sprite.Group):
 
         self.exp_text = [exp_text, exp_text_rect]
 
-    def draw(self, targets, always_show=False):
+    def draw(self, targets: pygame.sprite.Group, always_show: bool = False):
         target = None
         if (always_show):
             # selects the first sprite
@@ -603,8 +603,8 @@ class BarGroup(pygame.sprite.Group):
 
 
 class Cursor(pygame.sprite.Sprite):
-    def __init__(self, tile_size, game, group):
-        super().__init__(group)
+    def __init__(self, tile_size: int, game, groups: pygame.sprite.Group):
+        super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
         self.game = game
         self.tile_size = tile_size

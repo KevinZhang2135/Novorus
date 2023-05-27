@@ -11,7 +11,7 @@ import random
 
 
 class Level:
-    def __init__(self, floor_level, tile_size, game):
+    def __init__(self, floor_level: int, tile_size: int, game):
         global player
 
         self.game = game
@@ -118,7 +118,7 @@ class Level:
         if self.floor_level > 1:
             self.game.light_group.color = MIDNIGHT
 
-    def create_tile_group(self, csv_file, path):
+    def create_tile_group(self, csv_file, path: str):
         create_tile = {
             'player': self.set_player_coords,
             'terrain': self.add_terrain,
@@ -151,10 +151,10 @@ class Level:
                             f'Unexpected value was found in csv file "{path}".'
                         )
 
-    def set_player_coords(self, id, coords):
+    def set_player_coords(self, id: int, coords: list):
         self.game.player.set_coords(*coords)
 
-    def add_terrain(self, id, coords):
+    def add_terrain(self, id: int, coords: list):
         sprites = [f'path{i + 1}' for i in range(0, 10)] \
             + [f'grassy{i + 1}' for i in range(0, 2)] \
             + [f'path{i + 1}' for i in range(10, 31)] \
@@ -170,7 +170,7 @@ class Level:
 
         terrain_tile.set_image(sprites[id], size)
 
-    def add_walls(self, id, coords):
+    def add_walls(self, id: int, coords: list):
         sprites = (
             'brick_top',
             'brick_middle',
@@ -184,13 +184,13 @@ class Level:
             coords,
             size,
             self.game,
-            self.game.camera_group
+            (self.game.camera_group, self.game.collision_group)
         )
 
         terrain_tile.set_image(sprites[id], size)
         terrain_tile.sprite_layer = 1
 
-    def add_enemies(self, id, coords):
+    def add_enemies(self, id: int, coords: list):
         enemies = (
             Ghost,
             Mimic,
@@ -206,7 +206,7 @@ class Level:
             enemy.coords.y + random.randint(-25, 25)
         )
 
-    def add_chests(self, id, coords):
+    def add_chests(self, id: int, coords: list):
         size = (80, ) * 2
         chest = Chest(
             coords,
@@ -215,7 +215,7 @@ class Level:
             (self.game.camera_group, self.game.collision_group)
         )
 
-    def add_static_decor(self, id, coords):
+    def add_static_decor(self, id: int, coords: list):
         match id:
             # grass1
             case 0:
@@ -344,6 +344,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('oak_tree', size)
+                decor.hitbox = decor.rect.scale_by(0.6)
 
             # tree2
             case 8:
@@ -360,6 +361,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('pine_tree', size)
+                decor.hitbox = decor.rect.scale_by(0.6)
 
             # tree3
             case 9:
@@ -376,6 +378,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('sakura_tree', size)
+                decor.hitbox = decor.rect.scale_by(0.6)
 
             # tree4
             case 10:
@@ -392,6 +395,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('dead_tree', size)
+                decor.hitbox = decor.rect.scale_by(0.6)
 
         decor.sprite_layer = 1
 
@@ -399,7 +403,7 @@ class Level:
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
 
-    def add_animated_decor(self, id, coords):
+    def add_animated_decor(self, id: int, coords: list):
         match id:
             # torch
             case 0:
@@ -414,7 +418,7 @@ class Level:
                 decor.set_images('torch', size)
                 decor.sprite_layer = 2
 
-    def add_exit(self, id, coords):
+    def add_exit(self, id: int, coords: list):
         exit = LevelExit(
             coords,
             [round(self.tile_size * 0.8)] * 2,

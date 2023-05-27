@@ -6,7 +6,7 @@ import pygame
 
 
 class Particle(Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
         self.acceleration = pygame.math.Vector2()
@@ -57,8 +57,8 @@ class Particle(Sprite):
 
 
 class TextPopUp(Particle):
-    def __init__(self, coords: list, game, groups):
-        super().__init__(coords, [0, 0], game, groups)
+    def __init__(self, coords: list, game, group: pygame.sprite.Group):
+        super().__init__(coords, [0, 0], game, group)
 
     def set_text(self, text):
         self.image = text

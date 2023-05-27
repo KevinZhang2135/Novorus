@@ -2,9 +2,10 @@ from constants import *
 from effects import *
 from entity import *
 
+import pygame
 
 class Ghost(Entity):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
         self.show_stats = True

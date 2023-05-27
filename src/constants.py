@@ -1,5 +1,4 @@
 import pygame
-
 import os
 import random
 
@@ -71,7 +70,7 @@ def randomize(value: int, offset: float):
     )
 
 
-def color_image(image, color, transparency=255):
+def color_image(image, color: list, transparency: int = 255):
     '''Recolors a surface'''
     image = image.copy()
     # zeros out rgb and preserves original transparency

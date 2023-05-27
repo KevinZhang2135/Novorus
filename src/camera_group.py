@@ -2,6 +2,7 @@ from constants import *
 
 import pygame
 
+
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, game):
         super().__init__()
@@ -40,14 +41,14 @@ class CameraGroup(pygame.sprite.Group):
                 - self.half_height \
 
 
-    def custom_draw(self, player, show_hitboxes=False):
+    def custom_draw(self, player, show_hitboxes: bool = False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
-            
+
             # draws hitboxes
             if show_hitboxes:
                 hitbox = pygame.Rect(

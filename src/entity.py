@@ -5,9 +5,8 @@ from random import randint
 
 import pygame
 
-
 class Entity(Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
         self.in_combat = False
@@ -138,17 +137,17 @@ class Entity(Sprite):
                 self.velocity.y = 0
                 self.set_coords(
                     self.coords.x,
-                    self.game.level.rect.bottom - TILE_SIZE / 2 + self.hitbox.height / 2
+                    self.game.level.rect.bottom - TILE_SIZE / 2 - self.hitbox.height / 2
                 )
 
-    def face_enemy(self, target):
+    def face_enemy(self, target: Sprite):
         if self.rect.centerx < target.rect.centerx:
             self.facing = 'right'
 
         else:
             self.facing = 'left'
 
-    def attack_enemy(self, target_group):
+    def attack_enemy(self, target_group: pygame.sprite.Group):
         # checks if the player mask overlaps an enemy mask
         if (pygame.sprite.spritecollide(self, target_group, False)
             and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)
@@ -239,7 +238,7 @@ class Entity(Sprite):
             self.kill()
             del self
 
-    def hurt(self, attack, crit_chance):
+    def hurt(self, attack: int, crit_chance: float):
         text_coords = (
             random.randint(
                 round((self.rect.left + self.rect.centerx) / 2),
@@ -295,7 +294,7 @@ class Entity(Sprite):
 
 
 class Stats:
-    def __init__(self, health, speed, attack, crit_chance, dodge_chance):
+    def __init__(self, health: int, speed: int, attack: int, crit_chance: float, dodge_chance: float):
         self.health = self.base_health = health
         self.speed = self.base_speed = speed
         self.attack = self.base_attack = attack

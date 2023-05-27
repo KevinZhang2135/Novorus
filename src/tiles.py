@@ -10,7 +10,7 @@ class Chest(Sprite):
         super().__init__(coords, size, game, groups)
 
         # hitbox
-        self.hitbox = self.rect.scale_by(0.5)
+        self.hitbox = self.rect.scale_by(0.55, 0.45)
 
         # sprites
         self.chest_closed = IMAGES['chest_closed'].copy()

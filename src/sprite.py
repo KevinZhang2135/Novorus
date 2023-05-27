@@ -14,6 +14,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = pygame.Surface(size)
         self.rect = self.image.get_rect(center=coords)
         self.hitbox = pygame.Rect(self.rect)
+        self.hitbox_offset = pygame.math.Vector2()
 
         self.sprite_layer = 0
 
@@ -24,4 +25,4 @@ class Sprite(pygame.sprite.Sprite):
     def set_coords(self, x: float, y: float):
         self.coords.xy = x, y
         self.rect.center = self.coords
-        self.hitbox.center = self.coords
+        self.hitbox.center = self.coords + self.hitbox_offset

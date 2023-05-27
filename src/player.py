@@ -2,9 +2,11 @@ from effects import *
 from entity import *
 from ui import *
 
+import pygame
+
 
 class Player(Entity):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
         self.show_stats = True
@@ -14,6 +16,8 @@ class Player(Entity):
 
         # hitbox
         self.hitbox = self.rect.scale_by(0.6)
+        self.hitbox_offset.y = 4
+        self.set_coords(*self.coords)
 
         # movement
         self.max_velocity = 15
@@ -172,8 +176,8 @@ class Player(Entity):
                 )
 
                 text.set_text(COMICORO[25].render(
-                    str(damage), 
-                    True, 
+                    str(damage),
+                    True,
                     TANGERINE
                 ))
 
