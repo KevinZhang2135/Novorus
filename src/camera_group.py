@@ -58,6 +58,20 @@ class CameraGroup(pygame.sprite.Group):
                     sprite.hitbox.height
                 )
 
+                rect = pygame.Rect(
+                    sprite.rect.x - self.offset.x,
+                    sprite.rect.y - self.offset.y,
+                    sprite.rect.width,
+                    sprite.rect.height
+                )
+
+                pygame.draw.rect(
+                    self.display_surface,
+                    (255, 255, 255),
+                    rect,
+                    1,
+                )
+
                 pygame.draw.rect(
                     self.display_surface,
                     (255, 0, 0),

@@ -249,7 +249,7 @@ class Level:
 
                 decor.set_image('grass2', size)
 
-            # grass3
+            # bush1
             case 2:
                 size = (round(randomize(80, 0.1)), ) * 2
 
@@ -264,6 +264,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('bush1', size)
+                decor.set_hitbox(0.7, 0.55)
 
             # rock1
             case 3:
@@ -280,6 +281,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock1', size)
+                decor.set_hitbox(0.4, 0.3, offsety=decor.rect.height / 10)
 
             # rock2
             case 4:
@@ -296,6 +298,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock2', size)
+                decor.set_hitbox(0.4, 0.4, offsety=decor.rect.height / 10)
 
             # rock3
             case 5:
@@ -312,10 +315,11 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock3', size)
+                decor.set_hitbox(0.4, 0.4, offsety=decor.rect.height / 10)
 
             # rock4
             case 6:
-                size = (round(randomize(50, 0.1)), ) * 2
+                size = (round(randomize(40, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -328,6 +332,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock4', size)
+                decor.set_hitbox(0.4, 0.4, offsety=decor.rect.height / 10)
 
             # tree1
             case 7:
@@ -344,7 +349,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('oak_tree', size)
-                decor.hitbox = decor.rect.scale_by(0.6)
+                decor.set_hitbox(0.6, 0.6)
 
             # tree2
             case 8:
@@ -361,7 +366,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('pine_tree', size)
-                decor.hitbox = decor.rect.scale_by(0.6)
+                decor.set_hitbox(0.6, 0.6)
 
             # tree3
             case 9:
@@ -378,7 +383,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('sakura_tree', size)
-                decor.hitbox = decor.rect.scale_by(0.6)
+                decor.set_hitbox(0.6, 0.6)
 
             # tree4
             case 10:
@@ -395,7 +400,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('dead_tree', size)
-                decor.hitbox = decor.rect.scale_by(0.6)
+                decor.set_hitbox(0.6, 0.6)
 
         decor.sprite_layer = 1
 

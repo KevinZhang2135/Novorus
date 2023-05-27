@@ -26,3 +26,8 @@ class Sprite(pygame.sprite.Sprite):
         self.coords.xy = x, y
         self.rect.center = self.coords
         self.hitbox.center = self.coords + self.hitbox_offset
+
+    def set_hitbox(self, width: float, height: float, offsetx: int = 0, offsety: int = 0):
+        self.hitbox = self.rect.scale_by(width, height)
+        self.hitbox_offset.xy = offsetx, offsety
+        self.set_coords(*self.coords)

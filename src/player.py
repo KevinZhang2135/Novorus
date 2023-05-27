@@ -15,9 +15,7 @@ class Player(Entity):
         self.name = 'Player'
 
         # hitbox
-        self.hitbox = self.rect.scale_by(0.6)
-        self.hitbox_offset.y = 4
-        self.set_coords(*self.coords)
+        self.set_hitbox(0.6, 0.6, 0, 4)
 
         # movement
         self.max_velocity = 15

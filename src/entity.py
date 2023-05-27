@@ -141,7 +141,7 @@ class Entity(Sprite):
                 )
 
     def face_enemy(self, target: Sprite):
-        if self.rect.centerx < target.rect.centerx:
+        if self.hitbox.centerx < target.hitbox.centerx:
             self.facing = 'right'
 
         else:
