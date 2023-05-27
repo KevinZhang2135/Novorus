@@ -58,11 +58,11 @@ class Entity(Sprite):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
             for sprite in self.game.collision_group:
-                collision_distance = pygame.math.Vector2((self.rect.width + sprite.rect.width) / 2,
-                                                         (self.rect.height + sprite.rect.height) / 2)
+                collision_distance = pygame.math.Vector2((self.hitbox.width + sprite.hitbox.width) / 2,
+                                                         (self.hitbox.height + sprite.hitbox.height) / 2)
 
-                center_distance = pygame.math.Vector2(self.rect.centerx - sprite.rect.centerx,
-                                                      self.rect.centery - sprite.rect.centery)
+                center_distance = pygame.math.Vector2(self.hitbox.centerx - sprite.hitbox.centerx,
+                                                      self.hitbox.centery - sprite.hitbox.centery)
 
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
@@ -72,12 +72,12 @@ class Entity(Sprite):
                         # left collision
                         if center_distance.x > 0:
                             self.set_coords(
-                                sprite.rect.right + self.rect.width / 2, self.coords.y)
+                                sprite.hitbox.right + self.hitbox.width / 2, self.coords.y)
 
                         # right collision
                         elif center_distance.x < 0:
-                            self.set_coords(sprite.rect.left -
-                                            self.rect.width / 2, self.coords.y)
+                            self.set_coords(sprite.hitbox.left -
+                                            self.hitbox.width / 2, self.coords.y)
 
                         self.velocity.x = 0
 
@@ -86,37 +86,37 @@ class Entity(Sprite):
                         # bottom collision
                         if center_distance.y < 0:
                             self.set_coords(
-                                self.coords.x, sprite.rect.top - self.rect.height / 2)
+                                self.coords.x, sprite.hitbox.top - self.hitbox.height / 2)
 
                         # top collision
                         elif center_distance.y > 0:
                             self.set_coords(
-                                self.coords.x, sprite.rect.bottom + self.rect.height / 2)
+                                self.coords.x, sprite.hitbox.bottom + self.hitbox.height / 2)
 
                         self.velocity.y = 0
 
             # left edge map
-            if self.rect.left < TILE_SIZE / 2:
-                self.rect.left = TILE_SIZE / 2
-                self.coords[0] = self.rect.centerx
+            if self.hitbox.left < TILE_SIZE / 2:
+                self.set_coords(self.hitbox.width / 2 + TILE_SIZE / 2, self.coords.y)
                 self.velocity.x = 0
 
             # right edge map
-            elif self.rect.right > self.game.level.rect.right - TILE_SIZE / 2:
-                self.rect.right = self.game.level.rect.right - TILE_SIZE / 2
-                self.coords[0] = self.rect.centerx
+            elif self.hitbox.right > self.game.level.rect.right - TILE_SIZE / 2:
+                self.set_coords(
+                    self.game.level.rect.right - TILE_SIZE / 2 - self.hitbox.width / 2, 
+                    self.coords.y)
                 self.velocity.x = 0
 
             # top edge map
-            if self.rect.top < -TILE_SIZE / 2:
-                self.rect.top = -TILE_SIZE / 2
+            if self.hitbox.top < -TILE_SIZE / 2:
+                self.hitbox.top = -TILE_SIZE / 2
                 self.coords[1] = self.rect.centery
                 self.velocity.y = 0
 
             # bottom edge map
-            elif self.rect.bottom > self.game.level.rect.bottom - TILE_SIZE / 2:
-                self.rect.bottom = self.game.level.rect.bottom - TILE_SIZE / 2
-                self.coords[1] = self.rect.centery
+            elif self.hitbox.bottom > self.game.level.rect.bottom - TILE_SIZE / 2:
+                self.hitbox.bottom = self.game.level.rect.bottom - TILE_SIZE / 2
+                self.coords[1] = self.hitbox.centery
                 self.velocity.y = 0
 
     def face_enemy(self, target):

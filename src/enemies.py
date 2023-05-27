@@ -22,7 +22,7 @@ class Ghost(Entity):
 
         self.stats = Stats(30, 10, 6, 0.05, 0.1)
 
-        # sprites
+        # general animation
         self.frame = 0
         self.animation_types = {'idle': [],
                                 'run': [],
@@ -44,6 +44,7 @@ class Ghost(Entity):
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
+        # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
             1200 - self.stats.speed) / len(self.animation_types['attack'])
@@ -116,10 +117,6 @@ class Mimic(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
-        self.in_combat = False
-        self.attacking = False
-        self.show_stats = False
-
         self.action = 'idle'
         self.facing = random.choice(('left', 'right'))
         self.name = 'Mimic'
@@ -169,10 +166,6 @@ class Mimic(Entity):
 class Sunflower(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-
-        self.in_combat = False
-        self.attacking = False
-        self.show_stats = False
 
         self.action = 'idle'
         self.facing = random.choice(('left', 'right'))

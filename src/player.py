@@ -12,6 +12,9 @@ class Player(Entity):
         self.facing = 'right'
         self.name = 'Player'
 
+        # hitbox
+        self.hitbox = self.rect.scale_by(0.6)
+
         # movement
         self.max_velocity = 15
 
@@ -24,7 +27,7 @@ class Player(Entity):
 
         self.stats = Stats(100, 10000, 200, 0.05, 0.01)
 
-        # sprites
+        # general animation
         self.frame = 0
         self.animation_types = {'idle': [],
                                 'run': [],
@@ -45,6 +48,7 @@ class Player(Entity):
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1200 / len(self.animation_types['idle'])
 
+        # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (
             1200 - self.stats.speed) / len(self.animation_types['attack'])
@@ -54,9 +58,11 @@ class Player(Entity):
 
         self.cooldown = self.animation_cooldown
 
+        # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
         self.inventory.add_item('wood_sword', 1)
 
+        # lighting
         self.light_size = pygame.math.Vector2(900, 900)
 
         self.light = IMAGES['soft_circle'].copy()

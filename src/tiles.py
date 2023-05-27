@@ -9,6 +9,10 @@ class Chest(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
+        # hitbox
+        self.hitbox = self.rect.scale_by(0.5)
+
+        # sprites
         self.chest_closed = IMAGES['chest_closed'].copy()
         self.chest_closed = pygame.transform.scale(
             self.chest_closed, size)
@@ -21,7 +25,6 @@ class Chest(Sprite):
 
         self.opened = False
         self.sprite_layer = 1
-
 
     def collision(self):
         # checks if the distance of the sprites are within collision distance

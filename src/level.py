@@ -170,16 +170,17 @@ class Level:
                    Mimic,
                    Sunflower)
 
-        sprite_size = (50, 60, 30)
+        sprite_size = (50, 80, 30)
 
         enemy = enemies[id](coords, [sprite_size[id]] * 2, self.game,
                             (self.game.camera_group, self.game.enemy_group))
 
-        enemy.rect.centerx += random.randint(-25, 25)
-        enemy.rect.centery += random.randint(-25, 25)
+        enemy.set_coords(
+            enemy.coords.x + random.randint(-25, 25), 
+            enemy.coords.y + random.randint(-25, 25))
 
     def add_chests(self, id, coords):
-        size = (60, ) * 2
+        size = (80, ) * 2
         chest = Chest(
             coords,
             size,
