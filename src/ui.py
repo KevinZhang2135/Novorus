@@ -1,4 +1,5 @@
 from constants import *
+from sprite import Sprite
 
 import pygame
 import math
@@ -11,13 +12,17 @@ class Menu(pygame.sprite.Group):
         self.game = game
 
         self.pause_button = Button(
-            (self.display_surface.get_width(), self.display_surface.get_height()),
-            {'inactive': IMAGES['menu'].copy(),
-             'active': IMAGES['paused'].copy()},
+            self.display_surface.get_size(),
+            (120, 120),
             self.game,
             self,
             optional_key=pygame.K_ESCAPE,
             work_paused=True
+        )
+
+        self.pause_button.set_images(
+            IMAGES['menu'],
+            IMAGES['paused']
         )
 
         menu_width = 360
@@ -99,27 +104,26 @@ class Menu(pygame.sprite.Group):
             sprite.update()
 
 
-class Button(pygame.sprite.Sprite):
-    def __init__(self, coords: list, images: dict, game, groups: pygame.sprite.Group, optional_key=False, work_paused=False):
-        super().__init__(groups)
-        self.game = game
-        self.width, self.height = 100, 100
-
-        self.sprites = images
-        for key, image in images.items():
-            self.sprites[key] = pygame.transform.scale(
-                image,
-                (self.width, self.height)
-            )
-
-        self.image = self.sprites['inactive']
-        self.rect = self.image.get_rect(bottomright=coords)
+class Button(Sprite):
+    def __init__(self, coords: list, size:list, game, groups: pygame.sprite.Group, optional_key=False, work_paused=False):
+        super().__init__(coords, size, game, groups)
+        self.set_coords(
+            self.coords.x - self.rect.width / 2,
+            self.coords.y - self.rect.height / 2
+        )
+        
+        self.inactive_sprite = self.active_sprite = self.image
 
         self.optional_key = optional_key
         self.work_paused = work_paused
 
         self.pressed = False
         self.active = False
+
+    def set_images(self, inactive_sprite, active_sprite):
+        self.inactive_sprite = pygame.transform.scale(inactive_sprite, self.rect.size)
+        self.active_sprite = pygame.transform.scale(active_sprite, self.rect.size)
+        self.image = self.inactive_sprite
 
     def press_button(self):
         left_click = (
@@ -146,10 +150,10 @@ class Button(pygame.sprite.Sprite):
             self.pressed = False
 
         if self.active:
-            self.image = self.sprites['active']
+            self.image = self.active_sprite
 
         else:
-            self.image = self.sprites['inactive']
+            self.image = self.inactive_sprite
 
     def update(self):
         '''Handles events'''
@@ -163,13 +167,17 @@ class Inventory(pygame.sprite.Group):
         self.game = game
 
         self.inventory_button = Button(
-            (self.display_surface.get_width() - 100,
+            (self.display_surface.get_width() - 90,
              self.display_surface.get_height()),
-            {'inactive': IMAGES['backpack_closed'].copy(
-            ), 'active': IMAGES['backpack_opened'].copy()},
+            (120, 120),
             self.game,
             self,
             optional_key=pygame.K_q
+        )
+
+        self.inventory_button.set_images(
+            IMAGES['backpack_closed'],
+            IMAGES['backpack_opened']
         )
 
         # inventory background
