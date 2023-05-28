@@ -63,23 +63,20 @@ class Entity(Sprite):
             # sorts sprites by distance
             sprites = sorted(
                 self.game.collision_group,
-                key=lambda sprite: dist(self.coords, sprite.coords)
+                key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center)
             )
 
-            # gets closest sprite
-            closest_sprite = sprites[0] if len(sprites) > 0 else None
-
-            if closest_sprite:
+            for sprite in sprites:
                 # minimum distance between two sprites which includes collision
                 collision_distance = pygame.math.Vector2(
-                    (self.hitbox.width + closest_sprite.hitbox.width) / 2,
-                    (self.hitbox.height + closest_sprite.hitbox.height) / 2
+                    (self.hitbox.width + sprite.hitbox.width) / 2,
+                    (self.hitbox.height + sprite.hitbox.height) / 2
                 )
 
                 # distance between the centers of two sprites
                 center_distance = pygame.math.Vector2(
-                    self.hitbox.centerx - closest_sprite.hitbox.centerx,
-                    self.hitbox.centery - closest_sprite.hitbox.centery
+                    self.hitbox.centerx - sprite.hitbox.centerx,
+                    self.hitbox.centery - sprite.hitbox.centery
                 )
 
                 # checks if the distance of the sprites are within collision distance
@@ -90,33 +87,33 @@ class Entity(Sprite):
                         # left collision
                         if center_distance.x > 0:
                             self.set_coords(
-                                closest_sprite.hitbox.right + self.hitbox.width / 2 - self.hitbox_offset.x,
+                                sprite.hitbox.right + self.hitbox.width / 2 - self.hitbox_offset.x + 1,
                                 self.coords.y
                             )
 
                         # right collision
                         elif center_distance.x < 0:
                             self.set_coords(
-                                closest_sprite.hitbox.left - self.hitbox.width / 2 - self.hitbox_offset.x,
+                                sprite.hitbox.left - self.hitbox.width / 2 - self.hitbox_offset.x - 1,
                                 self.coords.y
                             )
 
                         self.velocity.x = 0
 
                     # vertical collision
-                    if (abs(center_distance.y) > abs(center_distance.x)):
-                        # bottom collision
-                        if center_distance.y < 0:
+                    else:
+                        # top collision
+                        if center_distance.y > 0:
                             self.set_coords(
                                 self.coords.x,
-                                closest_sprite.hitbox.top - self.hitbox.height / 2 - self.hitbox_offset.y
+                                sprite.hitbox.bottom + self.hitbox.height / 2 - self.hitbox_offset.y + 1
                             )
 
-                        # top collision
-                        elif center_distance.y > 0:
+                        # bottom collision
+                        elif center_distance.y < 0:
                             self.set_coords(
                                 self.coords.x,
-                                closest_sprite.hitbox.bottom + self.hitbox.height / 2 - self.hitbox_offset.y
+                                sprite.hitbox.top - self.hitbox.height / 2 - self.hitbox_offset.y - 1
                             )
 
                         self.velocity.y = 0
@@ -130,7 +127,7 @@ class Entity(Sprite):
             if self.hitbox.left < screen_left:
                 self.velocity.x = 0
                 self.set_coords(
-                    self.hitbox.width / 2 + screen_left,
+                    self.hitbox.width / 2 + screen_left - self.hitbox_offset.x + 1,
                     self.coords.y
                 )
 
@@ -138,7 +135,7 @@ class Entity(Sprite):
             elif self.hitbox.right > screen_right:
                 self.velocity.x = 0
                 self.set_coords(
-                    screen_right - self.hitbox.width / 2,
+                    screen_right - self.hitbox.width / 2 - self.hitbox_offset.x - 1,
                     self.coords.y
                 )
 
@@ -147,7 +144,7 @@ class Entity(Sprite):
                 self.velocity.y = 0
                 self.set_coords(
                     self.coords.x,
-                    screen_top + self.hitbox.height / 2 - self.hitbox_offset.y
+                    screen_top + self.hitbox.height / 2 - self.hitbox_offset.y + 1
                 )
 
             # bottom edge map
@@ -155,7 +152,7 @@ class Entity(Sprite):
                 self.velocity.y = 0
                 self.set_coords(
                     self.coords.x,
-                    screen_bottom - self.hitbox.height / 2 - self.hitbox_offset.y
+                    screen_bottom - self.hitbox.height / 2 - self.hitbox_offset.y - 1
                 )
 
     def face_enemy(self, target: Sprite):
