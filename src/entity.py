@@ -72,52 +72,54 @@ class Entity(Sprite):
                     self.hitbox.centery - sprite.hitbox.centery
                 )
 
-                # checks if the distance of the sprites are within collision distance
-                if (abs(center_distance.x) < collision_distance.x
-                        and abs(center_distance.y) < collision_distance.y):
+                overlap_distance = pygame.math.Vector2()
+                overlap_distance.x = (self.hitbox.left - sprite.hitbox.right) if center_distance.x > 0 \
+                    else sprite.hitbox.left - self.hitbox.right
+                
+                overlap_distance.y = (self.hitbox.top - sprite.hitbox.bottom) if center_distance.y > 0 \
+                    else sprite.hitbox.top - self.hitbox.bottom
+
+                # # checks if the distance of the sprites are within collision distance
+                # if (abs(center_distance.x) < collision_distance.x
+                #         and abs(center_distance.y) < collision_distance.y):
                     
-                    overlap_distance = pygame.math.Vector2()
-                    overlap_distance.x = (self.hitbox.left - sprite.hitbox.right) if center_distance.x > 0 \
-                        else sprite.hitbox.left - self.hitbox.right
                     
-                    overlap_distance.y = (self.hitbox.top - sprite.hitbox.bottom) if center_distance.y > 0 \
-                        else sprite.hitbox.top - self.hitbox.bottom
                     
-                    # horizontal collision
-                    if (abs(center_distance.x) > abs(center_distance.y)):
-                        # left collision
-                        if center_distance.x > 0:
-                            self.set_coords(
-                                sprite.hitbox.right + self.hitbox.width / 2 - self.hitbox_offset.x,
-                                self.coords.y
-                            )
+                #     # horizontal collision
+                #     if (abs(center_distance.x) > abs(center_distance.y)):
+                #         # left collision
+                #         if center_distance.x > 0:
+                #             self.set_coords(
+                #                 sprite.hitbox.right + self.hitbox.width / 2 - self.hitbox_offset.x,
+                #                 self.coords.y
+                #             )
 
-                        # right collision
-                        elif center_distance.x < 0:
-                            self.set_coords(
-                                sprite.hitbox.left - self.hitbox.width / 2 - self.hitbox_offset.x,
-                                self.coords.y
-                            )
+                #         # right collision
+                #         elif center_distance.x < 0:
+                #             self.set_coords(
+                #                 sprite.hitbox.left - self.hitbox.width / 2 - self.hitbox_offset.x,
+                #                 self.coords.y
+                #             )
 
-                        self.velocity.x = 0
+                #         self.velocity.x = 0
 
-                    # vertical collision
-                    elif (abs(center_distance.y) > abs(center_distance.x)):
-                        # bottom collision
-                        if center_distance.y < 0:
-                            self.set_coords(
-                                self.coords.x,
-                                sprite.hitbox.top - self.hitbox.height / 2 - self.hitbox_offset.y
-                            )
+                #     # vertical collision
+                #     elif (abs(center_distance.y) > abs(center_distance.x)):
+                #         # bottom collision
+                #         if center_distance.y < 0:
+                #             self.set_coords(
+                #                 self.coords.x,
+                #                 sprite.hitbox.top - self.hitbox.height / 2 - self.hitbox_offset.y
+                #             )
 
-                        # top collision
-                        elif center_distance.y > 0:
-                            self.set_coords(
-                                self.coords.x,
-                                sprite.hitbox.bottom + self.hitbox.height / 2 - self.hitbox_offset.y
-                            )
+                #         # top collision
+                #         elif center_distance.y > 0:
+                #             self.set_coords(
+                #                 self.coords.x,
+                #                 sprite.hitbox.bottom + self.hitbox.height / 2 - self.hitbox_offset.y
+                #             )
 
-                        self.velocity.y = 0
+                #         self.velocity.y = 0
 
             # left edge map
             if self.hitbox.left < TILE_SIZE / 2:
