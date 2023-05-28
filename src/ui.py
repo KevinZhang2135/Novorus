@@ -625,8 +625,13 @@ class Cursor(pygame.sprite.Sprite):
         return mouse_pos
 
     def update(self):
-        mouse_pos = list(pygame.mouse.get_pos())
-        mouse_pos[0] = round(mouse_pos[0] / TILE_SIZE) * TILE_SIZE
-        mouse_pos[1] = round(mouse_pos[1] / TILE_SIZE) * TILE_SIZE
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = list(mouse_pos)
+
+        mouse_pos[0] = round((mouse_pos[0] - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE \
+            + TILE_SIZE / 2 \
+            
+        mouse_pos[1] = round((mouse_pos[1] - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE \
+            + TILE_SIZE / 2 \
 
         self.rect.center = mouse_pos

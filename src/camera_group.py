@@ -68,13 +68,6 @@ class CameraGroup(pygame.sprite.Group):
                 pygame.draw.rect(
                     self.display_surface,
                     (255, 255, 255),
-                    rect,
-                    1,
-                )
-
-                pygame.draw.rect(
-                    self.display_surface,
-                    (255, 0, 0),
                     hitbox,
                     1
                 )

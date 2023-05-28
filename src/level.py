@@ -190,6 +190,9 @@ class Level:
         terrain_tile.set_image(sprites[id], size)
         terrain_tile.sprite_layer = 1
 
+        if id == 0 or id == 4:
+            terrain_tile.set_hitbox(1, 0.8, offsety=0.1)
+
     def add_enemies(self, id: int, coords: list):
         enemies = (
             Ghost,
@@ -281,7 +284,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock1', size)
-                decor.set_hitbox(0.4, 0.3, offsety=decor.rect.height / 10)
+                decor.set_hitbox(0.4, 0.3, offsety=0.1)
 
             # rock2
             case 4:
@@ -298,7 +301,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock2', size)
-                decor.set_hitbox(0.4, 0.4, offsety=decor.rect.height / 10)
+                decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # rock3
             case 5:
@@ -315,7 +318,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock3', size)
-                decor.set_hitbox(0.4, 0.4, offsety=decor.rect.height / 10)
+                decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # rock4
             case 6:
@@ -332,7 +335,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('rock4', size)
-                decor.set_hitbox(0.4, 0.4, offsety=decor.rect.height / 10)
+                decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # tree1
             case 7:

@@ -5,6 +5,7 @@ from random import randint
 
 import pygame
 
+
 class Entity(Sprite):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
@@ -59,11 +60,13 @@ class Entity(Sprite):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
             for sprite in self.game.collision_group:
+                # minimum distance between two sprites which includes collision
                 collision_distance = pygame.math.Vector2(
                     (self.hitbox.width + sprite.hitbox.width) / 2,
                     (self.hitbox.height + sprite.hitbox.height) / 2
                 )
 
+                # distance between the centers of two sprites
                 center_distance = pygame.math.Vector2(
                     self.hitbox.centerx - sprite.hitbox.centerx,
                     self.hitbox.centery - sprite.hitbox.centery
@@ -72,19 +75,27 @@ class Entity(Sprite):
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
                         and abs(center_distance.y) < collision_distance.y):
+                    
+                    overlap_distance = pygame.math.Vector2()
+                    overlap_distance.x = (self.hitbox.left - sprite.hitbox.right) if center_distance.x > 0 \
+                        else sprite.hitbox.left - self.hitbox.right
+                    
+                    overlap_distance.y = (self.hitbox.top - sprite.hitbox.bottom) if center_distance.y > 0 \
+                        else sprite.hitbox.top - self.hitbox.bottom
+                    
                     # horizontal collision
                     if (abs(center_distance.x) > abs(center_distance.y)):
                         # left collision
                         if center_distance.x > 0:
                             self.set_coords(
-                                sprite.hitbox.right + self.hitbox.width / 2,
+                                sprite.hitbox.right + self.hitbox.width / 2 - self.hitbox_offset.x,
                                 self.coords.y
                             )
 
                         # right collision
                         elif center_distance.x < 0:
                             self.set_coords(
-                                sprite.hitbox.left - self.hitbox.width / 2,
+                                sprite.hitbox.left - self.hitbox.width / 2 - self.hitbox_offset.x,
                                 self.coords.y
                             )
 
@@ -96,14 +107,14 @@ class Entity(Sprite):
                         if center_distance.y < 0:
                             self.set_coords(
                                 self.coords.x,
-                                sprite.hitbox.top - self.hitbox.height / 2
+                                sprite.hitbox.top - self.hitbox.height / 2 - self.hitbox_offset.y
                             )
 
                         # top collision
                         elif center_distance.y > 0:
                             self.set_coords(
                                 self.coords.x,
-                                sprite.hitbox.bottom + self.hitbox.height / 2
+                                sprite.hitbox.bottom + self.hitbox.height / 2 - self.hitbox_offset.y
                             )
 
                         self.velocity.y = 0
