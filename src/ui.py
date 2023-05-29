@@ -432,7 +432,7 @@ class HealthBar(Bar):
         )
 
     def draw(self, target: pygame.sprite.Sprite):
-        pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2, 3)
+        pygame.draw.rect(self.display_surface, PECAN, self.total_bar, 2, self.bar.width // 5)
 
         # gets health / total bar ratio
         ratio = target.stats.health / target.stats.base_health
@@ -443,8 +443,8 @@ class HealthBar(Bar):
 
         # only display the bar when the player has health
         if ratio > 0:
-            pygame.draw.rect(self.display_surface, RED, self.bar, 0, 2)
-            pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2, 3)
+            pygame.draw.rect(self.display_surface, RED, self.bar, 0, self.bar.width // 5)
+            pygame.draw.rect(self.display_surface, BLOOD_RED, self.bar, 2, self.bar.width // 5)
 
         # displays health text
         self.stat_text[0] = COMICORO[20].render(
@@ -459,15 +459,15 @@ class HealthBar(Bar):
 class SpeedBar(Bar):
     def __init__(self, coords: list, groups: pygame.sprite.Group):
         super().__init__(coords, groups)
-        self.image = IMAGES['lightning'].copy()
+        self.image = IMAGES['boots'].copy()
         self.image = pygame.transform.scale(
             self.image,
             (self.width, self.height)
         )
 
     def draw(self, target):
-        pygame.draw.rect(self.display_surface, YELLOW, self.bar, 0, 3)
-        pygame.draw.rect(self.display_surface, GOLD, self.bar, 2, 3)
+        pygame.draw.rect(self.display_surface, YELLOW, self.bar, 0, self.bar.width // 5)
+        pygame.draw.rect(self.display_surface, GOLD, self.bar, 2, self.bar.width // 5)
 
         # displays speed text
         self.stat_text[0] = COMICORO[20].render(
@@ -489,8 +489,8 @@ class AttackBar(Bar):
         )
 
     def draw(self, target):
-        pygame.draw.rect(self.display_surface, GREY, self.bar, 0, 3)
-        pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2, 3)
+        pygame.draw.rect(self.display_surface, GREY, self.bar, 0, self.bar.width // 5)
+        pygame.draw.rect(self.display_surface, DARK_GREY, self.bar, 2, self.bar.width // 5)
 
         # displays attack text
         self.stat_text[0] = COMICORO[20].render(
@@ -554,13 +554,12 @@ class BarGroup(pygame.sprite.Group):
 
         # draws the card of the target's health, speed, and attack
         if target and target.show_stats:
-            pygame.draw.rect(self.display_surface, BROWN, self.rect, 0, 3)
+            pygame.draw.rect(self.display_surface, BROWN, self.rect)
             pygame.draw.rect(
                 self.display_surface,
                 DARK_BROWN, 
                 self.rect, 
                 3, 
-                3
             )
 
             # displays target level
