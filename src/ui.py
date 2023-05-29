@@ -610,15 +610,14 @@ class BarGroup(pygame.sprite.Group):
                 self.display_surface.blit(*self.exp_text)
 
 
-class Cursor(pygame.sprite.Sprite):
-    def __init__(self, tile_size: int, game, groups: pygame.sprite.Group):
-        super().__init__(groups)
+class Cursor(Sprite):
+    def __init__(self, size:list, game, groups: pygame.sprite.Group,):
+        super().__init__(pygame.mouse.get_pos(), size, game, groups)
         self.display_surface = pygame.display.get_surface()
         self.game = game
-        self.tile_size = tile_size
 
         self.image = IMAGES['cursor'].copy()
-        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.image = pygame.transform.scale(self.image, size)
 
         self.rect = self.image.get_rect(center=(0, 0))
 
@@ -635,11 +634,5 @@ class Cursor(pygame.sprite.Sprite):
     def update(self):
         mouse_pos = pygame.mouse.get_pos()
         mouse_pos = list(mouse_pos)
-
-        mouse_pos[0] = round((mouse_pos[0] - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE \
-            + TILE_SIZE / 2 \
-            
-        mouse_pos[1] = round((mouse_pos[1] - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE \
-            + TILE_SIZE / 2 \
 
         self.rect.center = mouse_pos

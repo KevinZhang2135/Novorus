@@ -12,6 +12,7 @@ class App:
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption('Novorus')
+        pygame.mouse.set_visible(False)
 
         # sets the size of the screen; defaults to full screen
         self.resolution = 1920, 1080
@@ -48,7 +49,7 @@ class App:
         self.enemy_bars = BarGroup((2, self.player_bars.height + 4), self)
 
         # hud
-        self.cursor = Cursor(TILE_SIZE, self, self.cursor_group)
+        self.cursor = Cursor((50, 50), self, self.cursor_group)
 
         # player
         self.player = Player(
@@ -73,7 +74,7 @@ class App:
 
             # redraws sprites and images
             self.camera_group.custom_draw(self.player, show_hitboxes=False)
-            self.cursor_group.draw(self.screen)
+            
             self.light_group.render_lighting()
 
             self.player_bars.draw(self.player_group, always_show=True)
@@ -82,7 +83,8 @@ class App:
             self.menu.draw()
             self.player.inventory.draw()
             self.level.draw()
-
+            self.cursor_group.draw(self.screen)
+            
             # updates
             if self.state['unpaused'] and not self.level.transitioning:
                 self.camera_group.update()
