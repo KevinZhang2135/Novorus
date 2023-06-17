@@ -73,7 +73,7 @@ class App:
             self.screen.fill((105, 162, 97))
 
             # redraws sprites and images
-            self.camera_group.custom_draw(self.player, show_hitboxes=False)
+            self.camera_group.custom_draw(self.player, show_hitboxes=True)
             
             self.light_group.render_lighting()
 

@@ -193,6 +193,9 @@ class Level:
         if id == 0 or id == 4:
             terrain_tile.set_hitbox(1, 0.8, offsety=0.1)
 
+        if id == 3:
+            terrain_tile.set_hitbox(0.7, 0.4, offsety=0.05)
+
     def add_enemies(self, id: int, coords: list):
         enemies = (
             Ghost,
