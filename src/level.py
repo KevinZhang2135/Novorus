@@ -168,7 +168,7 @@ class Level:
             self.game.camera_group
         )
 
-        terrain_tile.set_image(sprites[id], size)
+        terrain_tile.set_image(sprites[id])
 
     def add_walls(self, id: int, coords: list):
         sprites = (
@@ -187,7 +187,7 @@ class Level:
             (self.game.camera_group, self.game.collision_group)
         )
 
-        terrain_tile.set_image(sprites[id], size)
+        terrain_tile.set_image(sprites[id])
         terrain_tile.sprite_layer = 1
 
         if id == 0 or id == 4:
@@ -237,7 +237,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('grass1', size)
+                decor.set_image('grass1')
 
             # grass2
             case 1:
@@ -253,7 +253,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('grass2', size)
+                decor.set_image('grass2')
 
             # bush1
             case 2:
@@ -269,7 +269,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('bush1', size)
+                decor.set_image('bush1')
                 decor.set_hitbox(0.7, 0.55)
 
             # rock1
@@ -286,7 +286,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('rock1', size)
+                decor.set_image('rock1')
                 decor.set_hitbox(0.4, 0.3, offsety=0.1)
 
             # rock2
@@ -303,7 +303,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('rock2', size)
+                decor.set_image('rock2')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # rock3
@@ -320,7 +320,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('rock3', size)
+                decor.set_image('rock3')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # rock4
@@ -337,12 +337,12 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('rock4', size)
+                decor.set_image('rock4')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # tree1
             case 7:
-                size = (round(randomize(180, 0.1)), ) * 2
+                size = (round(randomize(200, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-10, 10)
@@ -354,12 +354,12 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('oak_tree', size)
+                decor.set_image('oak_tree')
                 decor.set_hitbox(0.6, 0.6)
 
             # tree2
             case 8:
-                size = (round(randomize(190, 0.1)), ) * 2
+                size = (round(randomize(210, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-10, 10)
@@ -371,12 +371,12 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('pine_tree', size)
+                decor.set_image('pine_tree')
                 decor.set_hitbox(0.6, 0.6)
 
             # tree3
             case 9:
-                size = (round(randomize(160, 0.1)), ) * 2
+                size = (round(randomize(190, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -388,7 +388,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('sakura_tree', size)
+                decor.set_image('sakura_tree')
                 decor.set_hitbox(0.6, 0.6)
 
             # tree4
@@ -405,7 +405,7 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('dead_tree', size)
+                decor.set_image('dead_tree')
                 decor.set_hitbox(0.6, 0.6)
 
         decor.sprite_layer = 1
@@ -426,7 +426,7 @@ class Level:
                     (self.game.camera_group, self.game.light_group)
                 )
 
-                decor.set_images('torch', size)
+                decor.set_images('torch')
                 decor.sprite_layer = 2
 
     def add_exit(self, id: int, coords: list):

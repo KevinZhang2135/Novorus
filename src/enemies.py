@@ -13,6 +13,9 @@ class Ghost(Entity):
         self.facing = random.choice(('left', 'right'))
         self.name = 'Ghost'
 
+        # hitbox
+        self.set_hitbox(0.4, 0.5)
+
         # movement
         self.detection_distance = 350
         self.max_velocity = 2
@@ -46,7 +49,6 @@ class Ghost(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
@@ -61,6 +63,37 @@ class Ghost(Entity):
             self.attack_cooldown = 200
 
         self.cooldown = self.animation_cooldown
+
+    def movement(self):
+        '''Handles movement'''
+        self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
+                                                self.game.player.rect.centery - self.rect.centery)
+
+        if (self.acceleration.length() < self.detection_distance
+                and not self.in_combat):
+            if self.acceleration.length() > 0:
+                self.acceleration.scale_to_length(self.max_velocity)
+
+            self.velocity += self.acceleration
+            self.velocity *= 0.5
+
+        else:
+            # movement decay
+            self.velocity *= 0.8
+            self.acceleration.x = 0
+            self.acceleration.y = 0
+
+        # movement decay when the speed is low
+        if abs(self.velocity.x) < self.max_velocity / 10:
+            self.velocity.x = 0
+
+        if abs(self.velocity.y) < self.max_velocity / 10:
+            self.velocity.y = 0
+
+        self.set_coords(
+            self.coords.x + self.velocity.x,
+            self.coords.y + self.velocity.y
+        )
 
     def check_state(self):
         if not self.in_combat:
@@ -141,8 +174,10 @@ class Mimic(Entity):
 
         # animation
         self.frame = 0
-        self.animation_types = {'idle': [],
-                                'attack': []}
+        self.animation_types = {
+            'idle': [],
+            'attack': []
+        }
 
         for type in self.animation_types:
             num_of_frames = len(os.listdir(
@@ -159,7 +194,6 @@ class Mimic(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
@@ -190,6 +224,9 @@ class Sunflower(Entity):
         self.facing = random.choice(('left', 'right'))
         self.name = 'Sunflower'
 
+        # hitbox
+        self.set_hitbox(0.4, 0.9)
+
         # stats
         self.exp = 5
         self.exp_levels = False
@@ -198,8 +235,10 @@ class Sunflower(Entity):
 
         # general animation
         self.frame = 0
-        self.animation_types = {'idle': [],
-                                'attack': []}
+        self.animation_types = {
+            'idle': [],
+            'attack': []
+        }
 
         for type in self.animation_types:
             num_of_frames = len(os.listdir(
@@ -216,7 +255,6 @@ class Sunflower(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])

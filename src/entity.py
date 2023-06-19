@@ -23,27 +23,12 @@ class Entity(Sprite):
         self.max_velocity = 0
 
         # render
-        self.mask = pygame.mask.from_surface(self.image)
         self.sprite_layer = 1
+
+        self.animation_types = {}
 
     def movement(self):
         '''Handles movement'''
-        self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
-                                                self.game.player.rect.centery - self.rect.centery)
-
-        if (self.acceleration.length() < self.detection_distance
-                and not self.in_combat):
-            if self.acceleration.length() > 0:
-                self.acceleration.scale_to_length(self.max_velocity)
-
-            self.velocity += self.acceleration
-            self.velocity *= 0.5
-
-        else:
-            # movement decay
-            self.velocity *= 0.8
-            self.acceleration.x = 0
-            self.acceleration.y = 0
 
         # movement decay when the speed is low
         if abs(self.velocity.x) < self.max_velocity / 10:

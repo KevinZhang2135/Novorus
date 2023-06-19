@@ -1,6 +1,8 @@
 from effects import *
 from entity import *
+from projectiles import *
 from ui import *
+
 
 import pygame
 
@@ -15,7 +17,7 @@ class Player(Entity):
         self.name = 'Player'
 
         # hitbox
-        self.set_hitbox(0.6, 0.6, offsety=0.05)
+        self.set_hitbox(0.4, 0.6, offsety=0.00)
 
         # movement
         self.max_velocity = 15
@@ -27,13 +29,15 @@ class Player(Entity):
         while self.exp > self.exp_levels[self.level - 1]:
             self.level += 1
 
-        self.stats = Stats(100, 10000, 200, 0.05, 0.01)
+        self.stats = Stats(100, 100, 20, 0.05, 0.01)
 
         # general animation
         self.frame = 0
-        self.animation_types = {'idle': [],
-                                'run': [],
-                                'attack': []}
+        self.animation_types = {
+            'idle': [],
+            'run': [],
+            'attack': []
+        }
 
         for type in self.animation_types:
             num_of_frames = len(os.listdir(f'{SPRITE_PATH}/player/{type}'))
@@ -47,10 +51,9 @@ class Player(Entity):
                 self.animation_types[type].append(image)
 
         self.image = self.animation_types['idle'][self.frame]
-        self.mask = pygame.mask.from_surface(self.image)
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1200 / len(self.animation_types['idle'])
+        self.animation_cooldown = 1500 / len(self.animation_types['idle'])
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
@@ -79,46 +82,58 @@ class Player(Entity):
 
     def movement(self):
         '''Handles movement'''
-        if not self.in_combat:
-            keys = pygame.key.get_pressed()
-            left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-            right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-            down = keys[pygame.K_DOWN] or keys[pygame.K_s]
-            up = keys[pygame.K_UP] or keys[pygame.K_w]
+        keys = pygame.key.get_pressed()
+        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+        up = keys[pygame.K_UP] or keys[pygame.K_w]
 
-            # creates movement using falsy and truthy values that evaluate to 0 and 1
-            self.acceleration = pygame.math.Vector2(right - left, down - up)
-            if self.acceleration.length_squared() > 0:  # checks if the player is moving
-                # converts the coordinates to a vector according to the radius
-                self.acceleration.scale_to_length(self.max_velocity)
-                self.velocity += self.acceleration
-                self.velocity *= 0.5
+        # creates movement using falsy and truthy values that evaluate to 0 and 1
+        self.acceleration = pygame.math.Vector2(right - left, down - up)
+        if not self.attacking and self.acceleration.length_squared() > 0:  # checks if the player is moving
+            # converts the coordinates to a vector according to the radius
+            self.acceleration.scale_to_length(self.max_velocity)
+            self.velocity += self.acceleration
+            self.velocity *= 0.5
 
-            else:
-                # movement decay when input is not received
-                self.velocity *= 0.8
-                self.acceleration.x = 0
-                self.acceleration.y = 0
+        else:
+            # movement decay when input is not received
+            self.velocity *= 0.8
+            self.acceleration.x = 0
+            self.acceleration.y = 0
 
-            # movement decay when the speed is low
-            if abs(self.velocity.x) < self.max_velocity / 100:
-                self.velocity.x = 0
+        # movement decay when the speed is low
+        if abs(self.velocity.x) < self.max_velocity / 100:
+            self.velocity.x = 0
 
-            if abs(self.velocity.y) < self.max_velocity / 100:
-                self.velocity.y = 0
+        if abs(self.velocity.y) < self.max_velocity / 100:
+            self.velocity.y = 0
 
-            self.set_coords(
-                self.coords.x + self.velocity.x,
-                self.coords.y + self.velocity.y
-            )
+        self.set_coords(
+            self.coords.x + self.velocity.x,
+            self.coords.y + self.velocity.y
+        )
 
     def leveling_up(self):
         '''Increases player level when they reach exp cap'''
         if self.exp > self.exp_levels[self.level - 1]:
             self.level += 1
 
+    def attack_enemy(self, target_group: pygame.sprite.Group):
+        self.attacking = False
+        if pygame.mouse.get_pressed()[0]:
+            self.attacking = True
+            if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown and self.frame >= len(self.animation_types[self.action]) - 1:
+                self.attack_time = pygame.time.get_ticks()
+                
+                slash = SwordSlash(self.coords, self.size, self.game, self.game.camera_group)
+                slash.set_target_group(self.game.enemy_group)
+                slash.set_attack(self.stats.attack)
+
+            
+
     def check_state(self):
-        if not self.in_combat:
+        if not self.attacking:
             if self.velocity.length_squared() > 0:
                 self.action = 'run'
 
@@ -132,11 +147,7 @@ class Player(Entity):
                 self.action = 'idle'
 
         else:
-            if self.attacking:
-                self.action = 'attack'
-
-            else:
-                self.action = 'idle'
+            self.action = 'attack'
 
     def hurt(self, attack, crit_chance):
         text_coords = (

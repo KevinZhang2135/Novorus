@@ -18,9 +18,10 @@ class Sprite(pygame.sprite.Sprite):
 
         self.sprite_layer = 0
 
-    def set_image(self, image_file: str, size: list):
+    def set_image(self, image_file: str):
         self.image = IMAGES[image_file].copy()
-        self.image = pygame.transform.scale(self.image, size)
+
+        self.image = pygame.transform.scale(self.image, self.size)
 
     def set_coords(self, x: float, y: float):
         self.coords.xy = x, y

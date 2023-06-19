@@ -12,8 +12,8 @@ class Particle(Sprite):
         self.acceleration = pygame.math.Vector2()
         self.velocity = pygame.math.Vector2()
 
-        self.time = pygame.time.get_ticks()
-        self.fade_time = randomize(1000, 0.1) # time for the particle to fade 10 alpha
+        self.fade_time = pygame.time.get_ticks()
+        self.fade_cooldown = randomize(1000, 0.1) # time for the particle to fade 10 alpha
 
         self.alpha = 255
         self.sprite_layer = 3
@@ -35,13 +35,10 @@ class Particle(Sprite):
             self.coords.y + self.velocity.y
         )
 
-    def set_image(self, image):
-        super().set_image(image, self.size)
-
     def expire(self):
         '''Fades particle after its fade time
            Deletes the particle if it has no alpha'''
-        if pygame.time.get_ticks() - self.time > self.fade_time:
+        if pygame.time.get_ticks() - self.fade_time > self.fade_cooldown:
             self.alpha -= 10
             if self.alpha > 0:
                 self.image.set_alpha(self.alpha)

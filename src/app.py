@@ -54,7 +54,7 @@ class App:
         # player
         self.player = Player(
             (0, 0),
-            (75, 75),
+            (100, 100),
             self,
             (self.camera_group, self.player_group, self.light_group)
         )

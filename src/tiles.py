@@ -77,14 +77,14 @@ class AnimatedTile(Sprite):
         self.animation_cooldown = 0 if len(self.animation_types) == 0 \
             else 1200 / len(self.animation_types)
 
-    def set_images(self, image_file, size):
+    def set_images(self, image_file):
         num_of_frames = len(os.listdir(
             f'{SPRITE_PATH}/decoration/animated/{image_file}'
         ))
 
         for i in range(num_of_frames):
             image = IMAGES[f'{image_file}{i + 1}'].copy()
-            image = pygame.transform.scale(image, size)
+            image = pygame.transform.scale(image, self.size)
 
             self.animation_types.append(image)
 
