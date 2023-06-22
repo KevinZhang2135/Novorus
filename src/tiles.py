@@ -32,7 +32,7 @@ class Chest(Sprite):
 
     def collision(self):
         # checks if the distance of the sprites are within collision distance
-        if pygame.Rect.colliderect(self.rect, self.game.player.rect) and not self.opened:
+        if pygame.Rect.colliderect(self.rect, self.game.player.hitbox) and not self.opened:
             self.image = self.chest_opened
             self.opened = True
 

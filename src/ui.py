@@ -547,7 +547,7 @@ class BarGroup(pygame.sprite.Group):
 
         else:
             for target in targets:
-                if (target.in_combat or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
+                if (target.attacking or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
                     break
 
                 target = None

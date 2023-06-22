@@ -24,7 +24,7 @@ class Ghost(Entity):
         self.exp = 15
         self.exp_levels = None
 
-        self.stats = Stats(3000, 10, 6, 0.05, 0.1)
+        self.stats = Stats(30, 10, 6, 0.05, 0.1)
 
         # general animation
         self.frame = 0
@@ -70,7 +70,7 @@ class Ghost(Entity):
                                                 self.game.player.rect.centery - self.rect.centery)
 
         if (self.acceleration.length() < self.detection_distance
-                and not self.in_combat):
+                and not self.attacking):
             if self.acceleration.length() > 0:
                 self.acceleration.scale_to_length(self.max_velocity)
 
@@ -96,7 +96,7 @@ class Ghost(Entity):
         )
 
     def check_state(self):
-        if not self.in_combat:
+        if not self.attacking:
             if self.velocity.length_squared() > 0:
                 self.action = 'run'
 
@@ -110,44 +110,7 @@ class Ghost(Entity):
                 self.action = 'idle'
 
         else:
-            if self.attacking:
-                self.action = 'attack'
-
-            else:
-                self.action = 'idle'
-
-        if self.stats.health < 0:
-            # sprite dies
-            self.stats.health = 0
-            self.in_combat = False
-            self.animation_time = pygame.time.get_ticks()
-            self.cooldown = self.game.player.animation_cooldown
-
-            for i in range(5):
-                x_offset = round((self.rect.right - self.rect.left) / 4)
-                x = random.randint(
-                    self.rect.centerx - x_offset,
-                    self.rect.centerx + x_offset
-                )
-
-                y_offset = round((self.rect.bottom - self.rect.top) / 4)
-                y = random.randint(
-                    self.rect.centery - y_offset,
-                    self.rect.centery + y_offset
-                )
-
-                dust = Particle(
-                    (x, y),
-                    [randomize(self.rect.width / 2, 0.05) for i in range(2)],
-                    self.game,
-                    self.game.camera_group
-                )
-
-                dust.set_image(f'dust{random.randint(1, 3)}')
-                dust.velocity.y = -2
-
-            self.kill()
-            del self
+            self.action = 'attack'
 
     def update(self):
         '''Handles events'''
@@ -155,6 +118,7 @@ class Ghost(Entity):
         self.collision()
         self.attack_enemy(self.game.player_group)
         self.check_state()
+        self.check_death()
         self.animation()
 
 
@@ -213,6 +177,7 @@ class Mimic(Entity):
         '''Handles events'''
         self.attack_enemy(self.game.player_group)
         self.check_state()
+        self.check_death()
         self.animation()
 
 
@@ -274,4 +239,5 @@ class Sunflower(Entity):
         '''Handles events'''
         self.attack_enemy(self.game.player_group)
         self.check_state()
+        self.check_death()
         self.animation()

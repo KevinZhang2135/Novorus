@@ -40,8 +40,7 @@ class CameraGroup(pygame.sprite.Group):
             self.offset.y = target.rect.centery \
                 - self.half_height \
 
-
-    def custom_draw(self, player, show_hitboxes: bool = False):
+    def custom_draw(self, player, show_hitboxes: bool = False, show_rects: bool = False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
@@ -58,6 +57,14 @@ class CameraGroup(pygame.sprite.Group):
                     sprite.hitbox.height
                 )
 
+                pygame.draw.rect(
+                    self.display_surface,
+                    (255, 0, 0),
+                    hitbox,
+                    1
+                )
+
+            if show_rects:
                 rect = pygame.Rect(
                     sprite.rect.x - self.offset.x,
                     sprite.rect.y - self.offset.y,
@@ -68,7 +75,7 @@ class CameraGroup(pygame.sprite.Group):
                 pygame.draw.rect(
                     self.display_surface,
                     (255, 255, 255),
-                    hitbox,
+                    rect,
                     1
                 )
 

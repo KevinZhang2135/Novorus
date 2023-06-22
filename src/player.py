@@ -5,7 +5,6 @@ from ui import *
 
 
 import pygame
-import math
 
 
 class Player(Entity):
@@ -30,7 +29,7 @@ class Player(Entity):
         while self.exp > self.exp_levels[self.level - 1]:
             self.level += 1
 
-        self.stats = Stats(100, 50000, 20, 0.05, 0.01)
+        self.stats = Stats(100, 50, 20, 0.05, 0.01)
 
         # general animation
         self.frame = 0
@@ -122,22 +121,36 @@ class Player(Entity):
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         self.attacking = False
+
+        # attacks on click
         if pygame.mouse.get_pressed()[0]:
             self.attacking = True
-            #self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.attack_cooldown
 
-            # only creates sword slash when at end of animation
-            # checks if the player mask overlaps an enemy mask
-            if (pygame.sprite.spritecollide(self, target_group, False)
-                and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)):
-                #if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                #        and self.frame >= len(self.animation_types[self.action]) - 1):
-                self.attack_time = pygame.time.get_ticks()
+            # checks if the player rect overlaps an enemy rect
+            colliding_sprites = pygame.sprite.spritecollide(
+                self,
+                target_group,
+                False
+            )
 
+            colliding_sprites.sort(
+                key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center)
+            )
 
-        # idea: when attacking, whole sprite is used as the mask for attack
-        # damage is done to hitbox
+            for sprite in colliding_sprites:
+                # checks if the player mask overlaps an enemy hitbox
+                mask = pygame.mask.from_surface(self.image)
+                offset = (sprite.hitbox.x - self.rect.x,
+                          sprite.hitbox.y - self.rect.y)
+                
+                # when attacking, whole sprite is used as the mask for attack
+                # damage is done to hitbox
+                if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
+                    if mask.overlap(sprite.rect_mask, offset):
+                        self.attack_time = pygame.time.get_ticks()
+                        sprite.hurt(self.stats.attack, self.stats.crit_chance)
+
         else:
             self.cooldown = self.animation_cooldown
 
@@ -208,10 +221,10 @@ class Player(Entity):
             text.set_text(COMICORO[20].render('Dodged', True, GOLD))
             text.velocity.y = -5
 
+    def check_death(self):
         if self.stats.health < 0:
             # sprite dies
             self.stats.health = 0
-            self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.game.player.animation_cooldown
 
@@ -221,5 +234,6 @@ class Player(Entity):
         self.collision()
         self.attack_enemy(self.game.enemy_group)
         self.check_state()
+        self.check_death()
         self.animation()
         self.leveling_up()

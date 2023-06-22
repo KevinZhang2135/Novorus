@@ -15,10 +15,10 @@ class App:
         pygame.mouse.set_visible(False)
 
         # sets the size of the screen; defaults to full screen
-        self.resolution = 1920, 1080
+        self.resolution = 800, 600#1920, 1080
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF | pygame.FULLSCREEN,
+            pygame.DOUBLEBUF,# | pygame.FULLSCREEN,
             16
         ) 
 
@@ -73,7 +73,7 @@ class App:
             self.screen.fill((105, 162, 97))
 
             # redraws sprites and images
-            self.camera_group.custom_draw(self.player, show_hitboxes=False)
+            self.camera_group.custom_draw(self.player, show_hitboxes=True, show_rects=True)
             
             self.light_group.render_lighting()
 

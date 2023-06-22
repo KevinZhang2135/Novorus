@@ -72,24 +72,3 @@ class Projectile(Entity):
         self.expire()
         self.hit_target()
 
-
-class SwordSlash(Projectile):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
-        super().__init__(coords, size, game, groups)
-        self.fade_cooldown = 100
-        self.max_pierce = 3
-
-        self.set_image('slash')
-
-    def movement(self):
-        self.velocity *= 0.9
-        if abs(self.velocity.x) < self.max_velocity / 10:
-            self.velocity.x = 0
-
-        if abs(self.velocity.y) < self.max_velocity / 10:
-            self.velocity.y = 0
-
-        self.set_coords(
-            self.coords.x + self.velocity.x,
-            self.coords.y + self.velocity.y
-        )

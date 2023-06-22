@@ -11,7 +11,6 @@ class Entity(Sprite):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
-        self.in_combat = False
         self.attacking = False
         self.show_stats = False
 
@@ -48,10 +47,8 @@ class Entity(Sprite):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
             # sorts sprites by distance
-            sprites = sorted(
-                self.game.collision_group,
-                key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center)
-            )
+            sprites = pygame.sprite.spritecollide(self, self.game.collision_group, False)
+            sprites.sort(key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center))
 
             for sprite in sprites:
                 # minimum distance between two sprites which includes collision
@@ -150,66 +147,42 @@ class Entity(Sprite):
             self.facing = 'left'
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
-        # checks if the player mask overlaps an enemy mask
-        if (pygame.sprite.spritecollide(self, target_group, False)
-            and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)
-                and self.stats.health > 0):
+        # checks if the player rect overlaps an enemy rect
+        colliding_sprites = pygame.sprite.spritecollide(self, target_group, False)
+        colliding_sprites.sort(key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center))
 
-            distance = pygame.math.Vector2(self.rect.center)
-            enemies = target_group.sprites()
+        self.attacking = False
+        self.cooldown = self.animation_cooldown
 
-            # closest enemy
-            enemy = sorted(
-                enemies,
-                key=lambda enemy: distance.distance_to(enemy.rect.center)
-            )[0]
-
-            self.face_enemy(enemy)
-
-            if not self.in_combat and enemy.stats.health > 0:
-                self.in_combat = True
-                self.show_stats = True
-                self.animation_time = pygame.time.get_ticks()
+        for sprite in colliding_sprites:
+            # checks if the player mask overlaps an enemy hitbox
+            mask = pygame.mask.from_surface(self.image)
+            offset = (sprite.hitbox.x - self.rect.x,
+                      sprite.hitbox.y - self.rect.y)
+            
+            # when attacking, whole sprite is used as the mask for attack
+            # damage is done to hitbox
+            if mask.overlap(sprite.rect_mask, offset):
+                self.attacking = True
                 self.cooldown = self.attack_cooldown
-                self.frame = 0
 
-            if self.in_combat:
-                if not self.attacking and pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                    self.attacking = True
-                    self.frame = 0
-
-                # only deal damage when animation begins
-                if self.attacking and self.frame == 0:
-                    if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-                        enemy.hurt(
-                            self.stats.attack,
-                            self.stats.crit_chance
-                        )
-
-                        # gains exp if player is victorious
-                        if enemy.stats.health <= 0:
-                            self.in_combat = False
-                            self.exp += enemy.exp
-        else:
-            self.in_combat = False
-            self.attacking = False
-            self.cooldown = self.animation_cooldown
+                self.face_enemy(sprite)
+                
+                if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
+                    self.attack_time = pygame.time.get_ticks()
+                    sprite.hurt(self.stats.attack, self.stats.crit_chance)
 
     def check_state(self):
-        if not self.in_combat:
-            self.action = 'idle'
+        if self.attacking:
+            self.action = 'attack'
 
         else:
-            if self.attacking:
-                self.action = 'attack'
+            self.action = 'idle'
 
-            else:
-                self.action = 'idle'
-
+    def check_death(self):
         if self.stats.health < 0:
             # sprite dies
             self.stats.health = 0
-            self.in_combat = False
             self.animation_time = pygame.time.get_ticks()
             self.cooldown = self.game.player.animation_cooldown
 
@@ -275,9 +248,6 @@ class Entity(Sprite):
             text = TextPopUp(text_coords, self.game, self.game.camera_group)
             text.set_text(COMICORO[20].render('Dodged', True, GOLD))
             text.velocity.y = -5
-
-    def knockback(self, vector: pygame.math.Vector2):
-        self.velocity -= vector
 
     def animation(self):
         '''Handles animation'''
