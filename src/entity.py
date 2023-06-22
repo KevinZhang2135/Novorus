@@ -26,6 +26,8 @@ class Entity(Sprite):
         self.sprite_layer = 1
 
         self.animation_types = {}
+        self.animation_cooldown = 0
+        self.attack_cooldown = 0
 
     def movement(self):
         '''Handles movement'''
@@ -176,8 +178,8 @@ class Entity(Sprite):
                     self.attacking = True
                     self.frame = 0
 
-                # only deal damage when animation ends
-                if self.attacking and self.frame >= len(self.animation_types[self.action]) - 1:
+                # only deal damage when animation begins
+                if self.attacking and self.frame == 0:
                     if pygame.time.get_ticks() - self.animation_time > self.cooldown:
                         enemy.hurt(
                             self.stats.attack,
@@ -274,8 +276,12 @@ class Entity(Sprite):
             text.set_text(COMICORO[20].render('Dodged', True, GOLD))
             text.velocity.y = -5
 
+    def knockback(self, vector: pygame.math.Vector2):
+        self.velocity -= vector
+
     def animation(self):
         '''Handles animation'''
+
         # loops frames
         if self.frame >= len(self.animation_types[self.action]):
             self.frame = 0

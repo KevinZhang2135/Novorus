@@ -5,6 +5,7 @@ from ui import *
 
 
 import pygame
+import math
 
 
 class Player(Entity):
@@ -17,10 +18,10 @@ class Player(Entity):
         self.name = 'Player'
 
         # hitbox
-        self.set_hitbox(0.4, 0.6, offsety=0.00)
+        self.set_hitbox(0.15, 0.3)
 
         # movement
-        self.max_velocity = 15
+        self.max_velocity = 5
 
         # stats
         self.exp = 0  # max exp is 9900
@@ -29,7 +30,7 @@ class Player(Entity):
         while self.exp > self.exp_levels[self.level - 1]:
             self.level += 1
 
-        self.stats = Stats(100, 100, 20, 0.05, 0.01)
+        self.stats = Stats(100, 50000, 20, 0.05, 0.01)
 
         # general animation
         self.frame = 0
@@ -57,8 +58,8 @@ class Player(Entity):
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
-        self.attack_cooldown = (
-            1200 - self.stats.speed) / len(self.animation_types['attack'])
+        self.attack_cooldown = (300 - self.stats.speed) / \
+            len(self.animation_types['attack'])
 
         if self.attack_cooldown < 100:
             self.attack_cooldown = 100
@@ -123,14 +124,22 @@ class Player(Entity):
         self.attacking = False
         if pygame.mouse.get_pressed()[0]:
             self.attacking = True
-            if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown and self.frame >= len(self.animation_types[self.action]) - 1:
-                self.attack_time = pygame.time.get_ticks()
-                
-                slash = SwordSlash(self.coords, self.size, self.game, self.game.camera_group)
-                slash.set_target_group(self.game.enemy_group)
-                slash.set_attack(self.stats.attack)
+            #self.animation_time = pygame.time.get_ticks()
+            self.cooldown = self.attack_cooldown
 
-            
+            # only creates sword slash when at end of animation
+            # checks if the player mask overlaps an enemy mask
+            if (pygame.sprite.spritecollide(self, target_group, False)
+                and pygame.sprite.spritecollide(self, target_group, False, pygame.sprite.collide_mask)):
+                #if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
+                #        and self.frame >= len(self.animation_types[self.action]) - 1):
+                self.attack_time = pygame.time.get_ticks()
+
+
+        # idea: when attacking, whole sprite is used as the mask for attack
+        # damage is done to hitbox
+        else:
+            self.cooldown = self.animation_cooldown
 
     def check_state(self):
         if not self.attacking:

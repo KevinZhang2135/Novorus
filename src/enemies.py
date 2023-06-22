@@ -24,7 +24,7 @@ class Ghost(Entity):
         self.exp = 15
         self.exp_levels = None
 
-        self.stats = Stats(30, 10, 6, 0.05, 0.1)
+        self.stats = Stats(3000, 10, 6, 0.05, 0.1)
 
         # general animation
         self.frame = 0

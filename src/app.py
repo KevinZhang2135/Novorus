@@ -54,7 +54,7 @@ class App:
         # player
         self.player = Player(
             (0, 0),
-            (100, 100),
+            (175, 175),
             self,
             (self.camera_group, self.player_group, self.light_group)
         )
@@ -73,7 +73,7 @@ class App:
             self.screen.fill((105, 162, 97))
 
             # redraws sprites and images
-            self.camera_group.custom_draw(self.player, show_hitboxes=True)
+            self.camera_group.custom_draw(self.player, show_hitboxes=False)
             
             self.light_group.render_lighting()
 
