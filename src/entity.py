@@ -47,8 +47,10 @@ class Entity(Sprite):
         '''Handles collision'''
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
             # sorts sprites by distance
-            sprites = pygame.sprite.spritecollide(self, self.game.collision_group, False)
-            sprites.sort(key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center))
+            sprites = pygame.sprite.spritecollide(
+                self, self.game.collision_group, False)
+            sprites.sort(key=lambda sprite: dist(
+                self.hitbox.center, sprite.hitbox.center))
 
             for sprite in sprites:
                 # minimum distance between two sprites which includes collision
@@ -148,18 +150,26 @@ class Entity(Sprite):
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         # checks if the player rect overlaps an enemy rect
-        colliding_sprites = pygame.sprite.spritecollide(self, target_group, False)
-        colliding_sprites.sort(key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center))
+        colliding_sprites = pygame.sprite.spritecollide(
+                self,
+                target_group,
+                False
+            )
+
+        colliding_sprites.sort(
+            key=lambda sprite: dist(
+                self.hitbox.center, sprite.hitbox.center)
+        )
 
         self.attacking = False
         self.cooldown = self.animation_cooldown
 
         for sprite in colliding_sprites:
-            # checks if the player mask overlaps an enemy hitbox
+            # checks if mask overlaps an enemy hitbox
             mask = pygame.mask.from_surface(self.image)
             offset = (sprite.hitbox.x - self.rect.x,
                       sprite.hitbox.y - self.rect.y)
-            
+
             # when attacking, whole sprite is used as the mask for attack
             # damage is done to hitbox
             if mask.overlap(sprite.rect_mask, offset):
@@ -167,8 +177,11 @@ class Entity(Sprite):
                 self.cooldown = self.attack_cooldown
 
                 self.face_enemy(sprite)
-                
-                if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
+
+                # only attacks the last frame
+                if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
+                        and self.frame == len(self.animation_types['attack']) - 1):
+                    
                     self.attack_time = pygame.time.get_ticks()
                     sprite.hurt(self.stats.attack, self.stats.crit_chance)
 
@@ -216,9 +229,9 @@ class Entity(Sprite):
     def hurt(self, attack: int, crit_chance: float):
         text_coords = (
             random.randint(
-                round((self.rect.left + self.rect.centerx) / 2),
-                round((self.rect.right + self.rect.centerx) / 2)),
-            self.rect.top)
+                round((self.hitbox.left + self.hitbox.centerx) / 2),
+                round((self.hitbox.right + self.hitbox.centerx) / 2)),
+            self.hitbox.top)
 
         dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
         if not dodge:
@@ -230,15 +243,25 @@ class Entity(Sprite):
             if crit:
                 damage *= 2
 
-                text = TextPopUp(text_coords, self.game,
-                                 self.game.camera_group)
+                text = TextPopUp(
+                    text_coords,
+                    self.game,
+                    self.game.camera_group
+                )
+
                 text.set_text(COMICORO[35].render(
-                    str(damage), True, BLOOD_RED))
+                    str(damage), True, BLOOD_RED)
+                )
+
                 text.velocity.y = -5
 
             else:
-                text = TextPopUp(text_coords, self.game,
-                                 self.game.camera_group)
+                text = TextPopUp(
+                    text_coords, 
+                    self.game,
+                    self.game.camera_group
+                )
+                
                 text.set_text(COMICORO[25].render(str(damage), True, RED))
                 text.velocity.y = -5
 

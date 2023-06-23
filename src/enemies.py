@@ -24,7 +24,7 @@ class Ghost(Entity):
         self.exp = 15
         self.exp_levels = None
 
-        self.stats = Stats(30, 10, 6, 0.05, 0.1)
+        self.stats = Stats(3000, 10, 6, 0.05, 0.1)
 
         # general animation
         self.frame = 0
@@ -55,9 +55,8 @@ class Ghost(Entity):
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
-        self.attack_cooldown = (
-            1200 - self.stats.speed) / len(self.animation_types['attack']
-        )
+        self.attack_cooldown = (1200 - self.stats.speed) \
+            / len(self.animation_types['attack'])
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -164,9 +163,9 @@ class Mimic(Entity):
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
-        self.attack_cooldown = (
-            1200 - self.stats.speed) / len(self.animation_types['attack']
-        )
+        self.attack_cooldown = (1200 - self.stats.speed) \
+            / len(self.animation_types['attack'])
+        
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -226,9 +225,8 @@ class Sunflower(Entity):
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
-        self.attack_cooldown = (
-            1200 - self.stats.speed) / len(self.animation_types['attack']                                  
-        )
+        self.attack_cooldown = (1200 - self.stats.speed) \
+            / len(self.animation_types['attack'])
         
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200

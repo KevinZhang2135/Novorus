@@ -20,7 +20,7 @@ class Player(Entity):
         self.set_hitbox(0.15, 0.3)
 
         # movement
-        self.max_velocity = 5
+        self.max_velocity = 6
 
         # stats
         self.exp = 0  # max exp is 9900
@@ -57,11 +57,11 @@ class Player(Entity):
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
-        self.attack_cooldown = (300 - self.stats.speed) / \
-            len(self.animation_types['attack'])
+        self.attack_cooldown = (700 - self.stats.speed) \
+            / len(self.animation_types['attack'])
 
-        if self.attack_cooldown < 100:
-            self.attack_cooldown = 100
+        if self.attack_cooldown < 50:
+            self.attack_cooldown = 50
 
         self.cooldown = self.animation_cooldown
 
@@ -121,12 +121,13 @@ class Player(Entity):
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         self.attacking = False
+        self.cooldown = self.animation_cooldown
 
         # attacks on click
         if pygame.mouse.get_pressed()[0]:
             self.attacking = True
             self.cooldown = self.attack_cooldown
-
+            
             # checks if the player rect overlaps an enemy rect
             colliding_sprites = pygame.sprite.spritecollide(
                 self,
@@ -135,24 +136,26 @@ class Player(Entity):
             )
 
             colliding_sprites.sort(
-                key=lambda sprite: dist(self.hitbox.center, sprite.hitbox.center)
+                key=lambda sprite: dist(
+                    self.hitbox.center, sprite.hitbox.center)
             )
-
+            #print(self.frame, len(self.animation_types['attack']))
             for sprite in colliding_sprites:
                 # checks if the player mask overlaps an enemy hitbox
                 mask = pygame.mask.from_surface(self.image)
                 offset = (sprite.hitbox.x - self.rect.x,
                           sprite.hitbox.y - self.rect.y)
-                
+
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
-                if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
-                    if mask.overlap(sprite.rect_mask, offset):
+                if mask.overlap(sprite.rect_mask, offset):
+
+                    # only attacks the last frame
+                    if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
+                            and self.frame == len(self.animation_types['attack']) - 1):
                         self.attack_time = pygame.time.get_ticks()
                         sprite.hurt(self.stats.attack, self.stats.crit_chance)
 
-        else:
-            self.cooldown = self.animation_cooldown
 
     def check_state(self):
         if not self.attacking:
@@ -174,10 +177,10 @@ class Player(Entity):
     def hurt(self, attack, crit_chance):
         text_coords = (
             random.randint(
-                round((self.rect.left + self.rect.centerx) / 2),
-                round((self.rect.right + self.rect.centerx) / 2)
+                round((self.hitbox.left + self.hitbox.centerx) / 2),
+                round((self.hitbox.right + self.hitbox.centerx) / 2)
             ),
-            self.rect.top
+            self.hitbox.top
         )
 
         dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
