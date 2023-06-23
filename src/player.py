@@ -11,10 +11,8 @@ class Player(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
-        self.show_stats = True
-        self.action = 'idle'
-        self.facing = 'right'
         self.name = 'Player'
+        self.facing = 'right'
 
         # hitbox
         self.set_hitbox(0.15, 0.3)
@@ -33,23 +31,7 @@ class Player(Entity):
 
         # general animation
         self.frame = 0
-        self.animation_types = {
-            'idle': [],
-            'run': [],
-            'attack': []
-        }
-
-        for type in self.animation_types:
-            num_of_frames = len(os.listdir(f'{SPRITE_PATH}/player/{type}'))
-            for i in range(num_of_frames):
-                image = IMAGES[f'knight_{type}{i + 1}'].copy()
-                image = pygame.transform.scale(
-                    image,
-                    size
-                )
-
-                self.animation_types[type].append(image)
-
+        self.set_animation('player')
         self.image = self.animation_types['idle'][self.frame]
 
         self.animation_time = pygame.time.get_ticks()

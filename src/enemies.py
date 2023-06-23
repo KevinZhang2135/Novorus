@@ -4,15 +4,13 @@ from entity import *
 
 import pygame
 
-class Ghost(Entity):
+
+class Ghost(MeleeEnemy):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
-        self.show_stats = True
-        self.action = 'idle'
-        self.facing = random.choice(('left', 'right'))
         self.name = 'Ghost'
-
+        
         # hitbox
         self.set_hitbox(0.4, 0.5)
 
@@ -28,26 +26,7 @@ class Ghost(Entity):
 
         # general animation
         self.frame = 0
-        self.animation_types = {
-            'idle': [],
-            'run': [],
-            'attack': []
-        }
-
-        for type in self.animation_types:
-            num_of_frames = len(os.listdir(
-                f'{SPRITE_PATH}/enemies/ghost/{type}'
-            ))
-
-            for i in range(num_of_frames):
-                image = IMAGES[f'ghost_{type}{i + 1}'].copy()
-                image = pygame.transform.scale(
-                    image, 
-                    size
-                )
-
-                self.animation_types[type].append(image)
-
+        self.set_animation('enemies/ghost')
         self.image = self.animation_types['idle'][self.frame]
 
         self.animation_time = pygame.time.get_ticks()
@@ -63,71 +42,13 @@ class Ghost(Entity):
 
         self.cooldown = self.animation_cooldown
 
-    def movement(self):
-        '''Handles movement'''
-        self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
-                                                self.game.player.rect.centery - self.rect.centery)
 
-        if (self.acceleration.length() < self.detection_distance
-                and not self.attacking):
-            if self.acceleration.length() > 0:
-                self.acceleration.scale_to_length(self.max_velocity)
-
-            self.velocity += self.acceleration
-            self.velocity *= 0.5
-
-        else:
-            # movement decay
-            self.velocity *= 0.8
-            self.acceleration.x = 0
-            self.acceleration.y = 0
-
-        # movement decay when the speed is low
-        if abs(self.velocity.x) < self.max_velocity / 10:
-            self.velocity.x = 0
-
-        if abs(self.velocity.y) < self.max_velocity / 10:
-            self.velocity.y = 0
-
-        self.set_coords(
-            self.coords.x + self.velocity.x,
-            self.coords.y + self.velocity.y
-        )
-
-    def check_state(self):
-        if not self.attacking:
-            if self.velocity.length_squared() > 0:
-                self.action = 'run'
-
-                if self.velocity.x < 0:
-                    self.facing = 'left'
-
-                elif self.velocity.x > 0:
-                    self.facing = 'right'
-
-            else:
-                self.action = 'idle'
-
-        else:
-            self.action = 'attack'
-
-    def update(self):
-        '''Handles events'''
-        self.movement()
-        self.collision()
-        self.attack_enemy(self.game.player_group)
-        self.check_state()
-        self.check_death()
-        self.animation()
-
-
-class Mimic(Entity):
+class Mimic(MeleeEnemy):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
-        self.action = 'idle'
-        self.facing = random.choice(('left', 'right'))
         self.name = 'Mimic'
+        self.show_stats = False
 
         # stats
         self.exp = 50
@@ -137,25 +58,7 @@ class Mimic(Entity):
 
         # animation
         self.frame = 0
-        self.animation_types = {
-            'idle': [],
-            'attack': []
-        }
-
-        for type in self.animation_types:
-            num_of_frames = len(os.listdir(
-                f'{SPRITE_PATH}/enemies/mimic/{type}'
-            ))
-
-            for i in range(num_of_frames):
-                image = IMAGES[f'mimic_{type}{i + 1}'].copy()
-                image = pygame.transform.scale(
-                    image, 
-                    size
-                )
-
-                self.animation_types[type].append(image)
-
+        self.set_animation('enemies/mimic')
         self.image = self.animation_types['idle'][self.frame]
 
         self.animation_time = pygame.time.get_ticks()
@@ -172,21 +75,13 @@ class Mimic(Entity):
 
         self.cooldown = self.animation_cooldown
 
-    def update(self):
-        '''Handles events'''
-        self.attack_enemy(self.game.player_group)
-        self.check_state()
-        self.check_death()
-        self.animation()
 
-
-class Sunflower(Entity):
+class Sunflower(MeleeEnemy):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
-        self.action = 'idle'
-        self.facing = random.choice(('left', 'right'))
         self.name = 'Sunflower'
+        self.show_stats = False
 
         # hitbox
         self.set_hitbox(0.4, 0.9)
@@ -199,25 +94,7 @@ class Sunflower(Entity):
 
         # general animation
         self.frame = 0
-        self.animation_types = {
-            'idle': [],
-            'attack': []
-        }
-
-        for type in self.animation_types:
-            num_of_frames = len(os.listdir(
-                f'{SPRITE_PATH}/enemies/sunflower/{type}'
-            ))
-
-            for i in range(num_of_frames):
-                image = IMAGES[f'sunflower_{type}{i + 1}'].copy()
-                image = pygame.transform.scale(
-                    image, 
-                    size
-                )
-
-                self.animation_types[type].append(image)
-
+        self.set_animation('enemies/sunflower')
         self.image = self.animation_types['idle'][self.frame]
 
         self.animation_time = pygame.time.get_ticks()
@@ -233,9 +110,40 @@ class Sunflower(Entity):
 
         self.cooldown = self.animation_cooldown
 
-    def update(self):
-        '''Handles events'''
-        self.attack_enemy(self.game.player_group)
-        self.check_state()
-        self.check_death()
-        self.animation()
+
+class Acorn(Entity):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        
+        self.name = 'Acorn Thrower'
+
+        # hitbox
+        self.set_hitbox(0.4, 0.5)
+
+        # movement
+        self.detection_distance = 450
+        self.max_velocity = 3
+
+        # stats
+        self.exp = 15
+        self.exp_levels = None
+
+        self.stats = Stats(30, 10, 4, 0.05, 0.1)
+
+        # general animation
+        self.frame = 0
+        self.set_animation('enemies/acorn')
+        self.image = self.animation_types['idle'][self.frame]
+
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+
+        # attack speed and animation
+        self.attack_time = pygame.time.get_ticks()
+        self.attack_cooldown = (1200 - self.stats.speed) \
+            / len(self.animation_types['attack'])
+
+        if self.attack_cooldown < 200:
+            self.attack_cooldown = 200
+
+        self.cooldown = self.animation_cooldown

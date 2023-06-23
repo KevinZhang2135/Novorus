@@ -115,8 +115,7 @@ class Level:
                 del sprite
 
     def update_lighting(self):
-        if self.floor_level > 1:
-            self.game.light_group.color = MIDNIGHT
+        pass
 
     def create_tile_group(self, csv_file, path: str):
         create_tile = {

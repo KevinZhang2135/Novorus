@@ -7,9 +7,30 @@ import pygame
 from math import dist
 
 
+class Stats:
+    def __init__(self, health: int, speed: int, attack: int, crit_chance: float, dodge_chance: float):
+        self.health = self.base_health = health
+        self.speed = self.base_speed = speed
+        self.attack = self.base_attack = attack
+
+        self.base_crit_chance = crit_chance
+        self.crit_chance = round(self.base_crit_chance + self.speed / 500, 2)
+        if self.crit_chance > 0.5:
+            self.crit_chance = 0.5
+
+        self.base_dodge_chance = dodge_chance
+        self.dodge_chance = round(self.base_dodge_chance + self.speed / 750, 2)
+        if self.dodge_chance > 0.33:
+            self.dodge_chance = 0.33
+
+
 class Entity(Sprite):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
+
+        self.name = ''
+        self.action = 'idle'
+        self.facing = random.choice(('left', 'right'))
 
         self.attacking = False
         self.show_stats = True
@@ -24,9 +45,33 @@ class Entity(Sprite):
         # render
         self.sprite_layer = 1
 
-        self.animation_types = {}
-        self.animation_cooldown = 0
         self.attack_cooldown = 0
+        self.animation_cooldown = 0
+        self.animation_types = {
+            'idle': [],
+            'run': [],
+            'attack': []
+        }
+
+    def set_animation(self, filepath: str):
+        for type in self.animation_types:
+            try: 
+                num_of_frames = len(os.listdir(
+                    f'{SPRITE_PATH}/{filepath}/{type}'
+                ))
+
+            # incase the folder does not exist for some animations
+            except FileNotFoundError:
+                continue
+
+            for i in range(num_of_frames):
+                image = IMAGES[f"{filepath.split('/')[-1]}_{type}{i + 1}"].copy()
+                image = pygame.transform.scale(
+                    image, 
+                    self.rect.size
+                )
+
+                self.animation_types[type].append(image)
 
     def movement(self):
         '''Handles movement'''
@@ -154,10 +199,10 @@ class Entity(Sprite):
         self.cooldown = self.animation_cooldown
 
         colliding_sprites = pygame.sprite.spritecollide(
-                self,
-                target_group,
-                False
-            )
+            self,
+            target_group,
+            False
+        )
 
         colliding_sprites.sort(
             key=lambda sprite: dist(
@@ -183,19 +228,29 @@ class Entity(Sprite):
                 if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
                         and self.frame == len(self.animation_types['attack']) - 1
                         and sprite not in targets_hit):
-                    
+
                     sprite.hurt(self.stats.attack, self.stats.crit_chance)
                     targets_hit.append(sprite)
-                    
+
         if targets_hit:
             self.attack_time = pygame.time.get_ticks()
 
     def check_state(self):
-        if self.attacking:
-            self.action = 'attack'
+        if not self.attacking:
+            if self.velocity.length_squared() > 0 and self.animation_types['run']:
+                self.action = 'run'
+
+                if self.velocity.x < 0:
+                    self.facing = 'left'
+
+                elif self.velocity.x > 0:
+                    self.facing = 'right'
+
+            else:
+                self.action = 'idle'
 
         else:
-            self.action = 'idle'
+            self.action = 'attack'
 
     def check_death(self):
         if self.stats.health < 0:
@@ -262,11 +317,11 @@ class Entity(Sprite):
 
             else:
                 text = TextPopUp(
-                    text_coords, 
+                    text_coords,
                     self.game,
                     self.game.camera_group
                 )
-                
+
                 text.set_text(COMICORO[25].render(str(damage), True, RED))
                 text.velocity.y = -5
 
@@ -297,18 +352,50 @@ class Entity(Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
 
 
-class Stats:
-    def __init__(self, health: int, speed: int, attack: int, crit_chance: float, dodge_chance: float):
-        self.health = self.base_health = health
-        self.speed = self.base_speed = speed
-        self.attack = self.base_attack = attack
+class MeleeEnemy(Entity):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
 
-        self.base_crit_chance = crit_chance
-        self.crit_chance = round(self.base_crit_chance + self.speed / 500, 2)
-        if self.crit_chance > 0.5:
-            self.crit_chance = 0.5
+        # movement
+        self.detection_distance = 0
+        self.max_velocity = 0
 
-        self.base_dodge_chance = dodge_chance
-        self.dodge_chance = round(self.base_dodge_chance + self.speed / 750, 2)
-        if self.dodge_chance > 0.33:
-            self.dodge_chance = 0.33
+    def movement(self):
+        '''Handles movement'''
+        self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
+                                                self.game.player.rect.centery - self.rect.centery)
+
+        if (self.acceleration.length() < self.detection_distance
+                and not self.attacking):
+            if self.acceleration.length() > 0:
+                self.acceleration.scale_to_length(self.max_velocity)
+
+            self.velocity += self.acceleration
+            self.velocity *= 0.5
+
+        else:
+            # movement decay
+            self.velocity *= 0.8
+            self.acceleration.x = 0
+            self.acceleration.y = 0
+
+        # movement decay when the speed is low
+        if abs(self.velocity.x) < self.max_velocity / 10:
+            self.velocity.x = 0
+
+        if abs(self.velocity.y) < self.max_velocity / 10:
+            self.velocity.y = 0
+
+        self.set_coords(
+            self.coords.x + self.velocity.x,
+            self.coords.y + self.velocity.y
+        )
+
+    def update(self):
+        '''Handles events'''
+        self.movement()
+        self.collision()
+        self.attack_enemy(self.game.player_group)
+        self.check_state()
+        self.check_death()
+        self.animation()
