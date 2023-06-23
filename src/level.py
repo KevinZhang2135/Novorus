@@ -204,6 +204,7 @@ class Level:
         )
 
         size = (50, 80, 30)
+
         enemy = enemies[id](coords, [size[id]] * 2, self.game,
                             (self.game.camera_group, self.game.enemy_group))
 

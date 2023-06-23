@@ -69,17 +69,6 @@ class Player(Entity):
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
         self.inventory.add_item('wood_sword', 1)
 
-        # lighting
-        self.light_size = pygame.math.Vector2(900, 900)
-
-        self.light = IMAGES['soft_circle'].copy()
-        self.light = pygame.transform.scale(
-            self.light,
-            [int(dimension) for dimension in self.light_size]
-        )
-
-        self.light = color_image(self.light, LIGHT_GREY, transparency=255)
-
     def movement(self):
         '''Handles movement'''
         keys = pygame.key.get_pressed()
@@ -127,7 +116,7 @@ class Player(Entity):
         if pygame.mouse.get_pressed()[0]:
             self.attacking = True
             self.cooldown = self.attack_cooldown
-            
+
             # checks if the player rect overlaps an enemy rect
             colliding_sprites = pygame.sprite.spritecollide(
                 self,
@@ -137,9 +126,12 @@ class Player(Entity):
 
             colliding_sprites.sort(
                 key=lambda sprite: dist(
-                    self.hitbox.center, sprite.hitbox.center)
+                    self.hitbox.center,
+                    sprite.hitbox.center
+                )
             )
-            #print(self.frame, len(self.animation_types['attack']))
+
+            targets_hit = []
             for sprite in colliding_sprites:
                 # checks if the player mask overlaps an enemy hitbox
                 mask = pygame.mask.from_surface(self.image)
@@ -149,13 +141,16 @@ class Player(Entity):
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
-
                     # only attacks the last frame
                     if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                            and self.frame == len(self.animation_types['attack']) - 1):
-                        self.attack_time = pygame.time.get_ticks()
+                            and self.frame == len(self.animation_types['attack']) - 1
+                            and sprite not in targets_hit):
+                        
                         sprite.hurt(self.stats.attack, self.stats.crit_chance)
+                        targets_hit.append(sprite)
 
+            if targets_hit:
+                self.attack_time = pygame.time.get_ticks()
 
     def check_state(self):
         if not self.attacking:

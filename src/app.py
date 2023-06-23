@@ -56,7 +56,7 @@ class App:
             (0, 0),
             (175, 175),
             self,
-            (self.camera_group, self.player_group, self.light_group)
+            (self.camera_group, self.player_group)
         )
 
         # levels and map

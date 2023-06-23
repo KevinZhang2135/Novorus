@@ -76,7 +76,7 @@ class LightGroup(pygame.sprite.Group):
         # light offset
         self.offset = pygame.math.Vector2()
         self.sprite_layer = 3
-        self.color = LIGHT_GREY
+        self.color = WHITE
 
     def render_lighting(self):
         self.filter.fill(self.color)
@@ -90,7 +90,7 @@ class LightGroup(pygame.sprite.Group):
 
             self.filter.blit(sprite.light, offset_pos)
 
-        # darws screen filter
+        #draws screen filter
         self.display_surface.blit(
             self.filter,
             (0, 0),

@@ -12,7 +12,7 @@ class Entity(Sprite):
         super().__init__(coords, size, game, groups)
 
         self.attacking = False
-        self.show_stats = False
+        self.show_stats = True
 
         self.stats = None
 
@@ -150,6 +150,9 @@ class Entity(Sprite):
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         # checks if the player rect overlaps an enemy rect
+        self.attacking = False
+        self.cooldown = self.animation_cooldown
+
         colliding_sprites = pygame.sprite.spritecollide(
                 self,
                 target_group,
@@ -161,9 +164,7 @@ class Entity(Sprite):
                 self.hitbox.center, sprite.hitbox.center)
         )
 
-        self.attacking = False
-        self.cooldown = self.animation_cooldown
-
+        targets_hit = []
         for sprite in colliding_sprites:
             # checks if mask overlaps an enemy hitbox
             mask = pygame.mask.from_surface(self.image)
@@ -180,10 +181,14 @@ class Entity(Sprite):
 
                 # only attacks the last frame
                 if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                        and self.frame == len(self.animation_types['attack']) - 1):
+                        and self.frame == len(self.animation_types['attack']) - 1
+                        and sprite not in targets_hit):
                     
-                    self.attack_time = pygame.time.get_ticks()
                     sprite.hurt(self.stats.attack, self.stats.crit_chance)
+                    targets_hit.append(sprite)
+                    
+        if targets_hit:
+            self.attack_time = pygame.time.get_ticks()
 
     def check_state(self):
         if self.attacking:
