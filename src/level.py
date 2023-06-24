@@ -189,23 +189,36 @@ class Level:
         terrain_tile.set_image(sprites[id])
         terrain_tile.sprite_layer = 1
 
-        if id == 0 or id == 4:
-            terrain_tile.set_hitbox(1, 0.8, offsety=0.1)
+        match id:
+            case 0:
+                terrain_tile.set_hitbox(1, 0.8, offsety=0.1)
 
-        if id == 3:
-            terrain_tile.set_hitbox(0.7, 0.4, offsety=0.05)
+            case 3:
+                terrain_tile.set_hitbox(0.7, 0.4, offsety=0.05)
+
+            case 4:
+                terrain_tile.set_hitbox(1, 0.8, offsety=0.1)
+
+            case _:
+                pass
+
 
     def add_enemies(self, id: int, coords: list):
         enemies = (
             Ghost,
             Mimic,
-            Sunflower
+            Sunflower,
+            Acorn
         )
 
-        size = (50, 80, 30)
+        size = (50, 80, 30, 60)
 
-        enemy = enemies[id](coords, [size[id]] * 2, self.game,
-                            (self.game.camera_group, self.game.enemy_group))
+        enemy = enemies[id](
+            coords,
+            [size[id]] * 2,
+            self.game,
+            (self.game.camera_group, self.game.enemy_group)
+        )
 
         enemy.set_coords(
             enemy.coords.x + random.randint(-25, 25),

@@ -1,5 +1,7 @@
 from constants import *
+from constants import pygame
 from effects import *
+from effects import pygame
 from sprite import Sprite
 from random import randint
 
@@ -33,6 +35,7 @@ class Entity(Sprite):
         self.facing = random.choice(('left', 'right'))
 
         self.attacking = False
+        self.in_combat = False
         self.show_stats = True
 
         self.stats = None
@@ -55,7 +58,7 @@ class Entity(Sprite):
 
     def set_animation(self, filepath: str):
         for type in self.animation_types:
-            try: 
+            try:
                 num_of_frames = len(os.listdir(
                     f'{SPRITE_PATH}/{filepath}/{type}'
                 ))
@@ -67,7 +70,7 @@ class Entity(Sprite):
             for i in range(num_of_frames):
                 image = IMAGES[f"{filepath.split('/')[-1]}_{type}{i + 1}"].copy()
                 image = pygame.transform.scale(
-                    image, 
+                    image,
                     self.rect.size
                 )
 
@@ -93,9 +96,15 @@ class Entity(Sprite):
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
             # sorts sprites by distance
             sprites = pygame.sprite.spritecollide(
-                self, self.game.collision_group, False)
+                self,
+                self.game.collision_group,
+                False
+            )
+
             sprites.sort(key=lambda sprite: dist(
-                self.hitbox.center, sprite.hitbox.center))
+                self.hitbox.center,
+                sprite.hitbox.center
+            ))
 
             for sprite in sprites:
                 # minimum distance between two sprites which includes collision
@@ -194,46 +203,7 @@ class Entity(Sprite):
             self.facing = 'left'
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
-        # checks if the player rect overlaps an enemy rect
-        self.attacking = False
-        self.cooldown = self.animation_cooldown
-
-        colliding_sprites = pygame.sprite.spritecollide(
-            self,
-            target_group,
-            False
-        )
-
-        colliding_sprites.sort(
-            key=lambda sprite: dist(
-                self.hitbox.center, sprite.hitbox.center)
-        )
-
-        targets_hit = []
-        for sprite in colliding_sprites:
-            # checks if mask overlaps an enemy hitbox
-            mask = pygame.mask.from_surface(self.image)
-            offset = (sprite.hitbox.x - self.rect.x,
-                      sprite.hitbox.y - self.rect.y)
-
-            # when attacking, whole sprite is used as the mask for attack
-            # damage is done to hitbox
-            if mask.overlap(sprite.rect_mask, offset):
-                self.attacking = True
-                self.cooldown = self.attack_cooldown
-
-                self.face_enemy(sprite)
-
-                # only attacks the last frame
-                if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                        and self.frame == len(self.animation_types['attack']) - 1
-                        and sprite not in targets_hit):
-
-                    sprite.hurt(self.stats.attack, self.stats.crit_chance)
-                    targets_hit.append(sprite)
-
-        if targets_hit:
-            self.attack_time = pygame.time.get_ticks()
+        pass
 
     def check_state(self):
         if not self.attacking:
@@ -286,7 +256,7 @@ class Entity(Sprite):
             self.kill()
             del self
 
-    def hurt(self, attack: int, crit_chance: float):
+    def hurt(self, stats):
         text_coords = (
             random.randint(
                 round((self.hitbox.left + self.hitbox.centerx) / 2),
@@ -296,10 +266,10 @@ class Entity(Sprite):
         dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
         if not dodge:
             # randomizes damage between 0.9 and 1.1
-            damage = randomize(attack, 0.15)
+            damage = randomize(stats.attack, 0.15)
 
             # doubles damage if crit
-            crit = crit_chance >= random.randint(0, 100) / 100
+            crit = stats.crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
 
@@ -315,6 +285,7 @@ class Entity(Sprite):
 
                 text.velocity.y = -5
 
+            # non-crit damage
             else:
                 text = TextPopUp(
                     text_coords,
@@ -327,6 +298,7 @@ class Entity(Sprite):
 
             self.stats.health -= damage
 
+        # damage is dodged
         else:
             text = TextPopUp(text_coords, self.game, self.game.camera_group)
             text.set_text(COMICORO[20].render('Dodged', True, GOLD))
@@ -351,6 +323,15 @@ class Entity(Sprite):
         if self.facing == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
 
+    def update(self):
+        '''Handles events'''
+        self.movement()
+        self.collision()
+        self.attack_enemy(self.game.player_group)
+        self.check_state()
+        self.check_death()
+        self.animation()
+
 
 class MeleeEnemy(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
@@ -365,8 +346,10 @@ class MeleeEnemy(Entity):
         self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
                                                 self.game.player.rect.centery - self.rect.centery)
 
+        # if target within detection range
         if (self.acceleration.length() < self.detection_distance
                 and not self.attacking):
+
             if self.acceleration.length() > 0:
                 self.acceleration.scale_to_length(self.max_velocity)
 
@@ -380,22 +363,90 @@ class MeleeEnemy(Entity):
             self.acceleration.y = 0
 
         # movement decay when the speed is low
-        if abs(self.velocity.x) < self.max_velocity / 10:
-            self.velocity.x = 0
+        super().movement()
 
-        if abs(self.velocity.y) < self.max_velocity / 10:
-            self.velocity.y = 0
+    def attack_enemy(self, target_group: pygame.sprite.Group):
+        # checks if the rect overlaps an enemy rect
+        self.attacking = False
+        self.in_combat = False
+        self.cooldown = self.animation_cooldown
 
-        self.set_coords(
-            self.coords.x + self.velocity.x,
-            self.coords.y + self.velocity.y
+        colliding_sprites = pygame.sprite.spritecollide(
+            self,
+            target_group,
+            False
         )
 
-    def update(self):
-        '''Handles events'''
-        self.movement()
-        self.collision()
-        self.attack_enemy(self.game.player_group)
-        self.check_state()
-        self.check_death()
-        self.animation()
+        colliding_sprites.sort(key=lambda sprite: dist(
+            self.hitbox.center,
+            sprite.hitbox.center
+        ))
+
+        targets_hit = []
+        for sprite in colliding_sprites:
+            # checks if mask overlaps an enemy hitbox
+            mask = pygame.mask.from_surface(self.image)
+            offset = (sprite.hitbox.x - self.rect.x,
+                      sprite.hitbox.y - self.rect.y)
+
+            # when attacking, whole sprite is used as the mask for attack
+            # damage is done to hitbox
+            if mask.overlap(sprite.rect_mask, offset):
+                # trigger attack animation
+                self.attacking = True 
+                self.in_combat = True
+                self.cooldown = self.attack_cooldown
+                
+                self.face_enemy(sprite)
+
+                # only attacks the last frame
+                if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
+                        and self.frame == len(self.animation_types['attack'])
+                        and sprite not in targets_hit):
+
+                    sprite.hurt(self.stats)
+                    targets_hit.append(sprite)
+
+        if targets_hit:
+            self.attack_time = pygame.time.get_ticks()
+
+
+class RangerEnemy(Entity):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+
+        # movement
+        self.detection_distance = 0
+        self.attack_range = 0
+        self.max_velocity = 0
+
+    def movement(self):
+        self.acceleration = pygame.math.Vector2(
+            self.game.player.rect.centerx - self.rect.centerx,
+            self.game.player.rect.centery - self.rect.centery
+        )
+
+        player_distance = dist(
+            self.hitbox.center,
+            self.game.player.hitbox.center
+        )
+
+        # if target within detection range
+        if (self.acceleration.length() < self.detection_distance
+                and player_distance > self.attack_range
+                and not self.attacking):
+
+            if self.acceleration.length() > 0:
+                self.acceleration.scale_to_length(self.max_velocity)
+
+            self.velocity += self.acceleration
+            self.velocity *= 0.5
+
+        else:
+            # movement decay
+            self.velocity *= 0.8
+            self.acceleration.x = 0
+            self.acceleration.y = 0
+
+        # movement decay when the speed is low
+        super().movement()

@@ -1,6 +1,7 @@
 from constants import *
 from effects import *
 from entity import *
+from projectiles import *
 
 import pygame
 
@@ -10,7 +11,7 @@ class Ghost(MeleeEnemy):
         super().__init__(coords, size, game, groups)
 
         self.name = 'Ghost'
-        
+
         # hitbox
         self.set_hitbox(0.4, 0.5)
 
@@ -68,7 +69,6 @@ class Mimic(MeleeEnemy):
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_types['attack'])
-        
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -104,31 +104,32 @@ class Sunflower(MeleeEnemy):
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_types['attack'])
-        
+
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
         self.cooldown = self.animation_cooldown
 
 
-class Acorn(Entity):
+class Acorn(RangerEnemy):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        
-        self.name = 'Acorn Thrower'
+
+        self.name = 'Angry Acorn'
 
         # hitbox
-        self.set_hitbox(0.4, 0.5)
+        self.set_hitbox(0.4, 0.4)
 
         # movement
-        self.detection_distance = 450
-        self.max_velocity = 3
+        self.detection_distance = 500
+        self.attack_range = 300
+        self.max_velocity = 3.5
 
         # stats
         self.exp = 15
         self.exp_levels = None
 
-        self.stats = Stats(30, 10, 4, 0.05, 0.1)
+        self.stats = Stats(10, 10, 8, 0.15, 0.15)
 
         # general animation
         self.frame = 0
@@ -136,14 +137,51 @@ class Acorn(Entity):
         self.image = self.animation_types['idle'][self.frame]
 
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.animation_cooldown = 600 / len(self.animation_types['idle'])
+
+        self.sprite_layer = 2
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
-        self.attack_cooldown = (1200 - self.stats.speed) \
+        self.attack_cooldown = (800 - self.stats.speed) \
             / len(self.animation_types['attack'])
 
-        if self.attack_cooldown < 200:
-            self.attack_cooldown = 200
-
         self.cooldown = self.animation_cooldown
+
+    def attack_enemy(self, target_group: pygame.sprite.Group):
+        # checks if the target rect is within attack range
+
+        targets = target_group.sprites()
+        targets.sort(key=lambda sprite: dist(
+            self.hitbox.center,
+            sprite.hitbox.center
+        ))
+
+        # attacks when target is within attack range
+        if (len(targets) > 0
+                and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range):
+            self.in_combat = True
+            self.cooldown = self.attack_cooldown
+            
+            # only attacks the last frame
+            if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown):
+                # trigger attack animation
+                if not self.attacking:
+                    self.frame = 0
+                    self.attacking = True
+
+                # shoot projectile after animation ends
+                if (self.frame == len(self.animation_types['attack'])):
+                    self.attack_time = pygame.time.get_ticks()
+
+                    projectile = AcornThorn(self.rect.center, self.rect.size, self.game, self.game.camera_group)
+                    projectile.set_target(self.game.player_group)
+                    projectile.set_attack(self.stats)
+                    projectile.set_vector(targets[0].hitbox.center)
+                    self.attacking = False
+
+        else:
+            self.attacking = False
+            self.in_combat = False
+            self.cooldown = self.animation_cooldown
+                

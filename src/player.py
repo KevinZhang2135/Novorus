@@ -74,16 +74,7 @@ class Player(Entity):
             self.acceleration.y = 0
 
         # movement decay when the speed is low
-        if abs(self.velocity.x) < self.max_velocity / 100:
-            self.velocity.x = 0
-
-        if abs(self.velocity.y) < self.max_velocity / 100:
-            self.velocity.y = 0
-
-        self.set_coords(
-            self.coords.x + self.velocity.x,
-            self.coords.y + self.velocity.y
-        )
+        super().movement()
 
     def leveling_up(self):
         '''Increases player level when they reach exp cap'''
@@ -91,12 +82,14 @@ class Player(Entity):
             self.level += 1
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
+        # attacks on click
         self.attacking = False
+        self.in_combat = False
         self.cooldown = self.animation_cooldown
 
-        # attacks on click
         if pygame.mouse.get_pressed()[0]:
             self.attacking = True
+            self.in_combat = True
             self.cooldown = self.attack_cooldown
 
             # checks if the player rect overlaps an enemy rect
@@ -106,12 +99,10 @@ class Player(Entity):
                 False
             )
 
-            colliding_sprites.sort(
-                key=lambda sprite: dist(
-                    self.hitbox.center,
-                    sprite.hitbox.center
-                )
-            )
+            colliding_sprites.sort(key=lambda sprite: dist(
+                self.hitbox.center,
+                sprite.hitbox.center
+            ))
 
             targets_hit = []
             for sprite in colliding_sprites:
@@ -125,11 +116,13 @@ class Player(Entity):
                 if mask.overlap(sprite.rect_mask, offset):
                     # only attacks the last frame
                     if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                            and self.frame == len(self.animation_types['attack']) - 1
+                            and self.frame == len(self.animation_types['attack'])
                             and sprite not in targets_hit):
-                        
-                        sprite.hurt(self.stats.attack, self.stats.crit_chance)
+
+                        sprite.hurt(self.stats)
                         targets_hit.append(sprite)
+
+                        
 
             if targets_hit:
                 self.attack_time = pygame.time.get_ticks()
@@ -151,7 +144,7 @@ class Player(Entity):
         else:
             self.action = 'attack'
 
-    def hurt(self, attack, crit_chance):
+    def hurt(self, stats):
         text_coords = (
             random.randint(
                 round((self.hitbox.left + self.hitbox.centerx) / 2),
@@ -163,10 +156,10 @@ class Player(Entity):
         dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
         if not dodge:
             # randomizes damage between 0.9 and 1.1
-            damage = randomize(attack, 0.15)
+            damage = randomize(stats.attack, 0.15)
 
             # doubles damage if crit
-            crit = crit_chance >= random.randint(0, 100) / 100
+            crit = stats.crit_chance >= random.randint(0, 100) / 100
             if crit:
                 damage *= 2
 
@@ -179,6 +172,7 @@ class Player(Entity):
                 text.set_text(COMICORO[35].render(str(damage), True, ORANGE))
                 text.velocity.y = -5
 
+            # non-crit damage
             else:
                 text = TextPopUp(
                     text_coords,
@@ -196,6 +190,7 @@ class Player(Entity):
 
             self.stats.health -= damage
 
+        # damage is dodged
         else:
             text = TextPopUp(text_coords, self.game, self.game.camera_group)
             text.set_text(COMICORO[20].render('Dodged', True, GOLD))

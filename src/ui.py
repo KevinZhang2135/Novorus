@@ -358,7 +358,7 @@ class Item(pygame.sprite.Sprite):
 
         # reading tooltip
         for line in tooltip:
-            text = COMICORO[20].render(line, True, BLACK)
+            text = COMICORO[20].render(line, True, WHITE)
             text_rect = text.get_rect(center=self.rect.center)
             self.tooltip_text.append([text, text_rect])
 
@@ -547,7 +547,7 @@ class BarGroup(pygame.sprite.Group):
 
         else:
             for target in targets:
-                if (target.attacking or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
+                if (target.in_combat or target.rect.collidepoint(self.game.cursor.offset_mouse_pos())):
                     break
 
                 target = None
