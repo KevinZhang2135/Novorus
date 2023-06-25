@@ -1,7 +1,7 @@
 from entity import Entity
 
 import pygame
-from math import dist
+import math
 
 
 class Projectile(Entity):
@@ -22,13 +22,19 @@ class Projectile(Entity):
         self.damaged_targets = []
 
     def set_vector(self, coords):
-        self.acceleration = pygame.math.Vector2(
+        self.velocity = pygame.math.Vector2(
             coords[0] - self.rect.centerx,
             coords[1] - self.rect.centery
         )
 
-        self.acceleration.scale_to_length(self.max_velocity)
-        self.velocity += self.acceleration
+        self.velocity.scale_to_length(self.max_velocity)
+        
+        angle = 0
+        if self.velocity.x != 0:
+            angle = math.atan2(*self.velocity.yx)
+
+        self.image = pygame.transform.rotate(self.image, angle * (180 / math.pi))
+        self.image = pygame.transform.flip(self.image, False, True)
 
     def set_target(self, group: pygame.sprite.Group):
         self.target_group = group
@@ -45,7 +51,7 @@ class Projectile(Entity):
                 False
             )
             
-            sprites.sort(key=lambda sprite: dist(
+            sprites.sort(key=lambda sprite: math.dist(
                 self.hitbox.center,
                 sprite.hitbox.center
             ))
@@ -92,7 +98,8 @@ class Projectile(Entity):
 
                     # fades faster when pierce count is reached
                     if self.pierce >= self.max_pierce:
-                        self.fade_cooldown = 100
+                        self.fade_cooldown = 50
+                        self.velocity.x, self.velocity.y = 0, 0
                         break
 
     def expire(self):

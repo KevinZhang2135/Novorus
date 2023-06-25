@@ -118,11 +118,11 @@ class Acorn(RangerEnemy):
         self.name = 'Angry Acorn'
 
         # hitbox
-        self.set_hitbox(0.4, 0.4)
+        self.set_hitbox(0.5, 0.5)
 
         # movement
-        self.detection_distance = 500
-        self.attack_range = 300
+        self.detection_distance = 700
+        self.attack_range = 500
         self.max_velocity = 3.5
 
         # stats
@@ -143,14 +143,13 @@ class Acorn(RangerEnemy):
 
         # attack speed and animation
         self.attack_time = pygame.time.get_ticks()
-        self.attack_cooldown = (800 - self.stats.speed) \
+        self.attack_cooldown = (1800 - self.stats.speed) \
             / len(self.animation_types['attack'])
 
         self.cooldown = self.animation_cooldown
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         # checks if the target rect is within attack range
-
         targets = target_group.sprites()
         targets.sort(key=lambda sprite: dist(
             self.hitbox.center,
@@ -173,13 +172,18 @@ class Acorn(RangerEnemy):
                 # shoot projectile after animation ends
                 if (self.frame == len(self.animation_types['attack'])):
                     self.attack_time = pygame.time.get_ticks()
+                    self.attacking = False
 
-                    projectile = AcornThorn(self.rect.center, self.rect.size, self.game, self.game.camera_group)
+                    projectile_size = (min(*self.hitbox.size), ) * 2
+
+                    # creates projectile
+                    projectile = AcornThorn(self.hitbox.center, projectile_size, self.game, self.game.camera_group)
                     projectile.set_target(self.game.player_group)
                     projectile.set_attack(self.stats)
                     projectile.set_vector(targets[0].hitbox.center)
-                    self.attacking = False
+                    
 
+        # cancels attack when target moves outside attack range
         else:
             self.attacking = False
             self.in_combat = False

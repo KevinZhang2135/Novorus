@@ -83,14 +83,14 @@ class Player(Entity):
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         # attacks on click
-        self.attacking = False
         self.in_combat = False
-        self.cooldown = self.animation_cooldown
-
         if pygame.mouse.get_pressed()[0]:
-            self.attacking = True
+            # trigger attack animation
             self.in_combat = True
-            self.cooldown = self.attack_cooldown
+            if not self.attacking:
+                self.frame = 0
+                self.attacking = True 
+                self.cooldown = self.attack_cooldown
 
             # checks if the player rect overlaps an enemy rect
             colliding_sprites = pygame.sprite.spritecollide(
@@ -110,7 +110,7 @@ class Player(Entity):
                 mask = pygame.mask.from_surface(self.image)
                 offset = (sprite.hitbox.x - self.rect.x,
                           sprite.hitbox.y - self.rect.y)
-
+                
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
@@ -122,10 +122,14 @@ class Player(Entity):
                         sprite.hurt(self.stats)
                         targets_hit.append(sprite)
 
-                        
-
+            # reset attack time if targets hit
             if targets_hit:
                 self.attack_time = pygame.time.get_ticks()
+
+        # clear attack animation if not in combat
+        if not self.in_combat:
+            self.attacking = False
+            self.cooldown = self.animation_cooldown
 
     def check_state(self):
         if not self.attacking:

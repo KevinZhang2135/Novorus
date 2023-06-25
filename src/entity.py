@@ -1,7 +1,5 @@
 from constants import *
-from constants import pygame
 from effects import *
-from effects import pygame
 from sprite import Sprite
 from random import randint
 
@@ -226,26 +224,24 @@ class Entity(Sprite):
         if self.stats.health < 0:
             # sprite dies
             self.stats.health = 0
-            self.animation_time = pygame.time.get_ticks()
-            self.cooldown = self.game.player.animation_cooldown
 
             # creates dust particles on death
             for i in range(5):
-                x_offset = round((self.rect.right - self.rect.left) / 4)
+                x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
                 x = randint(
-                    self.rect.centerx - x_offset,
-                    self.rect.centerx + x_offset
+                    self.hitbox.centerx - x_offset,
+                    self.hitbox.centerx + x_offset
                 )
 
-                y_offset = round((self.rect.bottom - self.rect.top) / 4)
+                y_offset = round((self.hitbox.bottom - self.hitbox.top) / 4)
                 y = randint(
-                    self.rect.centery - y_offset,
-                    self.rect.centery + y_offset
+                    self.hitbox.centery - y_offset,
+                    self.hitbox.centery + y_offset
                 )
 
                 dust = Particle(
                     (x, y),
-                    [randomize(self.rect.width / 2, 0.05) for i in range(2)],
+                    [randomize(self.hitbox.width / 2, 0.05) for i in range(2)],
                     self.game,
                     self.game.camera_group
                 )
@@ -348,7 +344,7 @@ class MeleeEnemy(Entity):
 
         # if target within detection range
         if (self.acceleration.length() < self.detection_distance
-                and not self.attacking):
+                and not self.in_combat):
 
             if self.acceleration.length() > 0:
                 self.acceleration.scale_to_length(self.max_velocity)
@@ -367,10 +363,7 @@ class MeleeEnemy(Entity):
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         # checks if the rect overlaps an enemy rect
-        self.attacking = False
         self.in_combat = False
-        self.cooldown = self.animation_cooldown
-
         colliding_sprites = pygame.sprite.spritecollide(
             self,
             target_group,
@@ -393,9 +386,11 @@ class MeleeEnemy(Entity):
             # damage is done to hitbox
             if mask.overlap(sprite.rect_mask, offset):
                 # trigger attack animation
-                self.attacking = True 
                 self.in_combat = True
-                self.cooldown = self.attack_cooldown
+                if not self.attacking:
+                    self.frame = 0
+                    self.attacking = True 
+                    self.cooldown = self.attack_cooldown
                 
                 self.face_enemy(sprite)
 
@@ -409,6 +404,11 @@ class MeleeEnemy(Entity):
 
         if targets_hit:
             self.attack_time = pygame.time.get_ticks()
+
+        # clear attack animation if not in combat
+        if not self.in_combat:
+            self.attacking = False
+            self.cooldown = self.animation_cooldown
 
 
 class RangerEnemy(Entity):
