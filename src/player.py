@@ -18,7 +18,7 @@ class Player(Entity):
         self.set_hitbox(0.15, 0.3)
 
         # movement
-        self.max_velocity = 6
+        self.max_velocity = 12#6
 
         # stats
         self.exp = 0  # max exp is 9900

@@ -1,6 +1,7 @@
 from constants import *
 from effects import *
 from sprite import Sprite
+from entity import Entity
 
 import pygame
 
@@ -66,45 +67,12 @@ class LevelExit(Sprite):
                 self.game.level.floor_level += 1
 
 
-class AnimatedTile(Sprite):
+class AnimatedTile(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.frame = 0
 
-        self.animation_types = []
-
-        self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldown = 0 if len(self.animation_types) == 0 \
-            else 1200 / len(self.animation_types)
-
-    def set_images(self, image_file):
-        num_of_frames = len(os.listdir(
-            f'{SPRITE_PATH}/decoration/animated/{image_file}'
-        ))
-
-        for i in range(num_of_frames):
-            image = IMAGES[f'{image_file}{i + 1}'].copy()
-            image = pygame.transform.scale(image, self.size)
-
-            self.animation_types.append(image)
-
-        self.image = self.animation_types[self.frame]
-        self.animation_cooldown = 0 if len(self.animation_types) == 0 \
-            else 1200 / len(self.animation_types)
-
-    def animation(self):
-        '''Handles animation'''
-        # loops frames
-        if self.frame >= len(self.animation_types):
-            self.frame = 0
-
-        # set image
-        self.image = self.animation_types[self.frame]
-
-        # determines whether the animation cooldown is over
-        if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
-            self.animation_time = pygame.time.get_ticks()
-            self.frame += 1
+    def update(self):
+        self.animation()
 
 
 class Torch(AnimatedTile):
@@ -112,12 +80,20 @@ class Torch(AnimatedTile):
         super().__init__(coords, size, game, groups)
         self.sprite_layer = 3
 
+        # animation
+        self.set_animation('decoration/animated/torch')
+        self.animation_cooldown = 1200 / len(self.animation_types)
+        self.cooldown = self.animation_cooldown
+
+        # smoke
         self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
         self.smoke_cooldown = randomize(4000, 0.2)
 
         self.smoke_frames = len(
-            os.listdir(f'{SPRITE_PATH}/particles/smoke'))
+            os.listdir(f'{SPRITE_PATH}/particles/smoke')
+        )
 
+        # light effects
         self.light_size = pygame.math.Vector2(500, 500)
 
         self.light = IMAGES['soft_circle'].copy()

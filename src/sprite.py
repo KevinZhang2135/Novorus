@@ -41,3 +41,4 @@ class Sprite(pygame.sprite.Sprite):
 
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
         self.rect_mask.fill()
+

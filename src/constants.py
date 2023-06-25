@@ -31,7 +31,7 @@ DARK_BROWN = (104, 84, 66)
 
 # tile pixel size
 TILE_SIZE = 100
-STARTING_FLOOR = 3
+STARTING_FLOOR = 2
 
 # file paths
 LEVEL_PATH = '../levels'

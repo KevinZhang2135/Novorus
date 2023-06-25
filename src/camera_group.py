@@ -82,12 +82,4 @@ class CameraGroup(pygame.sprite.Group):
     def update(self):
         "Updates all sprites"
         for sprite in self.sprites():
-            if (abs(self.game.player.rect.centerx
-                    - sprite.rect.centerx
-                    + sprite.rect.width) < self.half_width
-
-                or abs(self.game.player.rect.centery
-                       - sprite.rect.centery
-                       + sprite.rect.height) < self.half_height):
-
-                sprite.update()
+            sprite.update()

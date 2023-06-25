@@ -46,8 +46,14 @@ class Entity(Sprite):
         # render
         self.sprite_layer = 1
 
+        # animation
+        self.frame = 0
+        
+        self.cooldown = 0
         self.attack_cooldown = 0
+
         self.animation_cooldown = 0
+        self.animation_time = pygame.time.get_ticks()
         self.animation_types = {
             'idle': [],
             'run': [],

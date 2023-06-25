@@ -1,3 +1,4 @@
 src/__pycache__/
+sprites/tileset
 *.py[cod]
 *$py.class

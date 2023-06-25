@@ -29,8 +29,6 @@ class Ghost(MeleeEnemy):
         self.frame = 0
         self.set_animation('enemies/ghost')
         self.image = self.animation_types['idle'][self.frame]
-
-        self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
         # attack speed and animation

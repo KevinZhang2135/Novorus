@@ -86,8 +86,8 @@ class Level:
 
     def read_csv_level(self):
         files = os.listdir(f'{LEVEL_PATH}/{self._floor_level}')
+        row = 0
 
-        i = 0
         # reads csv files in folder
         for path in files:
             # checks if file is not csv
@@ -101,12 +101,12 @@ class Level:
             with open(os.path.join(f'{LEVEL_PATH}/{self._floor_level}', path)) as file:
                 csv_file = list(csv.reader(file))
                 self.create_tile_group(csv_file, path)
-                if not i:  # determines the dimensions of the first csv_file
+                if not row:  # determines the dimensions of the first csv_file
                     self.size.x = len(list(csv_file)[0]) * self.tile_size
                     self.size.y = len(list(csv_file)) * self.tile_size
 
                     self.rect = pygame.Rect(0, 0, *self.size)
-                    i += 1
+                    row += 1
 
     def clear_level(self):
         for sprite in self.game.camera_group.sprites():
@@ -154,10 +154,10 @@ class Level:
         self.game.player.set_coords(*coords)
 
     def add_terrain(self, id: int, coords: list):
-        sprites = [f'path{i + 1}' for i in range(0, 10)] \
-            + [f'grassy{i + 1}' for i in range(0, 2)] \
-            + [f'path{i + 1}' for i in range(10, 31)] \
-            + [f'grassy{i + 1}' for i in range(2, 6)]
+        sprites = [f'path{i}' for i in range(1, 11)] \
+            + [f'grassy{i}' for i in range(1, 3)] \
+            + [f'path{i}' for i in range(11, 32)] \
+            + [f'grassy{i}' for i in range(3, 7)]
 
         size = (100,) * 2
         terrain_tile = Sprite(
@@ -201,7 +201,6 @@ class Level:
 
             case _:
                 pass
-
 
     def add_enemies(self, id: int, coords: list):
         enemies = (
@@ -353,7 +352,7 @@ class Level:
                 decor.set_image('rock4')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
-            # tree1
+            # oak tree
             case 7:
                 size = (round(randomize(200, 0.1)), ) * 2
 
@@ -370,7 +369,7 @@ class Level:
                 decor.set_image('oak_tree')
                 decor.set_hitbox(0.6, 0.6)
 
-            # tree2
+            # pine tree
             case 8:
                 size = (round(randomize(210, 0.1)), ) * 2
 
@@ -387,7 +386,7 @@ class Level:
                 decor.set_image('pine_tree')
                 decor.set_hitbox(0.6, 0.6)
 
-            # tree3
+            # sakura tree
             case 9:
                 size = (round(randomize(190, 0.1)), ) * 2
 
@@ -404,7 +403,7 @@ class Level:
                 decor.set_image('sakura_tree')
                 decor.set_hitbox(0.6, 0.6)
 
-            # tree4
+            # dead tree
             case 10:
                 size = (round(randomize(150, 0.1)), ) * 2
 
@@ -438,9 +437,6 @@ class Level:
                     self.game,
                     (self.game.camera_group, self.game.light_group)
                 )
-
-                decor.set_images('torch')
-                decor.sprite_layer = 2
 
     def add_exit(self, id: int, coords: list):
         exit = LevelExit(
