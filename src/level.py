@@ -237,7 +237,7 @@ class Level:
         match id:
             # grass1
             case 0:
-                size = (round(randomize(30, 0.1)), ) * 2
+                size = (round(randomize(60, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -250,6 +250,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('grass1')
+                decor.set_hitbox(0.3, 0.3)
 
             # grass2
             case 1:
@@ -266,6 +267,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('grass2')
+                decor.set_hitbox(0.5, 0.5)
 
             # bush1
             case 2:
@@ -367,7 +369,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('oak_tree')
-                decor.set_hitbox(0.6, 0.6)
+                decor.set_hitbox(0.4, 0.6)
 
             # pine tree
             case 8:
@@ -384,7 +386,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('pine_tree')
-                decor.set_hitbox(0.6, 0.6)
+                decor.set_hitbox(0.3, 0.6)
 
             # sakura tree
             case 9:
@@ -401,7 +403,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('sakura_tree')
-                decor.set_hitbox(0.6, 0.6)
+                decor.set_hitbox(0.3, 0.6)
 
             # dead tree
             case 10:
@@ -418,7 +420,7 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('dead_tree')
-                decor.set_hitbox(0.6, 0.6)
+                decor.set_hitbox(0.3, 0.65)
 
         decor.sprite_layer = 1
 

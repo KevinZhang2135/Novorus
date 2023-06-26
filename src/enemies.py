@@ -26,13 +26,11 @@ class Ghost(MeleeEnemy):
         self.stats = Stats(30, 10, 4, 0.05, 0.1)
 
         # general animation
-        self.frame = 0
         self.set_animation('enemies/ghost')
         self.image = self.animation_types['idle'][self.frame]
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
         # attack speed and animation
-        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_types['attack'])
 
@@ -56,15 +54,11 @@ class Mimic(MeleeEnemy):
         self.stats = Stats(100, 20, 7, 0.15, 0)
 
         # animation
-        self.frame = 0
         self.set_animation('enemies/mimic')
         self.image = self.animation_types['idle'][self.frame]
-
-        self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
         # attack speed and animation
-        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_types['attack'])
 
@@ -91,15 +85,11 @@ class Sunflower(MeleeEnemy):
         self.stats = Stats(20, 5, 3, 0.05, 0)
 
         # general animation
-        self.frame = 0
         self.set_animation('enemies/sunflower')
         self.image = self.animation_types['idle'][self.frame]
-
-        self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
         # attack speed and animation
-        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_types['attack'])
 
@@ -112,7 +102,6 @@ class Sunflower(MeleeEnemy):
 class Acorn(RangerEnemy):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-
         self.name = 'Angry Acorn'
 
         # hitbox
@@ -124,23 +113,17 @@ class Acorn(RangerEnemy):
         self.max_velocity = 3.5
 
         # stats
-        self.exp = 15
+        self.exp = 30
         self.exp_levels = None
 
         self.stats = Stats(10, 10, 8, 0.15, 0.15)
 
         # general animation
-        self.frame = 0
         self.set_animation('enemies/acorn')
         self.image = self.animation_types['idle'][self.frame]
-
-        self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 600 / len(self.animation_types['idle'])
 
-        self.sprite_layer = 2
-
         # attack speed and animation
-        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (1800 - self.stats.speed) \
             / len(self.animation_types['attack'])
 

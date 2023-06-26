@@ -48,9 +48,10 @@ class Entity(Sprite):
 
         # animation
         self.frame = 0
-        
         self.cooldown = 0
+
         self.attack_cooldown = 0
+        self.attack_time = pygame.time.get_ticks()
 
         self.animation_cooldown = 0
         self.animation_time = pygame.time.get_ticks()
@@ -393,6 +394,7 @@ class MeleeEnemy(Entity):
             if mask.overlap(sprite.rect_mask, offset):
                 # trigger attack animation
                 self.in_combat = True
+                self.show_stats = True
                 if not self.attacking:
                     self.frame = 0
                     self.attacking = True 

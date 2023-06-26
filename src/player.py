@@ -21,7 +21,7 @@ class Player(Entity):
         self.max_velocity = 12#6
 
         # stats
-        self.exp = 0  # max exp is 9900
+        self.exp = 0
         self.exp_levels = [i for i in range(100, 10000, 100)]
         self.level = 1
         while self.exp > self.exp_levels[self.level - 1]:
@@ -30,15 +30,12 @@ class Player(Entity):
         self.stats = Stats(100, 50, 20, 0.05, 0.01)
 
         # general animation
-        self.frame = 0
         self.set_animation('player')
         self.image = self.animation_types['idle'][self.frame]
 
-        self.animation_time = pygame.time.get_ticks()
         self.animation_cooldown = 1500 / len(self.animation_types['idle'])
 
         # attack speed and animation
-        self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = (700 - self.stats.speed) \
             / len(self.animation_types['attack'])
 

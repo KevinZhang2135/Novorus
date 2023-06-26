@@ -82,7 +82,7 @@ class Torch(AnimatedTile):
 
         # animation
         self.set_animation('decoration/animated/torch')
-        self.animation_cooldown = 1200 / len(self.animation_types)
+        self.animation_cooldown = 800 / len(self.animation_types)
         self.cooldown = self.animation_cooldown
 
         # smoke
