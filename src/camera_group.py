@@ -15,19 +15,20 @@ class CameraGroup(pygame.sprite.Group):
         self.half_height = self.display_surface.get_height() / 2
 
     def center_target(self, target):
-        self.offset.x = TILE_SIZE / 2
+        self.offset.x = -TILE_SIZE / 2
         self.offset.y = -TILE_SIZE / 2
 
         # stops scrolling screen when the player is past right edge of the screen
-        if (target.rect.centerx >= self.game.level.size.x - self.half_width - TILE_SIZE / 2):
+        if (target.rect.centerx >= self.game.level.size.x - self.half_width):
             self.offset.x = self.game.level.size.x \
                 - self.display_surface.get_width() \
                 - TILE_SIZE / 2
 
         # starts scrolling screen when the player is in the middle of the screen
-        elif (target.rect.centerx > self.half_width + TILE_SIZE / 2):
+        elif (target.rect.centerx > self.half_width):
             self.offset.x = target.rect.centerx \
-                - self.half_width
+                - self.half_width \
+                - TILE_SIZE / 2
 
         # stops scrolling screen when the player is past bottom edge of the screen
         if (target.rect.centery >= self.game.level.size.y - self.half_height - TILE_SIZE / 2):

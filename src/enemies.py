@@ -9,7 +9,6 @@ import pygame
 class Ghost(MeleeEnemy):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-
         self.name = 'Ghost'
 
         # hitbox
@@ -43,7 +42,6 @@ class Ghost(MeleeEnemy):
 class Mimic(MeleeEnemy):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-
         self.name = 'Mimic'
         self.show_stats = False
 
@@ -71,7 +69,6 @@ class Mimic(MeleeEnemy):
 class Sunflower(MeleeEnemy):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-
         self.name = 'Sunflower'
         self.show_stats = False
 
@@ -124,7 +121,7 @@ class Acorn(RangerEnemy):
         self.animation_cooldown = 600 / len(self.animation_types['idle'])
 
         # attack speed and animation
-        self.attack_cooldown = (1800 - self.stats.speed) \
+        self.attack_cooldown = (randomize(1800, 0.25) - self.stats.speed) \
             / len(self.animation_types['attack'])
 
         self.cooldown = self.animation_cooldown
