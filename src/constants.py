@@ -31,7 +31,7 @@ DARK_BROWN = (104, 84, 66)
 
 # tile pixel size
 TILE_SIZE = 100
-STARTING_FLOOR = 1
+STARTING_FLOOR = 2
 
 # file paths
 LEVEL_PATH = '../levels'
@@ -73,6 +73,7 @@ def randomize(value: int, offset: float):
 def color_image(image, color: list, transparency: int = 255):
     '''Recolors a surface'''
     image = image.copy()
+    
     # zeros out rgb and preserves original transparency
     image.fill((0, 0, 0, 255), None, special_flags=pygame.BLEND_RGBA_MULT)
 

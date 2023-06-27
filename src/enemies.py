@@ -139,6 +139,8 @@ class Acorn(RangerEnemy):
                 and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range):
             self.in_combat = True
             self.cooldown = self.attack_cooldown
+
+            self.face_enemy(self.game.player)
             
             # only attacks the last frame
             if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown):

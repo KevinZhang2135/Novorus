@@ -237,7 +237,7 @@ class Level:
         match id:
             # grass1
             case 0:
-                size = (round(randomize(60, 0.1)), ) * 2
+                size = (round(randomize(100, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -250,11 +250,11 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('grass1')
-                decor.set_hitbox(0.3, 0.3)
+                decor.set_hitbox(0.2, 0.2)
 
             # grass2
             case 1:
-                size = (round(randomize(30, 0.1)), ) * 2
+                size = (round(randomize(100, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -267,11 +267,11 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('grass2')
-                decor.set_hitbox(0.5, 0.5)
+                decor.set_hitbox(0.4, 0.3)
 
             # bush1
             case 2:
-                size = (round(randomize(80, 0.1)), ) * 2
+                size = (round(randomize(100, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -288,7 +288,7 @@ class Level:
 
             # rock1
             case 3:
-                size = (round(randomize(50, 0.1)), ) * 2
+                size = (round(randomize(80, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -305,7 +305,7 @@ class Level:
 
             # rock2
             case 4:
-                size = (round(randomize(40, 0.1)), ) * 2
+                size = (round(randomize(70, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -322,7 +322,7 @@ class Level:
 
             # rock3
             case 5:
-                size = (round(randomize(30, 0.1)), ) * 2
+                size = (round(randomize(60, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -339,7 +339,7 @@ class Level:
 
             # rock4
             case 6:
-                size = (round(randomize(40, 0.1)), ) * 2
+                size = (round(randomize(80, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -407,7 +407,7 @@ class Level:
 
             # dead tree
             case 10:
-                size = (round(randomize(150, 0.1)), ) * 2
+                size = (round(randomize(180, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-50, 50)
