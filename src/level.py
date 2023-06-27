@@ -187,7 +187,7 @@ class Level:
         )
 
         terrain_tile.set_image(sprites[id])
-        terrain_tile.sprite_layer = 1
+        terrain_tile.sprite_layer = 3
 
         match id:
             case 0:
@@ -251,6 +251,7 @@ class Level:
 
                 decor.set_image('grass1')
                 decor.set_hitbox(0.2, 0.2)
+                decor.sprite_layer = 1
 
             # grass2
             case 1:
@@ -268,6 +269,7 @@ class Level:
 
                 decor.set_image('grass2')
                 decor.set_hitbox(0.4, 0.3)
+                decor.sprite_layer = 1
 
             # bush1
             case 2:
@@ -285,6 +287,7 @@ class Level:
 
                 decor.set_image('bush1')
                 decor.set_hitbox(0.7, 0.55)
+                decor.sprite_layer = 3
 
             # rock1
             case 3:
@@ -302,6 +305,7 @@ class Level:
 
                 decor.set_image('rock1')
                 decor.set_hitbox(0.4, 0.3, offsety=0.1)
+                decor.sprite_layer = 3
 
             # rock2
             case 4:
@@ -319,6 +323,7 @@ class Level:
 
                 decor.set_image('rock2')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
+                decor.sprite_layer = 3
 
             # rock3
             case 5:
@@ -336,6 +341,7 @@ class Level:
 
                 decor.set_image('rock3')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
+                decor.sprite_layer = 3
 
             # rock4
             case 6:
@@ -353,6 +359,7 @@ class Level:
 
                 decor.set_image('rock4')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
+                decor.sprite_layer = 3
 
             # oak tree
             case 7:
@@ -370,6 +377,7 @@ class Level:
 
                 decor.set_image('oak_tree')
                 decor.set_hitbox(0.4, 0.6)
+                decor.sprite_layer = 3
 
             # pine tree
             case 8:
@@ -387,6 +395,7 @@ class Level:
 
                 decor.set_image('pine_tree')
                 decor.set_hitbox(0.3, 0.6)
+                decor.sprite_layer = 3
 
             # sakura tree
             case 9:
@@ -404,6 +413,7 @@ class Level:
 
                 decor.set_image('sakura_tree')
                 decor.set_hitbox(0.3, 0.6)
+                decor.sprite_layer = 3
 
             # dead tree
             case 10:
@@ -421,8 +431,9 @@ class Level:
 
                 decor.set_image('dead_tree')
                 decor.set_hitbox(0.3, 0.65)
+                decor.sprite_layer = 3
 
-        decor.sprite_layer = 1
+        
 
         # randomly flips vertically
         if random.randint(0, 1):

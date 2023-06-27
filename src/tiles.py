@@ -29,7 +29,7 @@ class Chest(Sprite):
         self.image = self.chest_closed
 
         self.opened = False
-        self.sprite_layer = 1
+        self.sprite_layer = 3
 
     def collision(self):
         # checks if the distance of the sprites are within collision distance
@@ -58,7 +58,7 @@ class LevelExit(Sprite):
         self.image = IMAGES['dirt_hole'].copy()
         self.image = pygame.transform.scale(self.image, size)
 
-        self.sprite_layer = 1
+        self.sprite_layer = 3
 
     def update(self):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):
@@ -78,7 +78,7 @@ class AnimatedTile(Entity):
 class Torch(AnimatedTile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.sprite_layer = 3
+        self.sprite_layer = 4
 
         # animation
         self.set_animation('decoration/animated/torch')

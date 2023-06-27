@@ -44,7 +44,7 @@ class Entity(Sprite):
         self.max_velocity = 0
 
         # render
-        self.sprite_layer = 1
+        self.sprite_layer = 3
 
         # animation
         self.frame = 0
