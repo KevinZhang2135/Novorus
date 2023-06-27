@@ -118,10 +118,10 @@ class Acorn(RangerEnemy):
         # general animation
         self.set_animation('enemies/acorn')
         self.image = self.animation_types['idle'][self.frame]
-        self.animation_cooldown = 600 / len(self.animation_types['idle'])
+        self.animation_cooldown = 700 / len(self.animation_types['idle'])
 
         # attack speed and animation
-        self.attack_cooldown = (randomize(1800, 0.25) - self.stats.speed) \
+        self.attack_cooldown = (1400 - self.stats.speed) \
             / len(self.animation_types['attack'])
 
         self.cooldown = self.animation_cooldown
