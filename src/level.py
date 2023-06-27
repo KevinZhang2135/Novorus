@@ -359,8 +359,8 @@ class Level:
                 size = (round(randomize(200, 0.1)), ) * 2
 
                 # randomly offsets
-                coords[0] += random.randint(-10, 10)
-                coords[1] += random.randint(-10, 10)
+                coords[0] += random.randint(-50, 50)
+                coords[1] += random.randint(-50, 50)
 
                 decor = Sprite(
                     coords,
@@ -376,8 +376,8 @@ class Level:
                 size = (round(randomize(210, 0.1)), ) * 2
 
                 # randomly offsets
-                coords[0] += random.randint(-10, 10)
-                coords[1] += random.randint(-10, 10)
+                coords[0] += random.randint(-50, 50)
+                coords[1] += random.randint(-50, 50)
 
                 decor = Sprite(
                     coords,
@@ -393,8 +393,8 @@ class Level:
                 size = (round(randomize(190, 0.1)), ) * 2
 
                 # randomly offsets
-                coords[0] += random.randint(-25, 25)
-                coords[1] += random.randint(-25, 25)
+                coords[0] += random.randint(-50, 50)
+                coords[1] += random.randint(-50, 50)
 
                 decor = Sprite(
                     coords,
@@ -410,8 +410,8 @@ class Level:
                 size = (round(randomize(150, 0.1)), ) * 2
 
                 # randomly offsets
-                coords[0] += random.randint(-25, 25)
-                coords[1] += random.randint(-25, 25)
+                coords[0] += random.randint(-50, 50)
+                coords[1] += random.randint(-50, 50)
 
                 decor = Sprite(
                     coords,

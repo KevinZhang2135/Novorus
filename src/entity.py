@@ -81,6 +81,9 @@ class Entity(Sprite):
 
                 self.animation_types[type].append(image)
 
+        # sets image
+        self.image = self.animation_types[self.action][self.frame]
+
     def movement(self):
         '''Handles movement'''
 

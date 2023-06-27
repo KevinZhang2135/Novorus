@@ -49,7 +49,7 @@ class Mimic(MeleeEnemy):
         self.exp = 50
         self.exp_levels = False
 
-        self.stats = Stats(100, 20, 7, 0.15, 0)
+        self.stats = Stats(300, 10, 15, 0.25, 0)
 
         # animation
         self.set_animation('enemies/mimic')
@@ -113,7 +113,7 @@ class Acorn(RangerEnemy):
         self.exp = 30
         self.exp_levels = None
 
-        self.stats = Stats(10, 10, 8, 0.15, 0.15)
+        self.stats = Stats(10, 15, 8, 0.15, 0.1)
 
         # general animation
         self.set_animation('enemies/acorn')
