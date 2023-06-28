@@ -1,4 +1,4 @@
-from entity import Entity
+from entity import Entity, Stats
 
 import pygame
 import math
@@ -21,14 +21,10 @@ class Projectile(Entity):
 
         self.damaged_targets = []
 
-    def set_vector(self, coords):
-        self.velocity = pygame.math.Vector2(
-            coords[0] - self.rect.centerx,
-            coords[1] - self.rect.centery
-        )
-
-        self.velocity.scale_to_length(self.max_velocity)
+        # hitboxes are not used for collision
+        self.set_hitbox(0, 0)
         
+    def rotate_image(self):
         angle = 0
         if self.velocity.x != 0:
             angle = math.atan2(*self.velocity.yx)
@@ -36,11 +32,18 @@ class Projectile(Entity):
         self.image = pygame.transform.rotate(self.image, angle * (180 / math.pi))
         self.image = pygame.transform.flip(self.image, False, True)
 
-    def set_target(self, group: pygame.sprite.Group):
+    def set_target(self, coords: list, stats: Stats, group: pygame.sprite.Group):
+        self.stats = stats
         self.target_group = group
 
-    def set_attack(self, stats):
-        self.stats = stats
+        self.velocity = pygame.math.Vector2(
+            coords[0] - self.rect.centerx,
+            coords[1] - self.rect.centery
+        )
+
+        self.velocity.scale_to_length(self.max_velocity)
+
+        self.rotate_image()
 
     def collision(self):
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
@@ -76,19 +79,27 @@ class Projectile(Entity):
                     self.fade_cooldown = 0
 
     def hit_target(self):
-        collided_targets = self.hitbox.collideobjectsall(
+        # checks if the rect overlaps an enemy rect
+        collided_targets = self.rect.collideobjectsall(
             self.target_group.sprites()
-        )[:self.max_pierce]
+        )
 
+        # sorts sprites by distance
         closest_targets = sorted(
             collided_targets,
             key=lambda target: self.coords.distance_to(target.rect.center)
         )
 
         for sprite in closest_targets:
+            # target can only be damaged once by a projectile
             if (sprite not in self.damaged_targets and self.pierce < self.max_pierce):
-                # mask collision
-                if (pygame.sprite.collide_mask(self, sprite)):
+                # checks if mask overlaps an enemy hitbox
+                mask = pygame.mask.from_surface(self.image)
+                offset = (sprite.hitbox.x - self.rect.x,
+                      sprite.hitbox.y - self.rect.y)
+                
+                # damage is done to hitbox
+                if mask.overlap(sprite.rect_mask, offset):
                     # inflict damage
                     sprite.hurt(self.stats)
                     
@@ -121,12 +132,22 @@ class Projectile(Entity):
         self.expire()
 
 
-class AcornThorn(Projectile):
+class SunBeam(Projectile):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
         self.max_velocity = 7
-        self.fade_cooldown = 3000
+        self.fade_cooldown = 500
 
-        self.set_hitbox(0.2, 0.2)
+        self.set_image('beam')
+
+
+class AcornThorn(Projectile):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.max_velocity = 5
+        self.fade_cooldown = 2000
+
+        # hitboxes are not used for collision
+        self.set_hitbox(0, 0)
         self.set_image('thorn')
         

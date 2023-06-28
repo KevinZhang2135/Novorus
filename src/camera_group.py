@@ -64,7 +64,8 @@ class CameraGroup(pygame.sprite.Group):
                     hitbox,
                     1
                 )
-
+            
+            # draws sprite rects
             if show_rects:
                 rect = pygame.Rect(
                     sprite.rect.x - self.offset.x,

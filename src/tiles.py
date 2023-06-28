@@ -78,12 +78,16 @@ class AnimatedTile(Entity):
 class Torch(AnimatedTile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.sprite_layer = 4
+
+        # hitbox
+        self.set_hitbox(0.15, 0.3)
 
         # animation
         self.set_animation('decoration/animated/torch')
-        self.animation_cooldown = 800 / len(self.animation_types)
+        self.animation_cooldown = 600 / len(self.animation_types)
         self.cooldown = self.animation_cooldown
+
+        self.sprite_layer = 4
 
         # smoke
         self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)

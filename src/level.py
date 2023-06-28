@@ -210,7 +210,7 @@ class Level:
             Acorn
         )
 
-        size = (50, 80, 30, 60)
+        size = (50, 80, 70, 60)
 
         enemy = enemies[id](
             coords,
@@ -443,7 +443,7 @@ class Level:
         match id:
             # torch
             case 0:
-                size = (round(randomize(50, 0.1)), ) * 2
+                size = (round(randomize(100, 0.1)), ) * 2
                 decor = Torch(
                     coords,
                     size,

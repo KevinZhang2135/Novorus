@@ -62,14 +62,16 @@ class Entity(Sprite):
         }
 
     def set_animation(self, filepath: str):
+        unused_types = []
         for type in self.animation_types:
             try:
                 num_of_frames = len(os.listdir(
                     f'{SPRITE_PATH}/{filepath}/{type}'
                 ))
 
-            # incase the folder does not exist for some animations
+            # in case the folder does not exist for some animations
             except FileNotFoundError:
+                unused_types.append(type)
                 continue
 
             for i in range(num_of_frames):
@@ -80,6 +82,10 @@ class Entity(Sprite):
                 )
 
                 self.animation_types[type].append(image)
+
+        # cleans unused types
+        for type in unused_types:
+            del self.animation_types[type]
 
         # sets image
         self.image = self.animation_types[self.action][self.frame]
@@ -215,7 +221,7 @@ class Entity(Sprite):
 
     def check_state(self):
         if not self.attacking:
-            if self.velocity.length_squared() > 0 and self.animation_types['run']:
+            if self.velocity.length_squared() > 0:
                 self.action = 'run'
 
                 if self.velocity.x < 0:
@@ -229,6 +235,9 @@ class Entity(Sprite):
 
         else:
             self.action = 'attack'
+
+        if not self.animation_types[self.action]:
+            self.action = 'idle'
 
     def check_death(self):
         if self.stats.health < 0:
@@ -380,6 +389,7 @@ class MeleeEnemy(Entity):
             False
         )
 
+        # sorts sprites by distance
         colliding_sprites.sort(key=lambda sprite: dist(
             self.hitbox.center,
             sprite.hitbox.center
@@ -461,3 +471,43 @@ class RangerEnemy(Entity):
 
         # movement decay when the speed is low
         super().movement()
+
+    def attack_enemy(self, target_group: pygame.sprite.Group):
+        # checks if the target rect is within attack range
+        targets = target_group.sprites()
+        targets.sort(key=lambda sprite: dist(
+            self.hitbox.center,
+            sprite.hitbox.center
+        ))
+
+        # attacks when target is within attack range
+        if (len(targets) > 0
+                and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range):
+            self.in_combat = True
+            self.cooldown = self.attack_cooldown
+
+            self.face_enemy(self.game.player)
+            
+            # only attacks the last frame
+            if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown):
+                # trigger attack animation
+                if not self.attacking:
+                    self.frame = 0
+                    self.attacking = True
+
+                # shoot projectile after animation ends
+                if (self.frame == len(self.animation_types['attack'])):
+                    self.attack_time = pygame.time.get_ticks()
+                    self.attacking = False
+
+                    self.create_projectile(targets[0])
+                    
+
+        # cancels attack when target moves outside attack range
+        else:
+            self.attacking = False
+            self.in_combat = False
+            self.cooldown = self.animation_cooldown
+
+    def create_projectile(self, target):
+        pass
