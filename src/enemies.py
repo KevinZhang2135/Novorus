@@ -93,7 +93,7 @@ class Sunflower(RangerEnemy):
         self.animation_cooldown = 1600 / len(self.animation_types['idle'])
 
         # attack speed and animation
-        self.attack_cooldown = (500 - self.stats.speed) \
+        self.attack_cooldown = (2400 - self.stats.speed) \
             / len(self.animation_types['attack'])
 
         self.cooldown = self.animation_cooldown
