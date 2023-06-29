@@ -23,10 +23,6 @@ class Player(Entity):
 
         # stats
         self.exp = 0
-        self.exp_levels = [i for i in range(100, 10000, 100)]
-        self.level = 1
-        while self.exp > self.exp_levels[self.level - 1]:
-            self.level += 1
 
         self.stats = Stats(100, 50, 20, 0.05, 0.01)
 
@@ -73,11 +69,6 @@ class Player(Entity):
 
         # movement decay when the speed is low
         super().movement()
-
-    def leveling_up(self):
-        '''Increases player level when they reach exp cap'''
-        if self.exp > self.exp_levels[self.level - 1]:
-            self.level += 1
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
         # attacks on click
@@ -213,4 +204,3 @@ class Player(Entity):
         self.check_state()
         self.check_death()
         self.animation()
-        self.leveling_up()

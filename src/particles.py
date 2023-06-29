@@ -1,44 +1,86 @@
 from constants import *
+from constants import pygame
 from sprite import Sprite
 
 import pygame
+
 
 class Particle(Sprite):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
+        # movement
         self.acceleration = pygame.math.Vector2()
         self.velocity = pygame.math.Vector2()
 
+        # fade
+        self.fade = True
         self.fade_time = pygame.time.get_ticks()
-        self.fade_cooldown = randomize(1000, 0.1) # time for the particle to fade 10 alpha
+        self.fade_cooldown = randomize(1000, 0.1)
 
         self.alpha = 255
         self.sprite_layer = 3
+        
+        # animation
+        self.frame = 0
+        self.loop_frames = True
+
+        self.animation_cooldown = 0
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_frames = []
+
+        self.set_hitbox(0, 0)
+        self.sprite_layer = 4
+
+    def set_animation(self, filepath: str):
+        num_of_frames = len(os.listdir(
+            f'{SPRITE_PATH}/{filepath}'
+        ))
+            
+        for i in range(num_of_frames):
+            image = IMAGES[f"{filepath.split('/')[-1]}{i + 1}"].copy()
+            image = pygame.transform.scale(
+                image,
+                self.rect.size
+            )
+
+            self.animation_frames.append(image)
+
+        # sets image
+        self.image = self.animation_frames[self.frame]
 
     def movement(self):
         '''Handles movement'''
         self.velocity += self.acceleration
         self.velocity *= 0.9
 
-        # movement decay when the speed is low
-        if abs(self.velocity.x) < 0.25:
-            self.velocity.x = 0
-
-        if abs(self.velocity.y) < 0.25:
-            self.velocity.y = 0
-
         self.set_coords(
             self.coords.x + self.velocity.x,
             self.coords.y + self.velocity.y
         )
+
+    def animation(self):
+        '''Handles animation'''
+
+        # loops frames
+        if self.frame >= len(self.animation_frames) and self.loop_frames:
+            self.frame = 0
+
+        # set image
+        if self.frame < len(self.animation_frames):
+            self.image = self.animation_frames[self.frame]
+
+            # determines whether the animation cooldown is over
+            if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+                self.animation_time = pygame.time.get_ticks()
+                self.frame += 1
 
     def expire(self):
         '''Fades particle after its fade time
            Deletes the particle if it has no alpha'''
         if pygame.time.get_ticks() - self.fade_time > self.fade_cooldown:
             self.alpha -= 10
-            if self.alpha > 0:
+            if self.alpha > 0 and self.fade:
                 self.image.set_alpha(self.alpha)
 
             else:
@@ -48,7 +90,25 @@ class Particle(Sprite):
     def update(self):
         '''Handles events'''
         self.movement()
+        self.animation()
         self.expire()
+
+
+class Explosion(Particle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.loop_frames = False
+        self.animation_cooldown = 100
+
+        self.set_animation('particles/explosion')
+
+
+class Dust(Particle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+
+        self.set_image(f'dust{random.randint(1, 3)}')
+        self.velocity.y = -2
 
 
 class TextPopUp(Particle):

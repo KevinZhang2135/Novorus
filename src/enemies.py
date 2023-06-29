@@ -23,7 +23,6 @@ class Ghost(MeleeEnemy):
 
         # stats
         self.exp = 15
-        self.exp_levels = None
 
         self.stats = Stats(30, 10, 4, 0.05, 0.1)
 
@@ -50,7 +49,6 @@ class Mimic(MeleeEnemy):
 
         # stats
         self.exp = 50
-        self.exp_levels = False
 
         self.stats = Stats(300, 0, 15, 0.25, 0)
 
@@ -73,19 +71,17 @@ class Sunflower(RangerEnemy):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Sunflower'
-        self.show_stats = False
 
         # hitbox
-        self.set_hitbox(0.4, 0.9)
+        self.set_hitbox(0.2, 0.4)
 
         # range
-        self.attack_range = 150
+        self.attack_range = 300
 
         # stats
         self.exp = 5
-        self.exp_levels = False
 
-        self.stats = Stats(20, 0, 3, 0.05, 0)
+        self.stats = Stats(20, 0, 15, 0, 0)
 
         # general animation
         self.set_animation('enemies/sunflower')
@@ -103,10 +99,10 @@ class Sunflower(RangerEnemy):
         pass
 
     def create_projectile(self, target):
-        projectile_size = (min(*self.hitbox.size), ) * 2
+        projectile_size = (max(*self.hitbox.size) * 2, ) * 2
 
         # creates projectile
-        projectile = Fireball(self.hitbox.center, projectile_size, self.game, self.game.camera_group)
+        projectile = Fireball(self.hitbox.midtop, projectile_size, self.game, self.game.camera_group)
         projectile.set_target(
             target.hitbox.center,
             self.stats,
@@ -129,7 +125,6 @@ class Acorn(RangerEnemy):
 
         # stats
         self.exp = 30
-        self.exp_levels = None
 
         self.stats = Stats(10, 15, 8, 0.15, 0.1)
 
@@ -145,7 +140,7 @@ class Acorn(RangerEnemy):
         self.cooldown = self.animation_cooldown
 
     def create_projectile(self, target):
-        projectile_size = (min(*self.hitbox.size), ) * 2
+        projectile_size = (max(*self.hitbox.size), ) * 2
 
         # creates projectile
         projectile = AcornThorn(self.hitbox.center, projectile_size, self.game, self.game.camera_group)

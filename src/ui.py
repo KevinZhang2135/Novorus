@@ -580,34 +580,6 @@ class BarGroup(pygame.sprite.Group):
 
                 sprite.draw(target)
 
-            # displays exp if the cursor is hovered over the name
-            if self.name_text[1].collidepoint(pygame.mouse.get_pos()):
-                text = f'exp {target.exp}'
-                if target.exp_levels:
-                    text += f' / {target.exp_levels[target.level - 1]}'
-
-                self.exp_text[0] = COMICORO[25].render(text, True, BLACK)
-                self.exp_text[1] = self.exp_text[0].get_rect(
-                    center=self.exp_rect.center)
-
-                self.exp_rect.width = self.exp_text[1].width + 20
-                self.exp_rect.topleft = pygame.mouse.get_pos()
-
-                pygame.draw.rect(
-                    self.display_surface,
-                    BROWN, 
-                    self.exp_rect
-                )
-
-                pygame.draw.rect(
-                    self.display_surface,
-                    DARK_BROWN, 
-                    self.exp_rect, 
-                    3
-                )
-
-                self.display_surface.blit(*self.exp_text)
-
 
 class Cursor(Sprite):
     def __init__(self, size:list, game, groups: pygame.sprite.Group,):

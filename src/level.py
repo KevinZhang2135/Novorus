@@ -210,7 +210,7 @@ class Level:
             Acorn
         )
 
-        size = (50, 80, 70, 60)
+        size = (50, 80, 100, 60)
 
         enemy = enemies[id](
             coords,

@@ -1,4 +1,5 @@
 from entity import Entity, Stats
+from particles import *
 
 import pygame
 import math
@@ -10,11 +11,12 @@ class Projectile(Entity):
         self.facing = 'right'
         self.target_group = None
 
+        self.fade = True
         self.fade_time = pygame.time.get_ticks()
         self.fade_cooldown = 300  # time for the particle to fade 10 alpha
         self.alpha = 255
 
-        # rotation
+        # appearance
         self.angle = 0
 
         # attack
@@ -128,7 +130,7 @@ class Projectile(Entity):
            Deletes the particle if it has no alpha'''
         if pygame.time.get_ticks() - self.fade_time > self.fade_cooldown:
             self.alpha -= 10
-            if self.alpha > 0:
+            if self.alpha > 0 and self.fade:
                 self.image.set_alpha(self.alpha)
 
             else:
@@ -150,10 +152,19 @@ class Projectile(Entity):
 class Fireball(Projectile):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.max_velocity = 2
-        self.fade_cooldown = 500
+        self.fade = False
+        self.max_velocity = 3
+
+        self.fade_cooldown = 2500
+        self.animation_cooldown = 500
+        self.cooldown = self.animation_cooldown
         
         self.set_animation('projectiles/fireball')
+
+    def kill(self):
+        # leaves explosion on death
+        super().kill()
+        Explosion(self.rect.center, self.rect.size, self.game, self.game.camera_group)
 
 
 class AcornThorn(Projectile):
@@ -164,5 +175,5 @@ class AcornThorn(Projectile):
 
         # hitboxes are not used for collision
         self.set_hitbox(0, 0)
-        self.set_image('thorn')
+        self.set_animation('projectiles/thorn')
         

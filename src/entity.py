@@ -50,6 +50,7 @@ class Entity(Sprite):
         # animation
         self.frame = 0
         self.cooldown = 0
+        self.loop_frames = True
 
         self.attack_cooldown = 0
         self.attack_time = pygame.time.get_ticks()
@@ -74,7 +75,7 @@ class Entity(Sprite):
             except FileNotFoundError:
                 unused_types.append(type)
                 continue
-
+            
             for i in range(num_of_frames):
                 image = IMAGES[f"{filepath.split('/')[-1]}_{type}{i + 1}"].copy()
                 image = pygame.transform.scale(
@@ -259,15 +260,12 @@ class Entity(Sprite):
                     self.hitbox.centery + y_offset
                 )
 
-                dust = Particle(
+                Dust(
                     (x, y),
                     [randomize(self.hitbox.width / 2, 0.05) for i in range(2)],
                     self.game,
                     self.game.camera_group
                 )
-
-                dust.set_image(f'dust{random.randint(1, 3)}')
-                dust.velocity.y = -2
 
             self.kill()
             del self
@@ -324,20 +322,21 @@ class Entity(Sprite):
         '''Handles animation'''
 
         # loops frames
-        if self.frame >= len(self.animation_types[self.action]):
+        if self.frame >= len(self.animation_types[self.action]) and self.loop_frames:
             self.frame = 0
 
         # set image
-        self.image = self.animation_types[self.action][self.frame]
+        if self.frame < len(self.animation_types[self.action]):
+            self.image = self.animation_types[self.action][self.frame]
 
-        # determines whether the animation cooldown is over
-        if pygame.time.get_ticks() - self.animation_time > self.cooldown:
-            self.animation_time = pygame.time.get_ticks()
-            self.frame += 1
+            # determines whether the animation cooldown is over
+            if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+                self.animation_time = pygame.time.get_ticks()
+                self.frame += 1
 
-        # reflects over y-axis if facing left
-        if self.facing == 'left':
-            self.image = pygame.transform.flip(self.image, True, False)
+            # reflects over y-axis if facing left
+            if self.facing == 'left':
+                self.image = pygame.transform.flip(self.image, True, False)
 
     def update(self):
         '''Handles events'''
