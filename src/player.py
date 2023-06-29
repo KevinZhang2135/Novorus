@@ -1,10 +1,11 @@
-from effects import *
-from entity import *
+from lighting import *
+from particles import *
 from projectiles import *
 from ui import *
 
 
 import pygame
+import math
 
 
 class Player(Entity):
@@ -96,7 +97,7 @@ class Player(Entity):
                 False
             )
 
-            colliding_sprites.sort(key=lambda sprite: dist(
+            colliding_sprites.sort(key=lambda sprite: math.dist(
                 self.hitbox.center,
                 sprite.hitbox.center
             ))
@@ -201,8 +202,8 @@ class Player(Entity):
         if self.stats.health < 0:
             # sprite dies
             self.stats.health = 0
-            self.animation_time = pygame.time.get_ticks()
-            self.cooldown = self.game.player.animation_cooldown
+            #self.animation_time = pygame.time.get_ticks()
+            #self.cooldown = self.game.player.animation_cooldown
 
     def update(self):
         '''Handles events'''

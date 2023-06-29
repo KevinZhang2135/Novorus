@@ -1,6 +1,7 @@
 from constants import *
 from level import *
 from camera_group import *
+from lighting import *
 from ui import *
 from player import Player
 

@@ -1,5 +1,6 @@
 from constants import *
-from effects import *
+from lighting import *
+from particles import *
 from sprite import Sprite
 from random import randint
 

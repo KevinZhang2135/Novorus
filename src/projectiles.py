@@ -7,11 +7,15 @@ import math
 class Projectile(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
+        self.facing = 'right'
         self.target_group = None
 
         self.fade_time = pygame.time.get_ticks()
         self.fade_cooldown = 300  # time for the particle to fade 10 alpha
         self.alpha = 255
+
+        # rotation
+        self.angle = 0
 
         # attack
         self.stats = None
@@ -25,11 +29,18 @@ class Projectile(Entity):
         self.set_hitbox(0, 0)
         
     def rotate_image(self):
-        angle = 0
-        if self.velocity.x != 0:
-            angle = math.atan2(*self.velocity.yx)
+        if self.pierce < self.max_pierce:
+            self.angle = 0
+            if self.velocity.x != 0:
+                self.angle = math.atan2(*self.velocity.yx)
 
-        self.image = pygame.transform.rotate(self.image, angle * (180 / math.pi))
+            elif self.velocity.y > 0:
+                self.angle = math.pi / 2
+
+            elif self.velocity.y < 0:
+                self.angle = math.pi * 3 / 2
+
+        self.image = pygame.transform.rotate(self.image, self.angle * (180 / math.pi))
         self.image = pygame.transform.flip(self.image, False, True)
 
     def set_target(self, coords: list, stats: Stats, group: pygame.sprite.Group):
@@ -42,7 +53,6 @@ class Projectile(Entity):
         )
 
         self.velocity.scale_to_length(self.max_velocity)
-
         self.rotate_image()
 
     def collision(self):
@@ -110,7 +120,7 @@ class Projectile(Entity):
                     # fades faster when pierce count is reached
                     if self.pierce >= self.max_pierce:
                         self.fade_cooldown = 50
-                        self.velocity.x, self.velocity.y = 0, 0
+                        self.velocity.xy = 0, 0
                         break
 
     def expire(self):
@@ -125,20 +135,25 @@ class Projectile(Entity):
                 self.kill()
                 del self
 
+    def animation(self):
+        super().animation()
+        self.rotate_image()
+
     def update(self):
         self.movement()
         self.collision()
         self.hit_target()
         self.expire()
+        self.animation()
 
 
-class SunBeam(Projectile):
+class Fireball(Projectile):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.max_velocity = 7
+        self.max_velocity = 2
         self.fade_cooldown = 500
-
-        self.set_image('beam')
+        
+        self.set_animation('projectiles/fireball')
 
 
 class AcornThorn(Projectile):

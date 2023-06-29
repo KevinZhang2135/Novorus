@@ -1,12 +1,12 @@
 from constants import *
-from effects import *
-from effects import Sprite
 from entity import *
+from sprite import Sprite
+from lighting import *
 from projectiles import *
 
 import pygame
 
-from sprite import Sprite
+
 
 
 class Ghost(MeleeEnemy):
@@ -52,7 +52,7 @@ class Mimic(MeleeEnemy):
         self.exp = 50
         self.exp_levels = False
 
-        self.stats = Stats(300, 10, 15, 0.25, 0)
+        self.stats = Stats(300, 0, 15, 0.25, 0)
 
         # animation
         self.set_animation('enemies/mimic')
@@ -85,7 +85,7 @@ class Sunflower(RangerEnemy):
         self.exp = 5
         self.exp_levels = False
 
-        self.stats = Stats(20, 5, 3, 0.05, 0)
+        self.stats = Stats(20, 0, 3, 0.05, 0)
 
         # general animation
         self.set_animation('enemies/sunflower')
@@ -106,7 +106,7 @@ class Sunflower(RangerEnemy):
         projectile_size = (min(*self.hitbox.size), ) * 2
 
         # creates projectile
-        projectile = SunBeam(self.hitbox.center, projectile_size, self.game, self.game.camera_group)
+        projectile = Fireball(self.hitbox.center, projectile_size, self.game, self.game.camera_group)
         projectile.set_target(
             target.hitbox.center,
             self.stats,
