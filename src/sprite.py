@@ -24,6 +24,14 @@ class Sprite(pygame.sprite.Sprite):
 
         self.sprite_layer = 0
 
+        # animation
+        self.frame = 0
+        self.loop_frames = True
+
+        self.animation_cooldown = 0
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_frames = []
+
     def set_image(self, image_file: str):
         self.image = IMAGES[image_file].copy()
         self.image = pygame.transform.scale(self.image, self.size)
@@ -41,4 +49,37 @@ class Sprite(pygame.sprite.Sprite):
 
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
         self.rect_mask.fill()
+
+    def set_animation(self, filepath: str):
+        num_of_frames = len(os.listdir(
+            f'{SPRITE_PATH}/{filepath}'
+        ))
+            
+        for i in range(num_of_frames):
+            image = IMAGES[f"{filepath.split('/')[-1]}{i + 1}"].copy()
+            image = pygame.transform.scale(
+                image,
+                self.rect.size
+            )
+
+            self.animation_frames.append(image)
+
+        # sets image
+        self.image = self.animation_frames[self.frame]
+
+    def animation(self):
+        '''Handles animation'''
+
+        # loops frames
+        if self.frame >= len(self.animation_frames) and self.loop_frames:
+            self.frame = 0
+
+        # set image
+        if self.frame < len(self.animation_frames):
+            self.image = self.animation_frames[self.frame]
+
+            # determines whether the animation cooldown is over
+            if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+                self.animation_time = pygame.time.get_ticks()
+                self.frame += 1
 

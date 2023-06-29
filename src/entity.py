@@ -57,7 +57,7 @@ class Entity(Sprite):
 
         self.animation_cooldown = 0
         self.animation_time = pygame.time.get_ticks()
-        self.animation_types = {
+        self.animation_frames = {
             'idle': [],
             'run': [],
             'attack': []
@@ -65,7 +65,7 @@ class Entity(Sprite):
 
     def set_animation(self, filepath: str):
         unused_types = []
-        for type in self.animation_types:
+        for type in self.animation_frames:
             try:
                 num_of_frames = len(os.listdir(
                     f'{SPRITE_PATH}/{filepath}/{type}'
@@ -83,14 +83,14 @@ class Entity(Sprite):
                     self.rect.size
                 )
 
-                self.animation_types[type].append(image)
+                self.animation_frames[type].append(image)
 
         # cleans unused types
         for type in unused_types:
-            del self.animation_types[type]
+            del self.animation_frames[type]
 
         # sets image
-        self.image = self.animation_types[self.action][self.frame]
+        self.image = self.animation_frames[self.action][self.frame]
 
     def movement(self):
         '''Handles movement'''
@@ -238,11 +238,11 @@ class Entity(Sprite):
         else:
             self.action = 'attack'
 
-        if not self.animation_types[self.action]:
+        if not self.animation_frames[self.action]:
             self.action = 'idle'
 
     def check_death(self):
-        if self.stats.health < 0:
+        if self.stats.health <= 0:
             # sprite dies
             self.stats.health = 0
 
@@ -322,12 +322,12 @@ class Entity(Sprite):
         '''Handles animation'''
 
         # loops frames
-        if self.frame >= len(self.animation_types[self.action]) and self.loop_frames:
+        if self.frame >= len(self.animation_frames[self.action]) and self.loop_frames:
             self.frame = 0
 
         # set image
-        if self.frame < len(self.animation_types[self.action]):
-            self.image = self.animation_types[self.action][self.frame]
+        if self.frame < len(self.animation_frames[self.action]):
+            self.image = self.animation_frames[self.action][self.frame]
 
             # determines whether the animation cooldown is over
             if pygame.time.get_ticks() - self.animation_time > self.cooldown:
@@ -417,7 +417,7 @@ class MeleeEnemy(Entity):
 
                 # only attacks the last frame
                 if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                        and self.frame == len(self.animation_types['attack'])
+                        and self.frame == len(self.animation_frames['attack'])
                         and sprite not in targets_hit):
 
                     sprite.hurt(self.stats)
@@ -496,7 +496,7 @@ class RangerEnemy(Entity):
                     self.attacking = True
 
                 # shoot projectile after animation ends
-                if (self.frame == len(self.animation_types['attack'])):
+                if (self.frame == len(self.animation_frames['attack'])):
                     self.attack_time = pygame.time.get_ticks()
                     self.attacking = False
 

@@ -28,12 +28,12 @@ class Ghost(MeleeEnemy):
 
         # general animation
         self.set_animation('enemies/ghost')
-        self.image = self.animation_types['idle'][self.frame]
-        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.image = self.animation_frames['idle'][self.frame]
+        self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
 
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
-            / len(self.animation_types['attack'])
+            / len(self.animation_frames['attack'])
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -54,12 +54,12 @@ class Mimic(MeleeEnemy):
 
         # animation
         self.set_animation('enemies/mimic')
-        self.image = self.animation_types['idle'][self.frame]
-        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.image = self.animation_frames['idle'][self.frame]
+        self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
 
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
-            / len(self.animation_types['attack'])
+            / len(self.animation_frames['attack'])
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -73,7 +73,7 @@ class Sunflower(RangerEnemy):
         self.name = 'Sunflower'
 
         # hitbox
-        self.set_hitbox(0.2, 0.4)
+        self.set_hitbox(0.25, 0.4)
 
         # range
         self.attack_range = 300
@@ -85,12 +85,12 @@ class Sunflower(RangerEnemy):
 
         # general animation
         self.set_animation('enemies/sunflower')
-        self.image = self.animation_types['idle'][self.frame]
-        self.animation_cooldown = 1600 / len(self.animation_types['idle'])
+        self.image = self.animation_frames['idle'][self.frame]
+        self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
 
         # attack speed and animation
         self.attack_cooldown = (2400 - self.stats.speed) \
-            / len(self.animation_types['attack'])
+            / len(self.animation_frames['attack'])
 
         self.cooldown = self.animation_cooldown
 
@@ -130,12 +130,12 @@ class Acorn(RangerEnemy):
 
         # general animation
         self.set_animation('enemies/acorn')
-        self.image = self.animation_types['idle'][self.frame]
-        self.animation_cooldown = 700 / len(self.animation_types['idle'])
+        self.image = self.animation_frames['idle'][self.frame]
+        self.animation_cooldown = 700 / len(self.animation_frames['idle'])
 
         # attack speed and animation
         self.attack_cooldown = (1400 - self.stats.speed) \
-            / len(self.animation_types['attack'])
+            / len(self.animation_frames['attack'])
 
         self.cooldown = self.animation_cooldown
 

@@ -121,6 +121,7 @@ class Level:
         create_tile = {
             'player': self.set_player_coords,
             'terrain': self.add_terrain,
+            'terrain_overlay': self.add_terrain_overlay,
             'wall': self.add_walls,
             'enemies': self.add_enemies,
             'chest': self.add_chests,
@@ -157,7 +158,7 @@ class Level:
         sprites = [f'path{i}' for i in range(1, 11)] \
             + [f'grassy{i}' for i in range(1, 3)] \
             + [f'path{i}' for i in range(11, 32)] \
-            + [f'grassy{i}' for i in range(3, 7)]
+            + [f'grassy{i}' for i in range(3, 11)]
 
         size = (100,) * 2
         terrain_tile = Sprite(
@@ -168,6 +169,9 @@ class Level:
         )
 
         terrain_tile.set_image(sprites[id])
+
+    def add_terrain_overlay(self, id: int, coords: list):
+        pass
 
     def add_walls(self, id: int, coords: list):
         sprites = (
@@ -210,7 +214,7 @@ class Level:
             Acorn
         )
 
-        size = (50, 80, 100, 60)
+        size = (50, 80, 90, 60)
 
         enemy = enemies[id](
             coords,
@@ -235,9 +239,9 @@ class Level:
 
     def add_static_decor(self, id: int, coords: list):
         match id:
-            # grass1
+            # flower1
             case 0:
-                size = (round(randomize(100, 0.1)), ) * 2
+                size = (round(randomize(90, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -249,31 +253,13 @@ class Level:
                     self.game,
                     self.game.camera_group)
 
-                decor.set_image('grass1')
-                decor.set_hitbox(0.2, 0.2)
-                decor.sprite_layer = 1
-
-            # grass2
-            case 1:
-                size = (round(randomize(100, 0.1)), ) * 2
-
-                # randomly offsets
-                coords[0] += random.randint(-25, 25)
-                coords[1] += random.randint(-25, 25)
-
-                decor = Sprite(
-                    coords,
-                    size,
-                    self.game,
-                    self.game.camera_group)
-
-                decor.set_image('grass2')
-                decor.set_hitbox(0.4, 0.3)
-                decor.sprite_layer = 1
+                decor.set_image('flower1')
+                decor.set_hitbox(0.25, 0.4)
+                decor.sprite_layer = 3
 
             # bush1
-            case 2:
-                size = (round(randomize(100, 0.1)), ) * 2
+            case 1:
+                size = (round(randomize(80, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -286,7 +272,25 @@ class Level:
                     self.game.camera_group)
 
                 decor.set_image('bush1')
-                decor.set_hitbox(0.7, 0.55)
+                decor.set_hitbox(0.6, 0.5)
+                decor.sprite_layer = 3
+
+            # bush2
+            case 2:
+                size = (round(randomize(80, 0.1)), ) * 2
+
+                # randomly offsets
+                coords[0] += random.randint(-25, 25)
+                coords[1] += random.randint(-25, 25)
+
+                decor = Sprite(
+                    coords,
+                    size,
+                    self.game,
+                    self.game.camera_group)
+
+                decor.set_image('bush2')
+                decor.set_hitbox(0.6, 0.3)
                 decor.sprite_layer = 3
 
             # rock1

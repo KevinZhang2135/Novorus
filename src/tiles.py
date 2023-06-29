@@ -68,15 +68,7 @@ class LevelExit(Sprite):
                 self.game.level.floor_level += 1
 
 
-class AnimatedTile(Entity):
-    def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(coords, size, game, groups)
-
-    def update(self):
-        self.animation()
-
-
-class Torch(AnimatedTile):
+class Torch(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
@@ -85,7 +77,7 @@ class Torch(AnimatedTile):
 
         # animation
         self.set_animation('decoration/animated/torch')
-        self.animation_cooldown = 600 / len(self.animation_types)
+        self.animation_cooldown = 600 / len(self.animation_frames)
         self.cooldown = self.animation_cooldown
 
         self.sprite_layer = 4

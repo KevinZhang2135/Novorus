@@ -20,34 +20,9 @@ class Particle(Sprite):
 
         self.alpha = 255
         self.sprite_layer = 3
-        
-        # animation
-        self.frame = 0
-        self.loop_frames = True
-
-        self.animation_cooldown = 0
-        self.animation_time = pygame.time.get_ticks()
-        self.animation_frames = []
 
         self.set_hitbox(0, 0)
         self.sprite_layer = 4
-
-    def set_animation(self, filepath: str):
-        num_of_frames = len(os.listdir(
-            f'{SPRITE_PATH}/{filepath}'
-        ))
-            
-        for i in range(num_of_frames):
-            image = IMAGES[f"{filepath.split('/')[-1]}{i + 1}"].copy()
-            image = pygame.transform.scale(
-                image,
-                self.rect.size
-            )
-
-            self.animation_frames.append(image)
-
-        # sets image
-        self.image = self.animation_frames[self.frame]
 
     def movement(self):
         '''Handles movement'''
@@ -58,22 +33,6 @@ class Particle(Sprite):
             self.coords.x + self.velocity.x,
             self.coords.y + self.velocity.y
         )
-
-    def animation(self):
-        '''Handles animation'''
-
-        # loops frames
-        if self.frame >= len(self.animation_frames) and self.loop_frames:
-            self.frame = 0
-
-        # set image
-        if self.frame < len(self.animation_frames):
-            self.image = self.animation_frames[self.frame]
-
-            # determines whether the animation cooldown is over
-            if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
-                self.animation_time = pygame.time.get_ticks()
-                self.frame += 1
 
     def expire(self):
         '''Fades particle after its fade time

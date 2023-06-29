@@ -28,13 +28,13 @@ class Player(Entity):
 
         # general animation
         self.set_animation('player')
-        self.image = self.animation_types['idle'][self.frame]
+        self.image = self.animation_frames['idle'][self.frame]
 
-        self.animation_cooldown = 1500 / len(self.animation_types['idle'])
+        self.animation_cooldown = 1500 / len(self.animation_frames['idle'])
 
         # attack speed and animation
         self.attack_cooldown = (700 - self.stats.speed) \
-            / len(self.animation_types['attack'])
+            / len(self.animation_frames['attack'])
 
         if self.attack_cooldown < 50:
             self.attack_cooldown = 50
@@ -103,9 +103,9 @@ class Player(Entity):
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
-                    # only attacks the last frame
+                    # only attacks the second to last frame
                     if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                            and self.frame == len(self.animation_types['attack'])
+                            and self.frame == len(self.animation_frames['attack'] - 1)
                             and sprite not in targets_hit):
 
                         sprite.hurt(self.stats)
