@@ -2,10 +2,10 @@ from constants import *
 from lighting import *
 from particles import *
 from sprite import Sprite
-from random import randint
 
 import pygame
 from math import dist
+from random import randint
 
 
 class Stats:

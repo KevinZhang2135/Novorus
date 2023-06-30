@@ -1,5 +1,4 @@
 from constants import *
-from constants import pygame
 from sprite import Sprite
 
 import pygame
@@ -60,7 +59,6 @@ class Explosion(Particle):
         self.animation_cooldown = 100
 
         self.set_animation('particles/explosion')
-
 
 class Dust(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):

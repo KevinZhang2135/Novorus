@@ -1,8 +1,7 @@
+from ui import *
 from lighting import *
 from particles import *
 from projectiles import *
-from ui import *
-
 
 import pygame
 import math
@@ -28,9 +27,8 @@ class Player(Entity):
 
         # general animation
         self.set_animation('player')
-        self.image = self.animation_frames['idle'][self.frame]
-
         self.animation_cooldown = 1500 / len(self.animation_frames['idle'])
+        self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (700 - self.stats.speed) \
@@ -38,8 +36,6 @@ class Player(Entity):
 
         if self.attack_cooldown < 50:
             self.attack_cooldown = 50
-
-        self.cooldown = self.animation_cooldown
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)

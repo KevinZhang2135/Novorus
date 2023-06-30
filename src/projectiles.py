@@ -1,5 +1,5 @@
-from entity import Entity, Stats
 from particles import *
+from entity import *
 
 import pygame
 import math
@@ -156,7 +156,7 @@ class Fireball(Projectile):
         self.max_velocity = 3
 
         self.fade_cooldown = 2500
-        self.animation_cooldown = 500
+        self.animation_cooldown = 250
         self.cooldown = self.animation_cooldown
         
         self.set_animation('projectiles/fireball')

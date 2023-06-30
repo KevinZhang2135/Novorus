@@ -1,7 +1,8 @@
 from constants import *
-from entity import *
 from tiles import *
+
 from enemies import *
+from entity import *
 from sprite import Sprite
 
 import pygame
@@ -11,7 +12,7 @@ import random
 
 
 class Level:
-    def __init__(self, floor_level: int, tile_size: int, game):
+    def __init__(self, floor_level: int, game):
         global player
 
         self.game = game
@@ -19,8 +20,7 @@ class Level:
         self.size = pygame.math.Vector2(0, 0)
         self.rect = pygame.Rect(0, 0, 0, 0)
 
-        self.tile_size = tile_size
-        self._floor_level = floor_level
+        self.floor_level = floor_level
         self.display_surface = pygame.display.get_surface()
 
         self.level_updated = False
@@ -44,28 +44,22 @@ class Level:
         self.read_csv_level()
         self.update_lighting()
 
-    @property
-    def floor_level(self):
-        return self._floor_level
-
-    @floor_level.setter
-    def floor_level(self, value):
-        self._floor_level = value
-        self.transitioning = True
-
     def transition_level(self):
         # draws rectangle to cover screen as level transitions
         if self.transitioning:
             self.level_transition_rect.x += 75
             if (self.level_transition_rect.x > 0
                     and not self.level_updated):
+
                 self.level_updated = True
+                self.floor_level += 1
 
                 # updates level map
                 self.clear_level()
                 self.read_csv_level()
                 self.update_lighting()
 
+                # updates floor level text
                 text = COMICORO[50].render(
                     f'Floor {self.floor_level}',
                     True,
@@ -85,7 +79,7 @@ class Level:
                 self.level_updated = False
 
     def read_csv_level(self):
-        files = os.listdir(f'{LEVEL_PATH}/{self._floor_level}')
+        files = os.listdir(f'{LEVEL_PATH}/{self.floor_level}')
         row = 0
 
         # reads csv files in folder
@@ -98,12 +92,12 @@ class Level:
                 )
 
             # reads csv
-            with open(os.path.join(f'{LEVEL_PATH}/{self._floor_level}', path)) as file:
+            with open(os.path.join(f'{LEVEL_PATH}/{self.floor_level}', path)) as file:
                 csv_file = list(csv.reader(file))
                 self.create_tile_group(csv_file, path)
                 if not row:  # determines the dimensions of the first csv_file
-                    self.size.x = len(list(csv_file)[0]) * self.tile_size
-                    self.size.y = len(list(csv_file)) * self.tile_size
+                    self.size.x = len(list(csv_file)[0]) * TILE_SIZE
+                    self.size.y = len(list(csv_file)) * TILE_SIZE
 
                     self.rect = pygame.Rect(0, 0, *self.size)
                     row += 1
@@ -122,12 +116,12 @@ class Level:
             'player': self.set_player_coords,
             'terrain': self.add_terrain,
             'terrain_overlay': self.add_terrain_overlay,
-            'wall': self.add_walls,
+            'walls': self.add_walls,
             'enemies': self.add_enemies,
-            'chest': self.add_chests,
+            'chests': self.add_chests,
             'static_decor': self.add_static_decor,
             'animated_decor': self.add_animated_decor,
-            'exit': self.add_exit
+            'totems': self.add_totems
         }
 
         if path[:-4] not in create_tile:
@@ -140,8 +134,8 @@ class Level:
 
                 # id -1 is empty
                 if id != -1 and id >= 0:
-                    x = col_index * self.tile_size
-                    y = row_index * self.tile_size
+                    x = col_index * TILE_SIZE
+                    y = row_index * TILE_SIZE
                     create_tile[path[:-4]](id, [x, y])
 
                 else:
@@ -252,7 +246,7 @@ class Level:
         match id:
             # flower1
             case 0:
-                size = (round(randomize(90, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.9, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -270,7 +264,7 @@ class Level:
 
             # bush1
             case 1:
-                size = (round(randomize(80, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -288,7 +282,7 @@ class Level:
 
             # bush2
             case 2:
-                size = (round(randomize(80, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -306,7 +300,7 @@ class Level:
 
             # rock1
             case 3:
-                size = (round(randomize(80, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -324,7 +318,7 @@ class Level:
 
             # rock2
             case 4:
-                size = (round(randomize(70, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.7, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -342,7 +336,7 @@ class Level:
 
             # rock3
             case 5:
-                size = (round(randomize(60, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.6, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -360,7 +354,7 @@ class Level:
 
             # rock4
             case 6:
-                size = (round(randomize(80, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -378,7 +372,7 @@ class Level:
 
             # oak tree
             case 7:
-                size = (round(randomize(200, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 2, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-50, 50)
@@ -396,7 +390,7 @@ class Level:
 
             # pine tree
             case 8:
-                size = (round(randomize(210, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 2, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-50, 50)
@@ -414,7 +408,7 @@ class Level:
 
             # sakura tree
             case 9:
-                size = (round(randomize(190, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 2, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-50, 50)
@@ -432,7 +426,7 @@ class Level:
 
             # dead tree
             case 10:
-                size = (round(randomize(180, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 1.8, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-50, 50)
@@ -448,8 +442,6 @@ class Level:
                 decor.set_hitbox(0.3, 0.65)
                 decor.sprite_layer = 3
 
-        
-
         # randomly flips vertically
         if random.randint(0, 1):
             decor.image = pygame.transform.flip(decor.image, True, False)
@@ -458,7 +450,7 @@ class Level:
         match id:
             # torch
             case 0:
-                size = (round(randomize(100, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE, 0.1)), ) * 2
                 decor = Torch(
                     coords,
                     size,
@@ -466,12 +458,12 @@ class Level:
                     (self.game.camera_group, self.game.light_group)
                 )
 
-    def add_exit(self, id: int, coords: list):
-        exit = LevelExit(
+    def add_totems(self, id: int, coords: list):
+        totem = Totem(
             coords,
-            [round(self.tile_size * 0.8)] * 2,
+            (TILE_SIZE * 1.75,) * 2,
             self.game,
-            self.game.camera_group
+            (self.game.camera_group, self.game.enemy_group, self.game.totem_group)
         )
 
     def draw(self):

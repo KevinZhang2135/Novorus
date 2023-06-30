@@ -402,7 +402,7 @@ class Bar(pygame.sprite.Sprite):
         self.display_surface = pygame.display.get_surface()
 
         self.width, self.height = 45, 45
-        self.bar_width, self.bar_height = 120, 15
+        self.bar_width, self.bar_height = 150, 15
 
         self.image = pygame.Surface((self.width, self.height))
 
@@ -520,11 +520,10 @@ class BarGroup(pygame.sprite.Group):
 
             padding += self.padding_step
 
-        self.width = bar.bar.right + 10
+        self.width = bar.bar.right + 20
         self.height = bar.rect.top - self.coords.y + 50
 
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
-        self.exp_rect = pygame.Rect(self.coords, (60, 30))
 
         name_text = COMICORO[25].render('', True, BLACK)
         name_text_rect = name_text.get_rect(center=(
@@ -533,11 +532,6 @@ class BarGroup(pygame.sprite.Group):
         ))
 
         self.name_text = [name_text, name_text_rect]
-
-        exp_text = COMICORO[25].render('', True, BLACK)
-        exp_text_rect = exp_text.get_rect(center=self.exp_rect.center)
-
-        self.exp_text = [exp_text, exp_text_rect]
 
     def draw(self, targets: pygame.sprite.Group, always_show: bool = False):
         target = None

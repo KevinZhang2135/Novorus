@@ -1,8 +1,8 @@
 from constants import *
-from level import *
 from camera_group import *
-from lighting import *
+from level import *
 from ui import *
+from lighting import *
 from player import Player
 
 import pygame
@@ -21,7 +21,7 @@ class App:
             self.resolution,
             pygame.DOUBLEBUF | pygame.FULLSCREEN,
             16
-        ) 
+        )
 
         self.clock = pygame.time.Clock()
 
@@ -37,8 +37,11 @@ class App:
         # sprite groups
         self.camera_group = CameraGroup(self)
         self.collision_group = pygame.sprite.Group()
+
         self.player_group = pygame.sprite.GroupSingle()
         self.enemy_group = pygame.sprite.Group()
+        self.totem_group = pygame.sprite.Group()
+
         self.cursor_group = pygame.sprite.GroupSingle()
         self.light_group = LightGroup(self)
 
@@ -55,13 +58,13 @@ class App:
         # player
         self.player = Player(
             (0, 0),
-            (175, 175),
+            (TILE_SIZE * 1.75, ) * 2,
             self,
             (self.camera_group, self.player_group)
         )
 
         # levels and map
-        self.level = Level(STARTING_FLOOR, TILE_SIZE, self)
+        self.level = Level(STARTING_FLOOR, self)
 
         while self.state['runtime']:
             # event handling
@@ -74,8 +77,12 @@ class App:
             self.screen.fill((105, 162, 97))
 
             # redraws sprites and images
-            self.camera_group.custom_draw(self.player, show_hitboxes=False, show_rects=False)
-            
+            self.camera_group.custom_draw(
+                self.player, 
+                show_hitboxes=False, 
+                show_rects=False
+            )
+
             self.light_group.render_lighting()
 
             self.player_bars.draw(self.player_group, always_show=True)
@@ -85,7 +92,7 @@ class App:
             self.player.inventory.draw()
             self.level.draw()
             self.cursor_group.draw(self.screen)
-            
+
             # updates
             if self.state['unpaused'] and not self.level.transitioning:
                 self.camera_group.update()

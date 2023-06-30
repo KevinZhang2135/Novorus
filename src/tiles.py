@@ -52,22 +52,6 @@ class Chest(Sprite):
         self.collision()
 
 
-class LevelExit(Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(coords, size, game, groups)
-
-        self.image = IMAGES['dirt_hole'].copy()
-        self.image = pygame.transform.scale(self.image, size)
-
-        self.sprite_layer = 3
-
-    def update(self):
-        if pygame.sprite.spritecollide(self, self.game.player_group, False):
-            # checks if the player mask overlaps an enemy mask
-            if pygame.sprite.spritecollide(self, self.game.player_group, False, pygame.sprite.collide_mask):
-                self.game.level.floor_level += 1
-
-
 class Torch(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
@@ -121,3 +105,60 @@ class Torch(Sprite):
     def update(self):
         self.animation()
         self.draw_smoke()
+
+
+class Totem(Entity):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.name = 'Mysterious Totem'
+
+        # hitbox
+        self.set_hitbox(0.2, 0.325)
+
+        # stats
+        self.exp = 15
+
+        self.stats = Stats(300, 0, 0, 0, 0)
+
+        # animation
+        self.set_animation('enemies/totem')
+        self.animation_cooldown = 700 / len(self.animation_frames['idle'])
+        self.cooldown = self.animation_cooldown
+
+    def make_exit(self):
+        '''Creates portal when all totems are destroyed'''
+        if not self.game.totem_group.sprites():
+            LevelExit(
+                self.hitbox.midbottom, 
+                (TILE_SIZE * 0.5, ) * 2,
+                self.game,
+                self.game.camera_group
+            )
+
+    def update(self):
+        self.check_state()
+        self.check_death()
+        self.make_exit()
+        self.animation()
+
+
+class LevelExit(Sprite):
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
+
+        self.image = IMAGES['dirt_hole'].copy()
+        self.image = pygame.transform.scale(self.image, size)
+
+        self.sprite_layer = 3
+
+    def update(self):
+        if pygame.sprite.spritecollide(self, self.game.player_group, False):
+            # checks if the player mask overlaps an enemy mask
+            mask = pygame.mask.from_surface(self.image)
+            offset = (self.game.player.hitbox.x - self.rect.x,
+                      self.game.player.hitbox.y - self.rect.y)
+            
+            if mask.overlap(self.game.player.rect_mask, offset):
+                self.game.level.transitioning = True
+
+                

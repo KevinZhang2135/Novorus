@@ -1,12 +1,10 @@
 from constants import *
-from entity import *
-from sprite import Sprite
 from lighting import *
 from projectiles import *
+from entity import *
+from sprite import Sprite
 
 import pygame
-
-
 
 
 class Ghost(MeleeEnemy):
@@ -28,8 +26,8 @@ class Ghost(MeleeEnemy):
 
         # general animation
         self.set_animation('enemies/ghost')
-        self.image = self.animation_frames['idle'][self.frame]
         self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
+        self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
@@ -37,8 +35,6 @@ class Ghost(MeleeEnemy):
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
-
-        self.cooldown = self.animation_cooldown
 
 
 class Mimic(MeleeEnemy):
@@ -54,8 +50,8 @@ class Mimic(MeleeEnemy):
 
         # animation
         self.set_animation('enemies/mimic')
-        self.image = self.animation_frames['idle'][self.frame]
         self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
+        self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
@@ -64,13 +60,12 @@ class Mimic(MeleeEnemy):
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
 
-        self.cooldown = self.animation_cooldown
-
 
 class Sunflower(RangerEnemy):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Sunflower'
+        self.show_stats = False
 
         # hitbox
         self.set_hitbox(0.25, 0.4)
@@ -85,14 +80,12 @@ class Sunflower(RangerEnemy):
 
         # general animation
         self.set_animation('enemies/sunflower')
-        self.image = self.animation_frames['idle'][self.frame]
         self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
+        self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (2400 - self.stats.speed) \
             / len(self.animation_frames['attack'])
-
-        self.cooldown = self.animation_cooldown
 
     def face_enemy(self, target: Sprite):
         # does not turn towards target
@@ -102,7 +95,8 @@ class Sunflower(RangerEnemy):
         projectile_size = (max(*self.hitbox.size) * 2, ) * 2
 
         # creates projectile
-        projectile = Fireball(self.hitbox.midtop, projectile_size, self.game, self.game.camera_group)
+        projectile = Fireball(
+            self.hitbox.midtop, projectile_size, self.game, self.game.camera_group)
         projectile.set_target(
             target.hitbox.center,
             self.stats,
@@ -130,23 +124,22 @@ class Acorn(RangerEnemy):
 
         # general animation
         self.set_animation('enemies/acorn')
-        self.image = self.animation_frames['idle'][self.frame]
         self.animation_cooldown = 700 / len(self.animation_frames['idle'])
+        self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (1400 - self.stats.speed) \
             / len(self.animation_frames['attack'])
-
-        self.cooldown = self.animation_cooldown
+        
 
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size), ) * 2
 
         # creates projectile
-        projectile = AcornThorn(self.hitbox.center, projectile_size, self.game, self.game.camera_group)
+        projectile = AcornThorn(
+            self.hitbox.center, projectile_size, self.game, self.game.camera_group)
         projectile.set_target(
             target.hitbox.center,
             self.stats,
             self.game.player_group
         )
-                
