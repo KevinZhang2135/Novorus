@@ -156,9 +156,9 @@ class Level:
 
     def add_terrain(self, id: int, coords: list):
         sprites = [f'path{i}' for i in range(1, 32)] \
-            + [f'grassy{i}' for i in range(1, 11)] \
+            + [f'grassy{i}' for i in range(1, 12)] \
 
-        size = (100,) * 2
+        size = (TILE_SIZE,) * 2
         terrain_tile = Sprite(
             coords,
             size,
@@ -169,7 +169,20 @@ class Level:
         terrain_tile.set_image(sprites[id])
 
     def add_terrain_overlay(self, id: int, coords: list):
-        pass
+        sprites = [f'bricks{i}' for i in range(1, 5)] \
+            + [f'ditch{i}' for i in range(1, 5)] \
+            + [f'grassy_patch{i}' for i in range(1, 9)]
+
+        size = (TILE_SIZE,) * 2
+        terrain_tile = Sprite(
+            coords,
+            size,
+            self.game,
+            self.game.camera_group
+        )
+
+        terrain_tile.set_image(sprites[id])
+        terrain_tile.sprite_layer = 2
 
     def add_walls(self, id: int, coords: list):
         sprites = (
@@ -180,7 +193,7 @@ class Level:
             'brick_side'
         )
 
-        size = (100,) * 2
+        size = (TILE_SIZE,) * 2
         terrain_tile = Sprite(
             coords,
             size,
