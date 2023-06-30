@@ -155,10 +155,8 @@ class Level:
         self.game.player.set_coords(*coords)
 
     def add_terrain(self, id: int, coords: list):
-        sprites = [f'path{i}' for i in range(1, 11)] \
-            + [f'grassy{i}' for i in range(1, 3)] \
-            + [f'path{i}' for i in range(11, 32)] \
-            + [f'grassy{i}' for i in range(3, 11)]
+        sprites = [f'path{i}' for i in range(1, 32)] \
+            + [f'grassy{i}' for i in range(1, 11)] \
 
         size = (100,) * 2
         terrain_tile = Sprite(

@@ -103,9 +103,9 @@ class Player(Entity):
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
-                    # only attacks the second to last frame
+                    # only attacks the last frame
                     if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                            and self.frame == len(self.animation_frames['attack'] - 1)
+                            and self.frame == len(self.animation_frames['attack'])
                             and sprite not in targets_hit):
 
                         sprite.hurt(self.stats)
