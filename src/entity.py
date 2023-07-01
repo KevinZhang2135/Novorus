@@ -277,7 +277,7 @@ class Entity(Sprite):
                 round((self.hitbox.right + self.hitbox.centerx) / 2)),
             self.hitbox.top)
 
-        dodge = self.stats.dodge_chance >= random.randint(0, 100) / 100
+        dodge = self.stats.dodge_chance > random.randint(0, 100) / 100
         if not dodge:
             # randomizes damage between 0.9 and 1.1
             damage = randomize(stats.attack, 0.15)

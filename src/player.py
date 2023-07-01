@@ -18,12 +18,12 @@ class Player(Entity):
         self.set_hitbox(0.15, 0.3)
 
         # movement
-        self.max_velocity = 6
+        self.max_velocity = 15
 
         # stats
         self.exp = 0
 
-        self.stats = Stats(100, 50, 20, 0.05, 0.01)
+        self.stats = Stats(100, 50, 220, 0.05, 0.01)
 
         # general animation
         self.set_animation('player')

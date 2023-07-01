@@ -146,12 +146,14 @@ class LevelExit(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
-        self.image = IMAGES['dirt_hole'].copy()
-        self.image = pygame.transform.scale(self.image, size)
+        # animation
+        self.set_animation('exit')
+        self.animation_cooldown = 700 / len(self.animation_frames)
+        self.cooldown = self.animation_cooldown
 
         self.sprite_layer = 3
 
-    def update(self):
+    def transition_level(self):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):
             # checks if the player mask overlaps an enemy mask
             mask = pygame.mask.from_surface(self.image)
@@ -160,5 +162,9 @@ class LevelExit(Sprite):
             
             if mask.overlap(self.game.player.rect_mask, offset):
                 self.game.level.transitioning = True
+
+    def update(self):
+        self.transition_level()
+        self.animation()
 
                 

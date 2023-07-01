@@ -17,12 +17,12 @@ class Ghost(MeleeEnemy):
 
         # movement
         self.detection_distance = 350
-        self.max_velocity = 2
+        self.max_velocity = 3
 
         # stats
-        self.exp = 15
+        self.exp = 25
 
-        self.stats = Stats(30, 10, 4, 0.05, 0.1)
+        self.stats = Stats(100, 10, 10, 0.05, 0.05)
 
         # general animation
         self.set_animation('enemies/ghost')
@@ -32,9 +32,6 @@ class Ghost(MeleeEnemy):
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_frames['attack'])
-
-        if self.attack_cooldown < 200:
-            self.attack_cooldown = 200
 
 
 class Mimic(MeleeEnemy):
@@ -46,7 +43,7 @@ class Mimic(MeleeEnemy):
         # stats
         self.exp = 50
 
-        self.stats = Stats(300, 0, 15, 0.25, 0)
+        self.stats = Stats(350, 0, 15, 0.25, 0)
 
         # animation
         self.set_animation('enemies/mimic')
@@ -74,9 +71,9 @@ class Sunflower(RangerEnemy):
         self.attack_range = 300
 
         # stats
-        self.exp = 5
+        self.exp = 15
 
-        self.stats = Stats(20, 0, 15, 0, 0)
+        self.stats = Stats(20, 0, 25, 0, 0)
 
         # general animation
         self.set_animation('enemies/sunflower')
@@ -113,22 +110,22 @@ class Acorn(RangerEnemy):
         self.set_hitbox(0.5, 0.5)
 
         # movement & range
-        self.detection_distance = 700
-        self.attack_range = 1500
-        self.max_velocity = 3.5
+        self.detection_distance = 500
+        self.attack_range = 250
+        self.max_velocity = 4
 
         # stats
-        self.exp = 30
+        self.exp = 35
 
-        self.stats = Stats(10, 15, 8, 0.15, 0.1)
+        self.stats = Stats(30, 15, 7, 0.05, 0.05)
 
         # general animation
         self.set_animation('enemies/acorn')
-        self.animation_cooldown = 700 / len(self.animation_frames['idle'])
+        self.animation_cooldown = 800 / len(self.animation_frames['idle'])
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
-        self.attack_cooldown = (1400 - self.stats.speed) \
+        self.attack_cooldown = (1600 - self.stats.speed) \
             / len(self.animation_frames['attack'])
         
 
