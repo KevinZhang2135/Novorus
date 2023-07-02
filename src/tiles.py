@@ -2,7 +2,7 @@ from constants import *
 from lighting import *
 from particles import *
 from sprite import Sprite
-from entity import Entity
+from entity import *
 
 import pygame
 
@@ -113,7 +113,7 @@ class Totem(Entity):
         self.name = 'Mysterious Totem'
 
         # hitbox
-        self.set_hitbox(0.2, 0.325)
+        self.set_hitbox(0.225, 0.375)
 
         # stats
         self.exp = 15
@@ -146,6 +146,9 @@ class LevelExit(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
+        # hitbox
+        self.set_hitbox(0.7, 0.5)
+
         # animation
         self.set_animation('exit')
         self.animation_cooldown = 700 / len(self.animation_frames)
@@ -157,8 +160,10 @@ class LevelExit(Sprite):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):
             # checks if the player mask overlaps an enemy mask
             mask = pygame.mask.from_surface(self.image)
-            offset = (self.game.player.hitbox.x - self.rect.x,
-                      self.game.player.hitbox.y - self.rect.y)
+            offset = (
+                self.game.player.hitbox.x - self.rect.x,
+                self.game.player.hitbox.y - self.rect.y
+            )
             
             if mask.overlap(self.game.player.rect_mask, offset):
                 self.game.level.transitioning = True

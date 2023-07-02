@@ -274,8 +274,10 @@ class Entity(Sprite):
         text_coords = (
             random.randint(
                 round((self.hitbox.left + self.hitbox.centerx) / 2),
-                round((self.hitbox.right + self.hitbox.centerx) / 2)),
-            self.hitbox.top)
+                round((self.hitbox.right + self.hitbox.centerx) / 2)
+            ),
+            self.hitbox.top
+        )
 
         dodge = self.stats.dodge_chance > random.randint(0, 100) / 100
         if not dodge:
@@ -358,8 +360,10 @@ class MeleeEnemy(Entity):
 
     def movement(self):
         '''Handles movement'''
-        self.acceleration = pygame.math.Vector2(self.game.player.rect.centerx - self.rect.centerx,
-                                                self.game.player.rect.centery - self.rect.centery)
+        self.acceleration = pygame.math.Vector2(
+            self.game.player.rect.centerx - self.rect.centerx,
+            self.game.player.rect.centery - self.rect.centery
+        )
 
         # if target within detection range
         if (self.acceleration.length() < self.detection_distance
@@ -399,8 +403,10 @@ class MeleeEnemy(Entity):
         for sprite in colliding_sprites:
             # checks if mask overlaps an enemy hitbox
             mask = pygame.mask.from_surface(self.image)
-            offset = (sprite.hitbox.x - self.rect.x,
-                      sprite.hitbox.y - self.rect.y)
+            offset = (
+                sprite.hitbox.x - self.rect.x,
+                sprite.hitbox.y - self.rect.y
+            )
 
             # when attacking, whole sprite is used as the mask for attack
             # damage is done to hitbox

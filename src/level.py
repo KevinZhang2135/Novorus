@@ -13,8 +13,6 @@ import random
 
 class Level:
     def __init__(self, floor_level: int, game):
-        global player
-
         self.game = game
 
         self.size = pygame.math.Vector2(0, 0)
@@ -95,6 +93,7 @@ class Level:
             with open(os.path.join(f'{LEVEL_PATH}/{self.floor_level}', path)) as file:
                 csv_file = list(csv.reader(file))
                 self.create_tile_group(csv_file, path)
+
                 if not row:  # determines the dimensions of the first csv_file
                     self.size.x = len(list(csv_file)[0]) * TILE_SIZE
                     self.size.y = len(list(csv_file)) * TILE_SIZE
@@ -220,7 +219,6 @@ class Level:
         )
 
         size = (50, 80, 90, 60)
-
         enemy = enemies[id](
             coords,
             [size[id]] * 2,
@@ -256,7 +254,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('flower1')
                 decor.set_hitbox(0.25, 0.4)
@@ -274,7 +273,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('bush1')
                 decor.set_hitbox(0.6, 0.5)
@@ -292,7 +292,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('bush2')
                 decor.set_hitbox(0.6, 0.3)
@@ -310,7 +311,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('rock1')
                 decor.set_hitbox(0.4, 0.3, offsety=0.1)
@@ -328,7 +330,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('rock2')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
@@ -346,7 +349,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('rock3')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
@@ -364,7 +368,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('rock4')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
@@ -382,7 +387,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('oak_tree')
                 decor.set_hitbox(0.4, 0.6)
@@ -400,7 +406,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('pine_tree')
                 decor.set_hitbox(0.3, 0.6)
@@ -418,7 +425,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('sakura_tree')
                 decor.set_hitbox(0.3, 0.6)
@@ -436,7 +444,8 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    self.game.camera_group)
+                    self.game.camera_group
+                )
 
                 decor.set_image('dead_tree')
                 decor.set_hitbox(0.3, 0.65)

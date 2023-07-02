@@ -18,12 +18,12 @@ class Player(Entity):
         self.set_hitbox(0.15, 0.3)
 
         # movement
-        self.max_velocity = 15
+        self.max_velocity = 5
 
         # stats
         self.exp = 0
 
-        self.stats = Stats(100, 50, 220, 0.05, 0.01)
+        self.stats = Stats(100, 50, 20, 0.05, 0.01)
 
         # general animation
         self.set_animation('player')
@@ -99,9 +99,9 @@ class Player(Entity):
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
-                    # only attacks the last frame
+                    # only attacks the penultimate frame
                     if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                            and self.frame == len(self.animation_frames['attack'])
+                            and self.frame == len(self.animation_frames['attack']) - 1
                             and sprite not in targets_hit):
 
                         sprite.hurt(self.stats)

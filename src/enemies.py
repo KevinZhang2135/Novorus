@@ -93,7 +93,12 @@ class Sunflower(RangerEnemy):
 
         # creates projectile
         projectile = Fireball(
-            self.hitbox.midtop, projectile_size, self.game, self.game.camera_group)
+            self.hitbox.midtop, 
+            projectile_size, 
+            self.game, 
+            self.game.camera_group
+        )
+        
         projectile.set_target(
             target.hitbox.center,
             self.stats,

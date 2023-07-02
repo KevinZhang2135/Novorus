@@ -70,10 +70,10 @@ def randomize(value: int, offset: float):
     )
 
 
-def color_image(image, color: list, transparency: int = 255):
+def color_image(image: pygame.Surface, color: list, transparency: int = 255):
     '''Recolors a surface'''
     image = image.copy()
-    
+
     # zeros out rgb and preserves original transparency
     image.fill((0, 0, 0, 255), None, special_flags=pygame.BLEND_RGBA_MULT)
 
@@ -84,3 +84,12 @@ def color_image(image, color: list, transparency: int = 255):
         image.set_alpha(transparency)
 
     return image
+
+
+def line_rect_intersect(vector_origin, vector: pygame.math.Vector2, rect: pygame.Rect):
+    '''Determines if a vector shot from the vector origin intersects with rectangle'''
+    # rectangles are made of vectors
+    rect_vectors = [
+        
+    ]
+
