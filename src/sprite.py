@@ -76,7 +76,7 @@ class Sprite(pygame.sprite.Sprite):
     def update_shadow(self):
         if self.draw_shadows:
             mask = pygame.mask.from_surface(self.image)
-            mask = [(x + self.rect.x + 100, y + self.rect.y + 100)
+            mask = [(x + self.rect.x, y)
                     for x, y in mask.outline()]
             
             self.shadows = mask
