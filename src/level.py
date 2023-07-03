@@ -40,7 +40,6 @@ class Level:
 
         self.floor_level_text = [text, text_rect]
         self.read_csv_level()
-        self.update_lighting()
 
     def transition_level(self):
         # draws rectangle to cover screen as level transitions
@@ -106,9 +105,6 @@ class Level:
             if sprite not in self.game.player_group:
                 sprite.kill()
                 del sprite
-
-    def update_lighting(self):
-        pass
 
     def create_tile_group(self, csv_file, path: str):
         create_tile = {
@@ -464,7 +460,7 @@ class Level:
                     coords,
                     size,
                     self.game,
-                    (self.game.camera_group, self.game.light_group)
+                    self.game.camera_group
                 )
 
     def add_totems(self, id: int, coords: list):

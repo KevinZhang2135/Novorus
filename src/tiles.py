@@ -1,5 +1,4 @@
 from constants import *
-from lighting import *
 from particles import *
 from sprite import Sprite
 from entity import *
@@ -10,9 +9,13 @@ import pygame
 class Chest(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
+        self.opened = False
 
         # hitbox
         self.hitbox = self.rect.scale_by(0.55, 0.45)
+
+        # render
+        self.sprite_layer = 3
 
         # sprites
         self.chest_closed = IMAGES['chest_closed'].copy()
@@ -28,9 +31,6 @@ class Chest(Sprite):
         )
 
         self.image = self.chest_closed
-
-        self.opened = False
-        self.sprite_layer = 3
 
     def collision(self):
         # checks if the distance of the sprites are within collision distance
@@ -59,12 +59,13 @@ class Torch(Sprite):
         # hitbox
         self.set_hitbox(0.15, 0.3)
 
+        # render
+        self.sprite_layer = 4
+
         # animation
         self.set_animation('decoration/animated/torch')
         self.animation_cooldown = 600 / len(self.animation_frames)
         self.cooldown = self.animation_cooldown
-
-        self.sprite_layer = 4
 
         # smoke
         self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
@@ -73,17 +74,6 @@ class Torch(Sprite):
         self.smoke_frames = len(
             os.listdir(f'{SPRITE_PATH}/particles/smoke')
         )
-
-        # light effects
-        self.light_size = pygame.math.Vector2(500, 500)
-
-        self.light = IMAGES['soft_circle'].copy()
-        self.light = pygame.transform.scale(
-            self.light, 
-            [int(dimension) for dimension in self.light_size]
-        )
-
-        self.light = color_image(self.light, MELLOW_YELLOW, transparency=100)
 
     def draw_smoke(self):
         "Creates smoke every interval"
@@ -116,8 +106,7 @@ class Totem(Entity):
         self.set_hitbox(0.225, 0.375)
 
         # stats
-        self.exp = 15
-
+        self.exp = 25
         self.stats = Stats(300, 0, 0, 0, 0)
 
         # animation
@@ -149,12 +138,14 @@ class LevelExit(Sprite):
         # hitbox
         self.set_hitbox(0.7, 0.5)
 
+        # render
+        self.sprite_layer = 3
+
         # animation
         self.set_animation('exit')
         self.animation_cooldown = 700 / len(self.animation_frames)
         self.cooldown = self.animation_cooldown
 
-        self.sprite_layer = 3
 
     def transition_level(self):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):

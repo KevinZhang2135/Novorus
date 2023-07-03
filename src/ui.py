@@ -414,12 +414,15 @@ class Bar(pygame.sprite.Sprite):
         super().__init__(groups)
         self.display_surface = pygame.display.get_surface()
 
+        # images and rects
         self.width, self.height = 45, 45
         self.bar_width, self.bar_height = 150, 15
 
         self.image = pygame.Surface((self.width, self.height))
 
         self.rect = self.image.get_rect(topleft=coords)
+
+        # bar rect
         self.bar = pygame.Rect(
             self.rect.right,
             self.rect.centery - self.bar_height / 2,
@@ -429,6 +432,7 @@ class Bar(pygame.sprite.Sprite):
 
         self.total_bar = self.bar.copy()
 
+        # bar text
         text = COMICORO[20].render(str(""), True, BLACK)
         text_rect = text.get_rect(midleft=self.bar.midleft)
         text_rect.left += self.total_bar.width * 0.25
@@ -578,11 +582,13 @@ class BarGroup(pygame.sprite.Group):
 
             padding += self.padding_step
 
+        # rects
         self.width = bar.bar.right + 20
         self.height = bar.rect.top - self.coords.y + 50
 
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
 
+        # name text
         name_text = COMICORO[25].render('', True, BLACK)
         name_text_rect = name_text.get_rect(
             center=(
@@ -616,7 +622,7 @@ class BarGroup(pygame.sprite.Group):
                 3,
             )
 
-            # displays target level
+            # displays target name
             self.name_text[0] = COMICORO[25].render(
                 f'{target.name}',
                 True,
@@ -641,12 +647,16 @@ class Cursor(Sprite):
         self.display_surface = pygame.display.get_surface()
         self.game = game
 
+        # render
+        self.sprite_layer = 4
+
+        # images and rects
         self.image = IMAGES['cursor'].copy()
         self.image = pygame.transform.scale(self.image, size)
 
         self.rect = self.image.get_rect(center=(0, 0))
 
-        self.sprite_layer = 4
+        
 
     def offset_mouse_pos(self):
         """Returns the mouse position in relation to the offset screen"""

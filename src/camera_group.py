@@ -42,46 +42,61 @@ class CameraGroup(pygame.sprite.Group):
                 - self.half_height \
 
 
-    def custom_draw(self, player, show_hitboxes: bool = False, show_rects: bool = False):
+    def render(self, player, show_hitboxes: bool = False, show_rects: bool = False):
         '''Draws the screen according to player movement'''
         self.center_target(player)
-        
+
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
+
             self.display_surface.blit(sprite.image, offset_pos)
-
-            # draws hitboxes
-            if show_hitboxes:
-                hitbox = pygame.Rect(
-                    sprite.hitbox.x - self.offset.x,
-                    sprite.hitbox.y - self.offset.y,
-                    sprite.hitbox.width,
-                    sprite.hitbox.height
+            if sprite.draw_shadows:
+                #print(tuple(map(lambda coord: coord + offset_pos, sprite.shadows)))
+                pygame.draw.polygon(
+                    self.display_surface, 
+                    (0, 0, 0), 
+                    tuple(map(lambda coord: coord - offset_pos, sprite.shadows))
                 )
 
-                pygame.draw.rect(
-                    self.display_surface,
-                    (255, 0, 0),
-                    hitbox,
-                    1
-                )
+            # draws sprite hitboxes
+            show_hitboxes and self.draw_hitboxes(sprite)
 
             # draws sprite rects
-            if show_rects:
-                rect = pygame.Rect(
-                    sprite.rect.x - self.offset.x,
-                    sprite.rect.y - self.offset.y,
-                    sprite.rect.width,
-                    sprite.rect.height
-                )
+            show_rects and self.draw_rects(sprite)
 
-                pygame.draw.rect(
-                    self.display_surface,
-                    (255, 255, 255),
-                    rect,
-                    1
-                )
+    def draw_shadows(self, sprite):
+        pass
+
+    def draw_hitboxes(self, sprite):
+        hitbox = pygame.Rect(
+            sprite.hitbox.x - self.offset.x,
+            sprite.hitbox.y - self.offset.y,
+            sprite.hitbox.width,
+            sprite.hitbox.height
+        )
+
+        pygame.draw.rect(
+            self.display_surface,
+            (255, 0, 0),
+            hitbox,
+            1
+        )
+
+    def draw_rects(self, sprite):
+        rect = pygame.Rect(
+            sprite.rect.x - self.offset.x,
+            sprite.rect.y - self.offset.y,
+            sprite.rect.width,
+            sprite.rect.height
+        )
+
+        pygame.draw.rect(
+            self.display_surface,
+            (255, 255, 255),
+            rect,
+            1
+        )
 
     def update(self):
         "Updates all sprites"

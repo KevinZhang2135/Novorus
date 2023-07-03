@@ -1,5 +1,4 @@
 from constants import *
-from lighting import *
 from particles import *
 from sprite import Sprite
 
@@ -462,8 +461,10 @@ class RangerEnemy(Entity):
 
         # movement
         self.detection_distance = 0
-        self.attack_range = 0
         self.max_velocity = 0
+
+        # attack
+        self.attack_range = 0
 
     def movement(self):
         self.acceleration = pygame.math.Vector2(

@@ -2,7 +2,6 @@ from constants import *
 from camera_group import *
 from level import *
 from ui import *
-from lighting import *
 from player import Player
 
 import pygame
@@ -43,7 +42,6 @@ class App:
         self.totem_group = pygame.sprite.Group()
 
         self.cursor_group = pygame.sprite.GroupSingle()
-        self.light_group = LightGroup(self)
 
         # menu
         self.menu = Menu(self)
@@ -77,13 +75,11 @@ class App:
             self.screen.fill((105, 162, 97))
 
             # redraws sprites and images
-            self.camera_group.custom_draw(
+            self.camera_group.render(
                 self.player, 
                 show_hitboxes=False, 
                 show_rects=False
             )
-
-            self.light_group.render_lighting()
 
             self.player_bars.draw(self.player_group, always_show=True)
             self.enemy_bars.draw(self.enemy_group)

@@ -1,5 +1,4 @@
 from constants import *
-from lighting import *
 from projectiles import *
 from entity import *
 from sprite import Sprite
@@ -21,7 +20,6 @@ class Ghost(MeleeEnemy):
 
         # stats
         self.exp = 25
-
         self.stats = Stats(100, 10, 10, 0.05, 0.05)
 
         # general animation
@@ -42,7 +40,6 @@ class Mimic(MeleeEnemy):
 
         # stats
         self.exp = 50
-
         self.stats = Stats(350, 0, 15, 0.25, 0)
 
         # animation
@@ -72,7 +69,6 @@ class Sunflower(RangerEnemy):
 
         # stats
         self.exp = 15
-
         self.stats = Stats(20, 0, 25, 0, 0)
 
         # general animation
@@ -121,16 +117,15 @@ class Acorn(RangerEnemy):
 
         # stats
         self.exp = 35
-
-        self.stats = Stats(30, 15, 7, 0.05, 0.05)
+        self.stats = Stats(30, 15, 5, 0.05, 0.05)
 
         # general animation
         self.set_animation('enemies/acorn')
-        self.animation_cooldown = 800 / len(self.animation_frames['idle'])
+        self.animation_cooldown = 600 / len(self.animation_frames['idle'])
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
-        self.attack_cooldown = (1600 - self.stats.speed) \
+        self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_frames['attack'])
         
 

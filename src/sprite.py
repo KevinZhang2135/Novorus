@@ -1,13 +1,14 @@
 from constants import *
 
 import pygame
+import math
 
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(groups)
         self.game = game
-        
+
         self.coords = pygame.math.Vector2(*coords)
         self.size = pygame.math.Vector2(*size)
 
@@ -22,6 +23,7 @@ class Sprite(pygame.sprite.Sprite):
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
         self.rect_mask.fill()
 
+        # render
         self.sprite_layer = 0
 
         # animation
@@ -31,6 +33,10 @@ class Sprite(pygame.sprite.Sprite):
         self.animation_cooldown = 0
         self.animation_time = pygame.time.get_ticks()
         self.animation_frames = []
+
+        # shadows
+        self.draw_shadows = False
+        self.shadows = []
 
     def set_image(self, image_file: str):
         self.image = IMAGES[image_file].copy()
@@ -54,7 +60,7 @@ class Sprite(pygame.sprite.Sprite):
         num_of_frames = len(os.listdir(
             f'{SPRITE_PATH}/{filepath}'
         ))
-            
+
         for i in range(num_of_frames):
             image = IMAGES[f"{filepath.split('/')[-1]}{i + 1}"].copy()
             image = pygame.transform.scale(
@@ -66,6 +72,20 @@ class Sprite(pygame.sprite.Sprite):
 
         # sets image
         self.image = self.animation_frames[self.frame]
+
+    def update_shadow(self):
+        if self.draw_shadows:
+            mask = pygame.mask.from_surface(self.image)
+            mask = [(x + self.rect.x + 100, y + self.rect.y + 100)
+                    for x, y in mask.outline()]
+            
+            self.shadows = mask
+
+            # self.shadows.clear()
+            # for x, y in mask:
+            #     shadow_height = 0
+            #     shadow_width = 0
+            #     self.shadows.append((x + shadow_width, y + shadow_height))
 
     def animation(self):
         '''Handles animation'''
@@ -82,4 +102,3 @@ class Sprite(pygame.sprite.Sprite):
             if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
                 self.animation_time = pygame.time.get_ticks()
                 self.frame += 1
-

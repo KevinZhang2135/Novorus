@@ -11,20 +11,20 @@ class Projectile(Entity):
         self.facing = 'right'
         self.target_group = None
 
+        # render
+        self.alpha = 255
+        self.angle = 0
+
+        # fade
         self.fade = True
         self.fade_time = pygame.time.get_ticks()
-        self.fade_cooldown = 300  # time for the particle to fade 10 alpha
-        self.alpha = 255
-
-        # appearance
-        self.angle = 0
+        self.fade_cooldown = 300
 
         # attack
         self.stats = None
 
         self.pierce = 0
         self.max_pierce = 1
-
         self.damaged_targets = []
 
         # hitboxes are not used for collision

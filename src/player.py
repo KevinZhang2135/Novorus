@@ -1,5 +1,4 @@
 from ui import *
-from lighting import *
 from particles import *
 from projectiles import *
 
@@ -22,7 +21,6 @@ class Player(Entity):
 
         # stats
         self.exp = 0
-
         self.stats = Stats(100, 50, 20, 0.05, 0.01)
 
         # general animation
@@ -37,9 +35,12 @@ class Player(Entity):
         if self.attack_cooldown < 50:
             self.attack_cooldown = 50
 
+        # shadows
+        self.draw_shadows = True
+        self.update_shadow()
+
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
-        self.inventory.add_item('wood_sword', 1)
 
     def movement(self):
         '''Handles movement'''
@@ -200,3 +201,4 @@ class Player(Entity):
         self.check_state()
         self.check_death()
         self.animation()
+        self.update_shadow()

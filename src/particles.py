@@ -12,16 +12,18 @@ class Particle(Sprite):
         self.acceleration = pygame.math.Vector2()
         self.velocity = pygame.math.Vector2()
 
+        # render
+        self.alpha = 255
+        self.sprite_layer = 4
+
         # fade
         self.fade = True
         self.fade_time = pygame.time.get_ticks()
         self.fade_cooldown = randomize(1000, 0.1)
 
-        self.alpha = 255
-        self.sprite_layer = 3
-
+        # hitboxes are not used for collision
         self.set_hitbox(0, 0)
-        self.sprite_layer = 4
+        
 
     def movement(self):
         '''Handles movement'''
