@@ -31,7 +31,7 @@ DARK_BROWN = (104, 84, 66)
 
 # tile pixel size
 TILE_SIZE = 100
-STARTING_FLOOR = 1
+STARTING_FLOOR = 2
 
 # file paths
 LEVEL_PATH = '../levels'
@@ -85,11 +85,4 @@ def color_image(image: pygame.Surface, color: list, transparency: int = 255):
 
     return image
 
-
-def line_rect_intersect(vector_origin, vector: pygame.math.Vector2, rect: pygame.Rect):
-    '''Determines if a vector shot from the vector origin intersects with rectangle'''
-    # rectangles are made of vectors
-    rect_vectors = [
-        
-    ]
 

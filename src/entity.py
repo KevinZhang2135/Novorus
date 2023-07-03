@@ -75,7 +75,7 @@ class Entity(Sprite):
             except FileNotFoundError:
                 unused_types.append(type)
                 continue
-            
+
             for i in range(num_of_frames):
                 image = IMAGES[f"{filepath.split('/')[-1]}_{type}{i + 1}"].copy()
                 image = pygame.transform.scale(
@@ -91,6 +91,21 @@ class Entity(Sprite):
 
         # sets image
         self.image = self.animation_frames[self.action][self.frame]
+
+    def line_of_sight(self, point):
+        distance = dist(self.hitbox.center, point)
+
+        # filters walls beyond point
+        walls = [
+            wall for wall in self.game.collision_group.sprites()
+            if dist(self.hitbox.center, wall.hitbox.center) < distance
+        ]
+
+        for wall in walls:
+            if wall.hitbox.clipline(self.hitbox.center, point):
+                return False
+
+        return True
 
     def movement(self):
         '''Handles movement'''
@@ -365,9 +380,12 @@ class MeleeEnemy(Entity):
             self.game.player.rect.centery - self.rect.centery
         )
 
-        # if target within detection range
+        line_of_sight = self.line_of_sight(self.game.player.hitbox.center)
+
+        # if target within detection range and line of sight
         if (self.acceleration.length() < self.detection_distance
-                and not self.in_combat):
+                and not self.in_combat
+                and line_of_sight):
 
             if self.acceleration.length() > 0:
                 self.acceleration.scale_to_length(self.max_velocity)
@@ -416,9 +434,9 @@ class MeleeEnemy(Entity):
                 self.show_stats = True
                 if not self.attacking:
                     self.frame = 0
-                    self.attacking = True 
+                    self.attacking = True
                     self.cooldown = self.attack_cooldown
-                
+
                 self.face_enemy(sprite)
 
                 # only attacks the last frame
@@ -458,10 +476,13 @@ class RangerEnemy(Entity):
             self.game.player.hitbox.center
         )
 
-        # if target within detection range
+        line_of_sight = self.line_of_sight(self.game.player.hitbox.center)
+
+        # if target within detection range and line of sight
         if (self.acceleration.length() < self.detection_distance
                 and player_distance > self.attack_range
-                and not self.attacking):
+                and not self.attacking
+                and line_of_sight):
 
             if self.acceleration.length() > 0:
                 self.acceleration.scale_to_length(self.max_velocity)
@@ -488,12 +509,14 @@ class RangerEnemy(Entity):
 
         # attacks when target is within attack range
         if (len(targets) > 0
-                and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range):
+                and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range
+                and self.line_of_sight(targets[0].hitbox.center)):
+
             self.in_combat = True
             self.cooldown = self.attack_cooldown
 
-            self.face_enemy(self.game.player)
-            
+            self.face_enemy(targets[0])
+
             # only attacks the last frame
             if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown):
                 # trigger attack animation
@@ -507,7 +530,6 @@ class RangerEnemy(Entity):
                     self.attacking = False
 
                     self.create_projectile(targets[0])
-                    
 
         # cancels attack when target moves outside attack range
         else:
