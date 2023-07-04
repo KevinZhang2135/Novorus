@@ -62,6 +62,7 @@ class Entity(Sprite):
             'attack': []
         }
 
+
     def set_animation(self, filepath: str):
         unused_types = []
         for type in self.animation_frames:

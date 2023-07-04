@@ -6,13 +6,13 @@ import pygame
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, game):
         super().__init__()
-        self.display_surface = pygame.display.get_surface()
+        self.screen = pygame.display.get_surface()
         self.game = game
 
         # camera offset
         self.offset = pygame.math.Vector2()
-        self.half_width = self.display_surface.get_width() / 2
-        self.half_height = self.display_surface.get_height() / 2
+        self.half_width = self.screen.get_width() / 2
+        self.half_height = self.screen.get_height() / 2
 
     def center_target(self, target):
         self.offset.x = -TILE_SIZE / 2
@@ -21,7 +21,7 @@ class CameraGroup(pygame.sprite.Group):
         # stops scrolling screen when the player is past right edge of the screen
         if (target.rect.centerx >= self.game.level.size.x - self.half_width):
             self.offset.x = self.game.level.size.x \
-                - self.display_surface.get_width() \
+                - self.screen.get_width() \
                 - TILE_SIZE / 2
 
         # starts scrolling screen when the player is in the middle of the screen
@@ -33,14 +33,13 @@ class CameraGroup(pygame.sprite.Group):
         # stops scrolling screen when the player is past bottom edge of the screen
         if (target.rect.centery >= self.game.level.size.y - self.half_height - TILE_SIZE / 2):
             self.offset.y = self.game.level.size.y \
-                - self.display_surface.get_height() \
+                - self.screen.get_height() \
                 - TILE_SIZE / 2
 
         # starts scrolling screen when the player is in the middle of the screen
         elif (target.rect.centery > self.half_height - TILE_SIZE / 2):
             self.offset.y = target.rect.centery \
-                - self.half_height \
-
+                - self.half_height
 
     def render(self, player, show_hitboxes: bool = False, show_rects: bool = False):
         '''Draws the screen according to player movement'''
@@ -49,7 +48,7 @@ class CameraGroup(pygame.sprite.Group):
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
-            self.display_surface.blit(sprite.image, offset_pos)
+            self.screen.blit(sprite.image, offset_pos)
 
             # draws sprite hitboxes
             show_hitboxes and self.draw_hitboxes(sprite)
@@ -58,7 +57,8 @@ class CameraGroup(pygame.sprite.Group):
             show_rects and self.draw_rects(sprite)
 
     def draw_shadows(self, sprite):
-        pass
+        shadow = color_image(sprite.image.copy(), (0, 0, 0), transparency=255)
+        self.screen.blit(shadow, sprite.rect.topleft - self.offset)
 
     def draw_hitboxes(self, sprite):
         hitbox = pygame.Rect(
@@ -69,7 +69,7 @@ class CameraGroup(pygame.sprite.Group):
         )
 
         pygame.draw.rect(
-            self.display_surface,
+            self.screen,
             (255, 0, 0),
             hitbox,
             1
@@ -84,7 +84,7 @@ class CameraGroup(pygame.sprite.Group):
         )
 
         pygame.draw.rect(
-            self.display_surface,
+            self.screen,
             (255, 255, 255),
             rect,
             1

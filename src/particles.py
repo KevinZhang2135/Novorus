@@ -14,7 +14,7 @@ class Particle(Sprite):
 
         # render
         self.alpha = 255
-        self.sprite_layer = 4
+        self.sprite_layer = 5
 
         # fade
         self.fade = True
@@ -24,7 +24,6 @@ class Particle(Sprite):
         # hitboxes are not used for collision
         self.set_hitbox(0, 0)
         
-
     def movement(self):
         '''Handles movement'''
         self.velocity += self.acceleration

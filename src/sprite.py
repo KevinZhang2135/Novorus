@@ -1,7 +1,6 @@
 from constants import *
 
 import pygame
-import math
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -19,10 +18,6 @@ class Sprite(pygame.sprite.Sprite):
         self.hitbox = pygame.Rect(self.rect)
         self.hitbox_offset = pygame.math.Vector2()
 
-        # masks
-        self.rect_mask = pygame.mask.Mask(self.hitbox.size)
-        self.rect_mask.fill()
-
         # render
         self.sprite_layer = 0
 
@@ -33,6 +28,10 @@ class Sprite(pygame.sprite.Sprite):
         self.animation_cooldown = 0
         self.animation_time = pygame.time.get_ticks()
         self.animation_frames = []
+
+        # masks
+        self.rect_mask = pygame.mask.Mask(self.hitbox.size)
+        self.rect_mask.fill()
 
     def set_image(self, image_file: str):
         self.image = IMAGES[image_file].copy()

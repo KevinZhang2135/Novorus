@@ -117,7 +117,7 @@ class Acorn(RangerEnemy):
 
         # stats
         self.exp = 35
-        self.stats = Stats(30, 15, 5, 0.05, 0.05)
+        self.stats = Stats(30, 15, 10, 0.05, 0.05)
 
         # general animation
         self.set_animation('enemies/acorn')
@@ -125,7 +125,7 @@ class Acorn(RangerEnemy):
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
-        self.attack_cooldown = (1200 - self.stats.speed) \
+        self.attack_cooldown = (1800 - self.stats.speed) \
             / len(self.animation_frames['attack'])
         
 
@@ -134,7 +134,12 @@ class Acorn(RangerEnemy):
 
         # creates projectile
         projectile = AcornThorn(
-            self.hitbox.center, projectile_size, self.game, self.game.camera_group)
+            self.hitbox.center,
+            projectile_size,
+            self.game, 
+            self.game.camera_group
+        )
+        
         projectile.set_target(
             target.hitbox.center,
             self.stats,

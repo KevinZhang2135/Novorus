@@ -19,22 +19,22 @@ class Level:
         self.rect = pygame.Rect(0, 0, 0, 0)
 
         self.floor_level = floor_level
-        self.display_surface = pygame.display.get_surface()
+        self.screen = pygame.display.get_surface()
 
         self.level_updated = False
         self.transitioning = False
         self.level_transition_rect = pygame.Rect(
-            -self.display_surface.get_width(),
+            -self.screen.get_width(),
             0,
-            self.display_surface.get_width(),
-            self.display_surface.get_height()
+            self.screen.get_width(),
+            self.screen.get_height()
         )
 
         text = COMICORO[50].render(f'Floor {self.floor_level}', True, BLACK)
         text_rect = text.get_rect(
             center=(
-                self.display_surface.get_width() / 2,
-                self.display_surface.get_height() - 50
+                self.screen.get_width() / 2,
+                self.screen.get_height() - 50
             )
         )
 
@@ -54,7 +54,6 @@ class Level:
                 # updates level map
                 self.clear_level()
                 self.read_csv_level()
-                self.update_lighting()
 
                 # updates floor level text
                 text = COMICORO[50].render(
@@ -69,8 +68,8 @@ class Level:
                 self.game.player.velocity.y = 0
 
             # finishes updating
-            if self.level_transition_rect.x > self.display_surface.get_width():
-                self.level_transition_rect.x = -self.display_surface.get_width()
+            if self.level_transition_rect.x > self.screen.get_width():
+                self.level_transition_rect.x = -self.screen.get_width()
 
                 self.transitioning = False
                 self.level_updated = False
@@ -472,11 +471,11 @@ class Level:
         )
 
     def draw(self):
-        self.display_surface.blit(*self.floor_level_text)
+        self.screen.blit(*self.floor_level_text)
 
         if self.transitioning:
             pygame.draw.rect(
-                self.display_surface,
+                self.screen,
                 BLACK,
                 self.level_transition_rect
             )

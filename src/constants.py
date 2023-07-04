@@ -70,7 +70,7 @@ def randomize(value: int, offset: float):
     )
 
 
-def color_image(image: pygame.Surface, color: list, transparency: int = 255):
+def color_image(image: pygame.Surface, color: list, transparency=255):
     '''Recolors a surface'''
     image = image.copy()
 
