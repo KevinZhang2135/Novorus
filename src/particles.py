@@ -65,7 +65,7 @@ class Dust(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
-        self.set_image(f'dust{random.randint(1, 3)}')
+        self.set_animation(f'dust{random.randint(1, 3)}')
         self.velocity.y = -2
 
 

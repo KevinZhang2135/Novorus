@@ -38,6 +38,11 @@ class Player(Entity):
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
 
+
+
+        self.draw_shadow = True
+        self.set_shadow()
+
     def movement(self):
         '''Handles movement'''
         keys = pygame.key.get_pressed()
@@ -197,3 +202,6 @@ class Player(Entity):
         self.check_state()
         self.check_death()
         self.animation()
+
+
+        self.set_shadow()

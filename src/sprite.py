@@ -1,6 +1,7 @@
 from constants import *
 
 import pygame
+import math
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -32,6 +33,10 @@ class Sprite(pygame.sprite.Sprite):
         # masks
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
         self.rect_mask.fill()
+
+        # shadows
+        self.draw_shadow = False
+        self.shadow = []
 
     def set_image(self, image_file: str):
         self.image = IMAGES[image_file].copy()
@@ -78,3 +83,16 @@ class Sprite(pygame.sprite.Sprite):
             if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
                 self.animation_time = pygame.time.get_ticks()
                 self.frame += 1
+
+    def set_shadow(self):
+        '''Experimental'''
+        if self.draw_shadow:
+            mask = pygame.mask.from_surface(self.image).outline(every=2)
+            mask = [(x + self.rect.x, y + self.rect.y)
+                    for x, y in mask]
+            
+            self.shadow.clear()
+            for x, y in mask:
+                shadow_height = (self.hitbox.bottom - y) * 0.5
+                shadow_width = shadow_height * math.tan(math.pi * 1 / 3)
+                self.shadow.append((x + shadow_width, y + shadow_height))

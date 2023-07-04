@@ -62,7 +62,6 @@ class Entity(Sprite):
             'attack': []
         }
 
-
     def set_animation(self, filepath: str):
         unused_types = []
         for type in self.animation_frames:
@@ -350,6 +349,7 @@ class Entity(Sprite):
             if self.facing == 'left':
                 self.image = pygame.transform.flip(self.image, True, False)
 
+
     def update(self):
         '''Handles events'''
         self.movement()
@@ -358,6 +358,9 @@ class Entity(Sprite):
         self.check_state()
         self.check_death()
         self.animation()
+
+
+        self.set_shadow()
 
 
 class MeleeEnemy(Entity):

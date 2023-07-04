@@ -192,6 +192,7 @@ class Level:
         wall.set_image(sprites[id])
         wall.sprite_layer = 3
 
+
         match id:
             case 0:
                 wall.set_hitbox(1, 0.8, offsety=0.1)
@@ -204,6 +205,9 @@ class Level:
 
             case _:
                 pass
+
+        wall.draw_shadow = True
+        wall.set_shadow()
 
     def add_enemies(self, id: int, coords: list):
         enemies = (

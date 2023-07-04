@@ -30,6 +30,10 @@ class Ghost(MeleeEnemy):
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
             / len(self.animation_frames['attack'])
+        
+
+        self.draw_shadow = True
+        self.set_shadow()
 
 
 class Mimic(MeleeEnemy):
@@ -53,6 +57,10 @@ class Mimic(MeleeEnemy):
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
+
+
+        self.draw_shadow = True
+        self.set_shadow()
 
 
 class Sunflower(RangerEnemy):
@@ -126,8 +134,10 @@ class Acorn(RangerEnemy):
 
         # attack speed and animation
         self.attack_cooldown = (1800 - self.stats.speed) \
-            / len(self.animation_frames['attack'])
+            / len(self.animation_frames['attack']) 
         
+        self.draw_shadow = True
+        self.set_shadow()
 
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size), ) * 2

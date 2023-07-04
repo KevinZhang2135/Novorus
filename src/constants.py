@@ -85,4 +85,17 @@ def color_image(image: pygame.Surface, color: list, transparency=255):
 
     return image
 
+def draw_polygon_alpha(surface, color, points):
+    # zips points into x's and y's
+    x, y = zip(*points)
+
+    # determines bounds of rect
+    min_x, min_y, max_x, max_y = min(x), min(y), max(x), max(y)
+
+    # draws polygon onto surface for color
+    target_rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
+    shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
+
+    pygame.draw.polygon(shape_surf, color, [(x - min_x, y - min_y) for x, y in points])
+    surface.blit(shape_surf, target_rect)
 
