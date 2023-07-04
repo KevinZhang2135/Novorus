@@ -65,24 +65,19 @@ class Entity(Sprite):
     def set_animation(self, filepath: str):
         unused_types = []
         for type in self.animation_frames:
-            try:
-                num_of_frames = len(os.listdir(
-                    f'{SPRITE_PATH}/{filepath}/{type}'
-                ))
+            path = f'{SPRITE_PATH}/{filepath}/{type}'
+            if os.path.exists(path):
+                for path in os.listdir(path):
+                    image = IMAGES[path[:-4]].copy()
+                    image = pygame.transform.scale(
+                        image,
+                        self.rect.size
+                    )
 
-            # in case the folder does not exist for some animations
-            except FileNotFoundError:
+                    self.animation_frames[type].append(image)
+
+            else:
                 unused_types.append(type)
-                continue
-
-            for i in range(num_of_frames):
-                image = IMAGES[f"{filepath.split('/')[-1]}_{type}{i + 1}"].copy()
-                image = pygame.transform.scale(
-                    image,
-                    self.rect.size
-                )
-
-                self.animation_frames[type].append(image)
 
         # cleans unused types
         for type in unused_types:

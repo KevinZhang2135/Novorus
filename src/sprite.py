@@ -37,7 +37,19 @@ class Sprite(pygame.sprite.Sprite):
     def set_image(self, image_file: str):
         self.image = IMAGES[image_file].copy()
         self.image = pygame.transform.scale(self.image, self.size)
-        self.sprite_mask = pygame.mask.from_surface(self.image)
+
+    def set_animation(self, filepath: str):
+        for path in os.listdir(f'{SPRITE_PATH}/{filepath}'):
+            image = IMAGES[path[:-4]].copy()
+            image = pygame.transform.scale(
+                image,
+                self.rect.size
+            )
+
+            self.animation_frames.append(image)
+
+        # sets image
+        self.image = self.animation_frames[self.frame]
 
     def set_coords(self, x: float, y: float):
         self.coords.xy = x, y
@@ -51,23 +63,6 @@ class Sprite(pygame.sprite.Sprite):
 
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
         self.rect_mask.fill()
-
-    def set_animation(self, filepath: str):
-        num_of_frames = len(os.listdir(
-            f'{SPRITE_PATH}/{filepath}'
-        ))
-
-        for i in range(num_of_frames):
-            image = IMAGES[f"{filepath.split('/')[-1]}{i + 1}"].copy()
-            image = pygame.transform.scale(
-                image,
-                self.rect.size
-            )
-
-            self.animation_frames.append(image)
-
-        # sets image
-        self.image = self.animation_frames[self.frame]
 
     def animation(self):
         '''Handles animation'''
