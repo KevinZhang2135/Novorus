@@ -34,10 +34,6 @@ class Sprite(pygame.sprite.Sprite):
         self.animation_time = pygame.time.get_ticks()
         self.animation_frames = []
 
-        # shadows
-        self.draw_shadows = False
-        self.shadows = []
-
     def set_image(self, image_file: str):
         self.image = IMAGES[image_file].copy()
         self.image = pygame.transform.scale(self.image, self.size)
@@ -72,20 +68,6 @@ class Sprite(pygame.sprite.Sprite):
 
         # sets image
         self.image = self.animation_frames[self.frame]
-
-    def update_shadow(self):
-        if self.draw_shadows:
-            mask = pygame.mask.from_surface(self.image)
-            mask = [(x + self.rect.x, y)
-                    for x, y in mask.outline()]
-            
-            self.shadows = mask
-
-            # self.shadows.clear()
-            # for x, y in mask:
-            #     shadow_height = 0
-            #     shadow_width = 0
-            #     self.shadows.append((x + shadow_width, y + shadow_height))
 
     def animation(self):
         '''Handles animation'''

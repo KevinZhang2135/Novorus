@@ -183,25 +183,25 @@ class Level:
         )
 
         size = (TILE_SIZE,) * 2
-        terrain_tile = Sprite(
+        wall = Sprite(
             coords,
             size,
             self.game,
             (self.game.camera_group, self.game.collision_group)
         )
 
-        terrain_tile.set_image(sprites[id])
-        terrain_tile.sprite_layer = 3
+        wall.set_image(sprites[id])
+        wall.sprite_layer = 3
 
         match id:
             case 0:
-                terrain_tile.set_hitbox(1, 0.8, offsety=0.1)
+                wall.set_hitbox(1, 0.8, offsety=0.1)
 
             case 3:
-                terrain_tile.set_hitbox(0.7, 0.4, offsety=0.05)
+                wall.set_hitbox(0.7, 0.4, offsety=0.05)
 
             case 4:
-                terrain_tile.set_hitbox(1, 0.8, offsety=0.1)
+                wall.set_hitbox(1, 0.8, offsety=0.1)
 
             case _:
                 pass

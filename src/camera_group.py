@@ -49,15 +49,7 @@ class CameraGroup(pygame.sprite.Group):
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
-
             self.display_surface.blit(sprite.image, offset_pos)
-            if sprite.draw_shadows:
-                #print(tuple(map(lambda coord: coord + offset_pos, sprite.shadows)))
-                pygame.draw.polygon(
-                    self.display_surface, 
-                    (0, 0, 0), 
-                    tuple(map(lambda coord: coord - offset_pos, sprite.shadows))
-                )
 
             # draws sprite hitboxes
             show_hitboxes and self.draw_hitboxes(sprite)

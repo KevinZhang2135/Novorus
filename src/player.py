@@ -35,10 +35,6 @@ class Player(Entity):
         if self.attack_cooldown < 50:
             self.attack_cooldown = 50
 
-        # shadows
-        self.draw_shadows = True
-        self.update_shadow()
-
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
 
@@ -201,4 +197,3 @@ class Player(Entity):
         self.check_state()
         self.check_death()
         self.animation()
-        self.update_shadow()
