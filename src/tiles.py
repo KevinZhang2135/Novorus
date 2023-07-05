@@ -32,8 +32,6 @@ class Chest(Entity):
 
         self.set_animation('chest', isFolder=True)
 
-        self.image = self.animation_frames[self.facing][self.action][self.frame]
-
     def check_state(self):
         # checks if the distance of the sprites are within collision distance
         if self.action == 'closed' and pygame.Rect.colliderect(self.rect, self.game.player.hitbox):
@@ -115,6 +113,7 @@ class Totem(Entity):
         self.set_animation('enemies/totem', isFolder=True)
         self.animation_cooldown = 700 / \
             len(self.animation_frames[self.facing]['idle'])
+        
         self.cooldown = self.animation_cooldown
 
     def make_exit(self):

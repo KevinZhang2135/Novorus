@@ -6,11 +6,14 @@ import math
 class Shadow:
     def __init__(self, color, image):
         points = []
-        for x, y in pygame.mask.from_surface(image).outline(every=2):
-            shadow_height = y * 0.2
-            shadow_width = shadow_height * math.tan(math.pi * 2 / 3)
+        mask_outline = pygame.mask.from_surface(image).outline(every=1)
+
+        for x, y in mask_outline:
+            shadow_height = (image.get_height() - y) * 0.5
+            shadow_width = shadow_height * math.tan(math.pi / 3)
             points.append((x + shadow_width, y + shadow_height))
 
+        # zips coords into its separate x's and y's
         x, y = zip(*points)
 
         # determines bounds of rect

@@ -191,7 +191,7 @@ class Level:
 
         wall.set_animation(f'walls/{sprites[id]}')
         wall.sprite_layer = 3
-
+        wall.draw_shadow = True
 
         match id:
             case 0:
@@ -448,9 +448,11 @@ class Level:
                 decor.set_hitbox(0.3, 0.65)
                 decor.sprite_layer = 3
 
+        decor.draw_shadow = True
+
         # randomly flips vertically
         if random.randint(0, 1):
-            decor.image = pygame.transform.flip(decor.image, True, False)
+            decor.facing = 'left'
 
     def add_animated_decor(self, id: int, coords: list):
         match id:

@@ -73,6 +73,7 @@ class Entity(Sprite):
         }
 
         # shadows
+        self.draw_shadow = True
         self.shadow_frames = deepcopy(self.animation_frames)
 
     def set_animation(self, filepath: str, isFolder=False):

@@ -41,6 +41,7 @@ class Sprite(pygame.sprite.Sprite):
         self.rect_mask.fill()
 
         # shadows
+        self.draw_shadow = False
         self.shadow = None
         self.shadow_frames = deepcopy(self.animation_frames)
 
