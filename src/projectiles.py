@@ -159,7 +159,7 @@ class Fireball(Projectile):
         self.animation_cooldown = 250
         self.cooldown = self.animation_cooldown
         
-        self.set_animation('projectiles/fireball')
+        self.set_animation('projectiles/fireball', isFolder=True)
 
     def kill(self):
         # leaves explosion on death
@@ -175,5 +175,5 @@ class AcornThorn(Projectile):
 
         # hitboxes are not used for collision
         self.set_hitbox(0, 0)
-        self.set_animation('projectiles/thorn')
+        self.set_animation('projectiles/thorn', isFolder=True)
         

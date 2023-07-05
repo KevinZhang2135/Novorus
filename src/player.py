@@ -24,21 +24,19 @@ class Player(Entity):
         self.stats = Stats(100, 50, 20, 0.05, 0.01)
 
         # general animation
-        self.set_animation('player')
-        self.animation_cooldown = 1500 / len(self.animation_frames['idle'])
+        self.set_animation('player', isFolder=True)
+        self.animation_cooldown = 1500 / len(self.animation_frames[self.facing]['idle'])
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (700 - self.stats.speed) \
-            / len(self.animation_frames['attack'])
+            / len(self.animation_frames[self.facing]['attack'])
 
         if self.attack_cooldown < 50:
             self.attack_cooldown = 50
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
-
-
 
         self.draw_shadow = True
         self.set_shadow()
@@ -103,7 +101,7 @@ class Player(Entity):
                 if mask.overlap(sprite.rect_mask, offset):
                     # only attacks the penultimate frame
                     if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                            and self.frame == len(self.animation_frames['attack']) - 1
+                            and self.frame == len(self.animation_frames[self.facing]['attack']) - 1
                             and sprite not in targets_hit):
 
                         sprite.hurt(self.stats)
@@ -202,6 +200,5 @@ class Player(Entity):
         self.check_state()
         self.check_death()
         self.animation()
-
 
         self.set_shadow()

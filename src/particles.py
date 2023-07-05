@@ -59,13 +59,13 @@ class Explosion(Particle):
         self.loop_frames = False
         self.animation_cooldown = 100
 
-        self.set_animation('particles/explosion')
+        self.set_animation('particles/explosion', isFolder=True)
 
 class Dust(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
-        self.set_animation(f'dust{random.randint(1, 3)}')
+        self.set_animation(f'particles/dust/dust{random.randint(1, 3)}')
         self.velocity.y = -2
 
 

@@ -143,8 +143,8 @@ class Level:
         self.game.player.set_coords(*coords)
 
     def add_terrain(self, id: int, coords: list):
-        sprites = [f'path{i}' for i in range(1, 32)] \
-            + [f'grassy{i}' for i in range(1, 12)] \
+        sprites = [f'path/path{i}' for i in range(1, 32)] \
+            + [f'grassy/grassy{i}' for i in range(1, 12)] \
 
         size = (TILE_SIZE,) * 2
         terrain_tile = Sprite(
@@ -154,7 +154,7 @@ class Level:
             self.game.camera_group
         )
 
-        terrain_tile.set_image(sprites[id])
+        terrain_tile.set_animation(f'terrain/{sprites[id]}')
 
     def add_terrain_overlay(self, id: int, coords: list):
         sprites = [f'bricks{i}' for i in range(1, 5)] \
@@ -169,7 +169,7 @@ class Level:
             self.game.camera_group
         )
 
-        terrain_tile.set_image(sprites[id])
+        terrain_tile.set_animation(f'terrain_overlay/{sprites[id]}')
         terrain_tile.sprite_layer = 2
 
     def add_walls(self, id: int, coords: list):
@@ -189,7 +189,7 @@ class Level:
             (self.game.camera_group, self.game.collision_group)
         )
 
-        wall.set_image(sprites[id])
+        wall.set_animation(f'walls/{sprites[id]}')
         wall.sprite_layer = 3
 
 
@@ -240,6 +240,7 @@ class Level:
         )
 
     def add_static_decor(self, id: int, coords: list):
+        path = 'decor/static'
         match id:
             # flower1
             case 0:
@@ -256,7 +257,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('flower1')
+                decor.set_animation(f'{path}/flower1')
                 decor.set_hitbox(0.25, 0.4)
                 decor.sprite_layer = 3
 
@@ -275,7 +276,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('bush1')
+                decor.set_animation(f'{path}/bush1')
                 decor.set_hitbox(0.6, 0.5)
                 decor.sprite_layer = 3
 
@@ -294,7 +295,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('bush2')
+                decor.set_animation(f'{path}/bush2')
                 decor.set_hitbox(0.6, 0.3)
                 decor.sprite_layer = 3
 
@@ -313,7 +314,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('rock1')
+                decor.set_animation(f'{path}/rock1')
                 decor.set_hitbox(0.4, 0.3, offsety=0.1)
                 decor.sprite_layer = 3
 
@@ -332,7 +333,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('rock2')
+                decor.set_animation(f'{path}/rock2')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
                 decor.sprite_layer = 3
 
@@ -351,7 +352,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('rock3')
+                decor.set_animation(f'{path}/rock3')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
                 decor.sprite_layer = 3
 
@@ -370,7 +371,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('rock4')
+                decor.set_animation(f'{path}/rock4')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
                 decor.sprite_layer = 3
 
@@ -389,7 +390,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('oak_tree')
+                decor.set_animation(f'{path}/oak_tree')
                 decor.set_hitbox(0.4, 0.6)
                 decor.sprite_layer = 3
 
@@ -408,7 +409,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('pine_tree')
+                decor.set_animation(f'{path}/pine_tree')
                 decor.set_hitbox(0.3, 0.6)
                 decor.sprite_layer = 3
 
@@ -427,7 +428,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('sakura_tree')
+                decor.set_animation(f'{path}/sakura_tree')
                 decor.set_hitbox(0.3, 0.6)
                 decor.sprite_layer = 3
 
@@ -446,7 +447,7 @@ class Level:
                     self.game.camera_group
                 )
 
-                decor.set_image('dead_tree')
+                decor.set_animation(f'{path}/dead_tree')
                 decor.set_hitbox(0.3, 0.65)
                 decor.sprite_layer = 3
 

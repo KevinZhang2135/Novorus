@@ -20,6 +20,7 @@ class Sprite(pygame.sprite.Sprite):
         self.hitbox_offset = pygame.math.Vector2()
 
         # render
+        self.facing = 'right'
         self.sprite_layer = 0
 
         # animation
@@ -28,7 +29,10 @@ class Sprite(pygame.sprite.Sprite):
 
         self.animation_cooldown = 0
         self.animation_time = pygame.time.get_ticks()
-        self.animation_frames = []
+        self.animation_frames = {
+            'left': [],
+            'right': []
+        }
 
         # masks
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
@@ -38,22 +42,46 @@ class Sprite(pygame.sprite.Sprite):
         self.draw_shadow = False
         self.shadow = []
 
-    def set_image(self, image_file: str):
-        self.image = IMAGES[image_file].copy()
-        self.image = pygame.transform.scale(self.image, self.size)
+    def get_images(self, filepath: str, isFolder=False, flipped=False):
+        images = []
+        if isFolder:
+            for path in os.listdir(f'{SPRITE_PATH}/{filepath}'):
+                filename = path[:-4].split('/')[-1]
+                image = IMAGES[filename].copy()
+                image = pygame.transform.scale(
+                    image,
+                    self.size
+                )
 
-    def set_animation(self, filepath: str):
-        for path in os.listdir(f'{SPRITE_PATH}/{filepath}'):
-            image = IMAGES[path[:-4]].copy()
-            image = pygame.transform.scale(
-                image,
-                self.rect.size
+                if flipped:
+                    image = pygame.transform.flip(image, True, False)
+
+                images.append(image)
+        
+        else:
+            filename = filepath.split('/')[-1]
+            image = IMAGES[filename].copy()
+            image = pygame.transform.scale(image, self.size)
+
+            if flipped:
+                image = pygame.transform.flip(image, True, False)
+
+            images.append(image)
+
+        return images
+
+    def set_animation(self, filepath: str, isFolder=False):
+        for facing in self.animation_frames:
+            path = f'{SPRITE_PATH}/{filepath}'
+
+            self.animation_frames[facing] = self.get_images(
+                path,
+                isFolder=isFolder,
+                flipped=(facing == 'left')
             )
 
-            self.animation_frames.append(image)
-
         # sets image
-        self.image = self.animation_frames[self.frame]
+        self.image = self.animation_frames[self.facing][self.frame]
 
     def set_coords(self, x: float, y: float):
         self.coords.xy = x, y
@@ -72,12 +100,12 @@ class Sprite(pygame.sprite.Sprite):
         '''Handles animation'''
 
         # loops frames
-        if self.frame >= len(self.animation_frames) and self.loop_frames:
+        if self.frame >= len(self.animation_frames[self.facing]) and self.loop_frames:
             self.frame = 0
 
         # set image
-        if self.frame < len(self.animation_frames):
-            self.image = self.animation_frames[self.frame]
+        if self.frame < len(self.animation_frames[self.facing]):
+            self.image = self.animation_frames[self.facing][self.frame]
 
             # determines whether the animation cooldown is over
             if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
@@ -96,3 +124,6 @@ class Sprite(pygame.sprite.Sprite):
                 shadow_height = (self.hitbox.bottom - y) * 0.5
                 shadow_width = shadow_height * math.tan(math.pi * 1 / 3)
                 self.shadow.append((x + shadow_width, y + shadow_height))
+
+    def update(self):
+        self.animation()

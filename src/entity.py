@@ -30,7 +30,7 @@ class Entity(Sprite):
 
         self.name = ''
         self.action = 'idle'
-        self.facing = random.choice(('left', 'right'))
+        self.facing = 'right'
 
         self.attacking = False
         self.in_combat = False
@@ -57,34 +57,32 @@ class Entity(Sprite):
         self.animation_cooldown = 0
         self.animation_time = pygame.time.get_ticks()
         self.animation_frames = {
-            'idle': [],
-            'run': [],
-            'attack': []
+            'left': {
+                'idle': [],
+                'run': [],
+                'attack': []
+            },
+
+            'right': {
+                'idle': [],
+                'run': [],
+                'attack': []
+            }
         }
 
-    def set_animation(self, filepath: str):
-        unused_types = []
-        for type in self.animation_frames:
-            path = f'{SPRITE_PATH}/{filepath}/{type}'
-            if os.path.exists(path):
-                for path in os.listdir(path):
-                    image = IMAGES[path[:-4]].copy()
-                    image = pygame.transform.scale(
-                        image,
-                        self.rect.size
+    def set_animation(self, filepath: str, isFolder=False):
+        for facing in self.animation_frames:
+            for action in self.animation_frames[facing]:
+                path = f'{SPRITE_PATH}/{filepath}/{action}'
+                if os.path.exists(path):
+                    self.animation_frames[facing][action] = self.get_images(
+                        path,
+                        isFolder=isFolder,
+                        flipped=(facing == 'left')
                     )
 
-                    self.animation_frames[type].append(image)
-
-            else:
-                unused_types.append(type)
-
-        # cleans unused types
-        for type in unused_types:
-            del self.animation_frames[type]
-
         # sets image
-        self.image = self.animation_frames[self.action][self.frame]
+        self.image = self.animation_frames[self.facing][self.action][self.frame]
 
     def line_of_sight(self, point):
         distance = dist(self.hitbox.center, point)
@@ -247,7 +245,7 @@ class Entity(Sprite):
         else:
             self.action = 'attack'
 
-        if not self.animation_frames[self.action]:
+        if not self.animation_frames[self.facing][self.action]:
             self.action = 'idle'
 
     def check_death(self):
@@ -333,21 +331,17 @@ class Entity(Sprite):
         '''Handles animation'''
 
         # loops frames
-        if self.frame >= len(self.animation_frames[self.action]) and self.loop_frames:
+        if self.frame >= len(self.animation_frames[self.facing][self.action]) and self.loop_frames:
             self.frame = 0
 
         # set image
-        if self.frame < len(self.animation_frames[self.action]):
-            self.image = self.animation_frames[self.action][self.frame]
+        if self.frame < len(self.animation_frames[self.facing][self.action]):
+            self.image = self.animation_frames[self.facing][self.action][self.frame]
 
             # determines whether the animation cooldown is over
             if pygame.time.get_ticks() - self.animation_time > self.cooldown:
                 self.animation_time = pygame.time.get_ticks()
                 self.frame += 1
-
-            # reflects over y-axis if facing left
-            if self.facing == 'left':
-                self.image = pygame.transform.flip(self.image, True, False)
 
 
     def update(self):
@@ -439,7 +433,7 @@ class MeleeEnemy(Entity):
 
                 # only attacks the last frame
                 if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                        and self.frame == len(self.animation_frames['attack'])
+                        and self.frame == len(self.animation_frames[self.facing]['attack'])
                         and sprite not in targets_hit):
 
                     sprite.hurt(self.stats)
@@ -525,7 +519,7 @@ class RangerEnemy(Entity):
                     self.attacking = True
 
                 # shoot projectile after animation ends
-                if (self.frame == len(self.animation_frames['attack'])):
+                if (self.frame == len(self.animation_frames[self.facing]['attack'])):
                     self.attack_time = pygame.time.get_ticks()
                     self.attacking = False
 

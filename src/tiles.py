@@ -63,8 +63,8 @@ class Torch(Sprite):
         self.sprite_layer = 4
 
         # animation
-        self.set_animation('decoration/animated/torch')
-        self.animation_cooldown = 600 / len(self.animation_frames)
+        self.set_animation('decor/animated/torch', isFolder=True)
+        self.animation_cooldown = 600 / len(self.animation_frames[self.facing])
         self.cooldown = self.animation_cooldown
 
         # smoke
@@ -88,7 +88,7 @@ class Torch(Sprite):
                 self.game.camera_group
             )
 
-            smoke.set_image(f'smoke{random.randint(1, self.smoke_frames)}')
+            smoke.set_animation(f'particles/smoke/smoke{random.randint(1, self.smoke_frames)}')
             smoke.velocity.y = -4
             smoke.expiration_time = 500
 
@@ -110,8 +110,8 @@ class Totem(Entity):
         self.stats = Stats(300, 0, 0, 0, 0)
 
         # animation
-        self.set_animation('enemies/totem')
-        self.animation_cooldown = 700 / len(self.animation_frames['idle'])
+        self.set_animation('enemies/totem', isFolder=True)
+        self.animation_cooldown = 700 / len(self.animation_frames[self.facing]['idle'])
         self.cooldown = self.animation_cooldown
 
     def make_exit(self):
@@ -142,8 +142,8 @@ class LevelExit(Sprite):
         self.sprite_layer = 3
 
         # animation
-        self.set_animation('exit')
-        self.animation_cooldown = 700 / len(self.animation_frames)
+        self.set_animation('exit', isFolder=True)
+        self.animation_cooldown = 700 / len(self.animation_frames[self.facing])
         self.cooldown = self.animation_cooldown
 
 

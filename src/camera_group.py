@@ -49,12 +49,12 @@ class CameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
             offset_pos = sprite.rect.topleft - self.offset
 
-            if sprite.draw_shadow and len(sprite.shadow) > 2:
-                draw_polygon_alpha(
-                    self.screen,
-                    (0, 0, 0),
-                    tuple(map(lambda coord: coord - self.offset, sprite.shadow))
-                )
+            # if sprite.draw_shadow and len(sprite.shadow) > 2:
+            #     draw_polygon_alpha(
+            #         self.screen,
+            #         (0, 0, 0),
+            #         tuple(map(lambda coord: coord - self.offset, sprite.shadow))
+            #     )
 
             self.screen.blit(sprite.image, offset_pos)
 

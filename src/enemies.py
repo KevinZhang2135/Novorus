@@ -23,13 +23,13 @@ class Ghost(MeleeEnemy):
         self.stats = Stats(100, 10, 10, 0.05, 0.05)
 
         # general animation
-        self.set_animation('enemies/ghost')
-        self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
+        self.set_animation('enemies/ghost', isFolder=True)
+        self.animation_cooldown = 1600 / len(self.animation_frames[self.facing]['idle'])
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
-            / len(self.animation_frames['attack'])
+            / len(self.animation_frames[self.facing]['attack'])
         
 
         self.draw_shadow = True
@@ -47,13 +47,13 @@ class Mimic(MeleeEnemy):
         self.stats = Stats(350, 0, 15, 0.25, 0)
 
         # animation
-        self.set_animation('enemies/mimic')
-        self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
+        self.set_animation('enemies/mimic', isFolder=True)
+        self.animation_cooldown = 1600 / len(self.animation_frames[self.facing]['idle'])
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (1200 - self.stats.speed) \
-            / len(self.animation_frames['attack'])
+            / len(self.animation_frames[self.facing]['attack'])
 
         if self.attack_cooldown < 200:
             self.attack_cooldown = 200
@@ -80,13 +80,13 @@ class Sunflower(RangerEnemy):
         self.stats = Stats(20, 0, 25, 0, 0)
 
         # general animation
-        self.set_animation('enemies/sunflower')
-        self.animation_cooldown = 1600 / len(self.animation_frames['idle'])
+        self.set_animation('enemies/sunflower', isFolder=True)
+        self.animation_cooldown = 1600 / len(self.animation_frames[self.facing]['idle'])
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (2400 - self.stats.speed) \
-            / len(self.animation_frames['attack'])
+            / len(self.animation_frames[self.facing]['attack'])
 
     def face_enemy(self, target: Sprite):
         # does not turn towards target
@@ -128,13 +128,13 @@ class Acorn(RangerEnemy):
         self.stats = Stats(30, 15, 10, 0.05, 0.05)
 
         # general animation
-        self.set_animation('enemies/acorn')
-        self.animation_cooldown = 600 / len(self.animation_frames['idle'])
+        self.set_animation('enemies/acorn', isFolder=True)
+        self.animation_cooldown = 600 / len(self.animation_frames[self.facing]['idle'])
         self.cooldown = self.animation_cooldown
 
         # attack speed and animation
         self.attack_cooldown = (1800 - self.stats.speed) \
-            / len(self.animation_frames['attack']) 
+            / len(self.animation_frames[self.facing]['attack']) 
         
         self.draw_shadow = True
         self.set_shadow()
