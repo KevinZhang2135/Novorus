@@ -5,6 +5,8 @@ from sprite import Sprite
 import pygame
 from math import dist
 from random import randint
+from copy import deepcopy
+
 
 
 class Stats:
@@ -70,19 +72,27 @@ class Entity(Sprite):
             }
         }
 
+        # shadows
+        self.shadow_frames = deepcopy(self.animation_frames)
+
     def set_animation(self, filepath: str, isFolder=False):
         for facing in self.animation_frames:
             for action in self.animation_frames[facing]:
                 path = f'{SPRITE_PATH}/{filepath}/{action}'
+
                 if os.path.exists(path):
-                    self.animation_frames[facing][action] = self.get_images(
+                    images = self.get_images(
                         path,
                         isFolder=isFolder,
                         flipped=(facing == 'left')
                     )
 
+                    self.animation_frames[facing][action] = images[0]
+                    self.shadow_frames[facing][action] = images[1]
+
         # sets image
         self.image = self.animation_frames[self.facing][self.action][self.frame]
+        self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
 
     def line_of_sight(self, point):
         distance = dist(self.hitbox.center, point)
@@ -337,6 +347,7 @@ class Entity(Sprite):
         # set image
         if self.frame < len(self.animation_frames[self.facing][self.action]):
             self.image = self.animation_frames[self.facing][self.action][self.frame]
+            self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
 
             # determines whether the animation cooldown is over
             if pygame.time.get_ticks() - self.animation_time > self.cooldown:
@@ -352,9 +363,6 @@ class Entity(Sprite):
         self.check_state()
         self.check_death()
         self.animation()
-
-
-        self.set_shadow()
 
 
 class MeleeEnemy(Entity):

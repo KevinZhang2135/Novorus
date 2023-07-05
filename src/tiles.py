@@ -6,10 +6,10 @@ from entity import *
 import pygame
 
 
-class Chest(Sprite):
+class Chest(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.opened = False
+        self.action = 'closed'
 
         # hitbox
         self.hitbox = self.rect.scale_by(0.55, 0.45)
@@ -18,25 +18,26 @@ class Chest(Sprite):
         self.sprite_layer = 3
 
         # sprites
-        self.chest_closed = IMAGES['chest_closed'].copy()
-        self.chest_closed = pygame.transform.scale(
-            self.chest_closed,
-            size
-        )
+        self.animation_frames = {
+            'left': {
+                'closed': [],
+                'opened': []
+            },
 
-        self.chest_opened = IMAGES['chest_opened'].copy()
-        self.chest_opened = pygame.transform.scale(
-            self.chest_opened,
-            size
-        )
+            'right': {
+                'closed': [],
+                'opened': []
+            }
+        }
 
-        self.image = self.chest_closed
+        self.set_animation('chest', isFolder=True)
 
-    def collision(self):
+        self.image = self.animation_frames[self.facing][self.action][self.frame]
+
+    def check_state(self):
         # checks if the distance of the sprites are within collision distance
-        if pygame.Rect.colliderect(self.rect, self.game.player.hitbox) and not self.opened:
-            self.image = self.chest_opened
-            self.opened = True
+        if self.action == 'closed' and pygame.Rect.colliderect(self.rect, self.game.player.hitbox):
+            self.action = 'opened'
 
             self.game.player.inventory.add_item(
                 'baguette',
@@ -49,8 +50,8 @@ class Chest(Sprite):
             )
 
     def update(self):
-        self.collision()
-
+        self.check_state()
+        self.animation()
 
 class Torch(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
@@ -88,7 +89,8 @@ class Torch(Sprite):
                 self.game.camera_group
             )
 
-            smoke.set_animation(f'particles/smoke/smoke{random.randint(1, self.smoke_frames)}')
+            smoke.set_animation(
+                f'particles/smoke/smoke{random.randint(1, self.smoke_frames)}')
             smoke.velocity.y = -4
             smoke.expiration_time = 500
 
@@ -111,14 +113,15 @@ class Totem(Entity):
 
         # animation
         self.set_animation('enemies/totem', isFolder=True)
-        self.animation_cooldown = 700 / len(self.animation_frames[self.facing]['idle'])
+        self.animation_cooldown = 700 / \
+            len(self.animation_frames[self.facing]['idle'])
         self.cooldown = self.animation_cooldown
 
     def make_exit(self):
         '''Creates portal when all totems are destroyed'''
         if not self.game.totem_group.sprites():
             LevelExit(
-                self.hitbox.midbottom, 
+                self.hitbox.midbottom,
                 (TILE_SIZE * 0.5, ) * 2,
                 self.game,
                 self.game.camera_group
@@ -146,7 +149,6 @@ class LevelExit(Sprite):
         self.animation_cooldown = 700 / len(self.animation_frames[self.facing])
         self.cooldown = self.animation_cooldown
 
-
     def transition_level(self):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):
             # checks if the player mask overlaps an enemy mask
@@ -155,12 +157,10 @@ class LevelExit(Sprite):
                 self.game.player.hitbox.x - self.rect.x,
                 self.game.player.hitbox.y - self.rect.y
             )
-            
+
             if mask.overlap(self.game.player.rect_mask, offset):
                 self.game.level.transitioning = True
 
     def update(self):
         self.transition_level()
         self.animation()
-
-                

@@ -206,9 +206,6 @@ class Level:
             case _:
                 pass
 
-        wall.draw_shadow = True
-        wall.set_shadow()
-
     def add_enemies(self, id: int, coords: list):
         enemies = (
             Ghost,
