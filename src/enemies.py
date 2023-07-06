@@ -6,7 +6,7 @@ from sprite import Sprite
 import pygame
 
 
-class Ghost(MeleeEnemy):
+class Ghost(MeleeEntity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
         self.name = 'Ghost'
@@ -24,20 +24,33 @@ class Ghost(MeleeEnemy):
 
         # general animation
         self.set_animation('enemies/ghost', isFolder=True)
-        self.animation_cooldown = 1600 / len(self.animation_frames[self.facing]['idle'])
-        self.cooldown = self.animation_cooldown
 
-        # attack speed and animation
-        self.attack_cooldown = (1200 - self.stats.speed) \
+        # animation cooldown
+        self.animation_cooldowns
+        self.animation_cooldowns['idle'] = 1600 / \
+            len(self.animation_frames[self.facing]['idle'])
+
+        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
+        self.animation_cooldowns['attack'] = (1200 - self.stats.speed) \
             / len(self.animation_frames[self.facing]['attack'])
-        
+
+        if self.animation_cooldowns['attack'] < 200:
+            self.animation_cooldowns['attack'] = 200
+
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+        # attack cooldown
+        self.attack_cooldown = self.animation_cooldowns['attack']
 
 
-class Mimic(MeleeEnemy):
+class Mimic(MeleeEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Mimic'
         self.show_stats = False
+
+        # hitbox
+        self.hitbox = self.rect.scale_by(0.55, 0.45)
 
         # stats
         self.exp = 50
@@ -45,18 +58,25 @@ class Mimic(MeleeEnemy):
 
         # animation
         self.set_animation('enemies/mimic', isFolder=True)
-        self.animation_cooldown = 1600 / len(self.animation_frames[self.facing]['idle'])
-        self.cooldown = self.animation_cooldown
 
-        # attack speed and animation
-        self.attack_cooldown = (1200 - self.stats.speed) \
+        # animation cooldown
+        self.animation_cooldowns['idle'] = 1600 / \
+            len(self.animation_frames[self.facing]['idle'])
+
+        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
+        self.animation_cooldowns['attack'] = (1200 - self.stats.speed) \
             / len(self.animation_frames[self.facing]['attack'])
 
-        if self.attack_cooldown < 200:
-            self.attack_cooldown = 200
+        if self.animation_cooldowns['attack'] < 200:
+            self.animation_cooldowns['attack'] = 200
+
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+        # attack cooldown
+        self.attack_cooldown = 200
 
 
-class Sunflower(RangerEnemy):
+class Sunflower(RangerEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Sunflower'
@@ -74,12 +94,19 @@ class Sunflower(RangerEnemy):
 
         # general animation
         self.set_animation('enemies/sunflower', isFolder=True)
-        self.animation_cooldown = 1600 / len(self.animation_frames[self.facing]['idle'])
-        self.cooldown = self.animation_cooldown
 
-        # attack speed and animation
-        self.attack_cooldown = (2400 - self.stats.speed) \
+        # animation cooldown
+        self.animation_cooldowns['idle'] = 1600 / \
+            len(self.animation_frames[self.facing]['idle'])
+
+        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
+        self.animation_cooldowns['attack'] = (1200 - self.stats.speed) \
             / len(self.animation_frames[self.facing]['attack'])
+
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+        # attack cooldown
+        self.attack_cooldown = 1500
 
     def face_enemy(self, target: Sprite):
         # does not turn towards target
@@ -90,12 +117,12 @@ class Sunflower(RangerEnemy):
 
         # creates projectile
         projectile = Fireball(
-            self.hitbox.midtop, 
-            projectile_size, 
-            self.game, 
+            self.hitbox.midtop,
+            projectile_size,
+            self.game,
             self.game.camera_group
         )
-        
+
         projectile.set_target(
             target.hitbox.center,
             self.stats,
@@ -103,7 +130,7 @@ class Sunflower(RangerEnemy):
         )
 
 
-class Acorn(RangerEnemy):
+class Acorn(RangerEntity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
         self.name = 'Angry Acorn'
@@ -122,13 +149,19 @@ class Acorn(RangerEnemy):
 
         # general animation
         self.set_animation('enemies/acorn', isFolder=True)
-        self.animation_cooldown = 600 / len(self.animation_frames[self.facing]['idle'])
-        self.cooldown = self.animation_cooldown
 
-        # attack speed and animation
-        self.attack_cooldown = (1800 - self.stats.speed) \
-            / len(self.animation_frames[self.facing]['attack']) 
-        
+        # animation cooldown
+        self.animation_cooldowns['idle'] = 600 / \
+            len(self.animation_frames[self.facing]['idle'])
+
+        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
+        self.animation_cooldowns['attack'] = (1800 - self.stats.speed) \
+            / len(self.animation_frames[self.facing]['attack'])
+
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+        # attack cooldown
+        self.attack_cooldown = 1500
 
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size), ) * 2
@@ -137,10 +170,10 @@ class Acorn(RangerEnemy):
         projectile = AcornThorn(
             self.hitbox.center,
             projectile_size,
-            self.game, 
+            self.game,
             self.game.camera_group
         )
-        
+
         projectile.set_target(
             target.hitbox.center,
             self.stats,

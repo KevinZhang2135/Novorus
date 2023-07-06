@@ -8,7 +8,6 @@ from random import randint
 from copy import deepcopy
 
 
-
 class Stats:
     def __init__(self, health: int, speed: int, attack: int, crit_chance: float, dodge_chance: float):
         self.health = self.base_health = health
@@ -31,8 +30,9 @@ class Entity(Sprite):
         super().__init__(coords, size, game, groups)
 
         self.name = ''
-        self.action = 'idle'
         self.facing = 'right'
+        self.action = 'idle'
+        self.actions = ['idle']
 
         self.attacking = False
         self.in_combat = False
@@ -49,28 +49,19 @@ class Entity(Sprite):
         self.sprite_layer = 3
 
         # animation
-        self.frame = 0
-        self.cooldown = 0
-        self.loop_frames = True
-
-        self.attack_cooldown = 0
-        self.attack_time = pygame.time.get_ticks()
-
-        self.animation_cooldown = 0
-        self.animation_time = pygame.time.get_ticks()
         self.animation_frames = {
-            'left': {
-                'idle': [],
-                'run': [],
-                'attack': []
-            },
-
-            'right': {
-                'idle': [],
-                'run': [],
-                'attack': []
-            }
+            'left': {},
+            'right': {}
         }
+
+        # animation cooldowns
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+        # attack times
+        self.attack_time = pygame.time.get_ticks()
+        self.attack_cooldown = 0
 
         # shadows
         self.draw_shadow = True
@@ -78,7 +69,7 @@ class Entity(Sprite):
 
     def set_animation(self, filepath: str, isFolder=False):
         for facing in self.animation_frames:
-            for action in self.animation_frames[facing]:
+            for action in self.actions:
                 path = f'{SPRITE_PATH}/{filepath}/{action}'
 
                 if os.path.exists(path):
@@ -340,9 +331,10 @@ class Entity(Sprite):
 
     def animation(self):
         '''Handles animation'''
+        self.animation_cooldown = self.animation_cooldowns[self.action]
 
         # loops frames
-        if self.frame >= len(self.animation_frames[self.facing][self.action]) and self.loop_frames:
+        if self.loop_frames and self.frame >= len(self.animation_frames[self.facing][self.action]):
             self.frame = 0
 
         # set image
@@ -351,10 +343,11 @@ class Entity(Sprite):
             self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
 
             # determines whether the animation cooldown is over
-            if pygame.time.get_ticks() - self.animation_time > self.cooldown:
+            if (self.animation_cooldown
+                    and pygame.time.get_ticks() - self.animation_time > self.animation_cooldown):
+
                 self.animation_time = pygame.time.get_ticks()
                 self.frame += 1
-
 
     def update(self):
         '''Handles events'''
@@ -366,13 +359,17 @@ class Entity(Sprite):
         self.animation()
 
 
-class MeleeEnemy(Entity):
+class MeleeEntity(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
+        self.actions = ['idle', 'run', 'attack']
 
         # movement
         self.detection_distance = 0
         self.max_velocity = 0
+
+        # animation cooldowns
+        self.animation_cooldowns = {action: 0 for action in self.actions}
 
     def movement(self):
         '''Handles movement'''
@@ -430,23 +427,23 @@ class MeleeEnemy(Entity):
             # when attacking, whole sprite is used as the mask for attack
             # damage is done to hitbox
             if mask.overlap(sprite.rect_mask, offset):
-                # trigger attack animation
-                self.in_combat = True
-                self.show_stats = True
-                if not self.attacking:
-                    self.frame = 0
-                    self.attacking = True
-                    self.cooldown = self.attack_cooldown
-
                 self.face_enemy(sprite)
 
-                # only attacks the last frame
-                if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                        and self.frame == len(self.animation_frames[self.facing]['attack'])
-                        and sprite not in targets_hit):
+                if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
+                    # trigger attack animation
+                    self.in_combat = True
+                    if not self.attacking:
+                        self.frame = 0
+                        self.attacking = True
 
-                    sprite.hurt(self.stats)
-                    targets_hit.append(sprite)
+                    
+
+                    # only attacks the last frame
+                    if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
+                            and sprite not in targets_hit):
+
+                        sprite.hurt(self.stats)
+                        targets_hit.append(sprite)
 
         if targets_hit:
             self.attack_time = pygame.time.get_ticks()
@@ -454,16 +451,19 @@ class MeleeEnemy(Entity):
         # clear attack animation if not in combat
         if not self.in_combat:
             self.attacking = False
-            self.cooldown = self.animation_cooldown
 
 
-class RangerEnemy(Entity):
+class RangerEntity(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
+        self.actions = ['idle', 'run', 'attack']
 
         # movement
         self.detection_distance = 0
         self.max_velocity = 0
+
+        # animation cooldowns
+        self.animation_cooldowns = {action: 0 for action in self.actions}
 
         # attack
         self.attack_range = 0
@@ -514,10 +514,8 @@ class RangerEnemy(Entity):
         if (len(targets) > 0
                 and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range
                 and self.line_of_sight(targets[0].hitbox.center)):
-
+            
             self.in_combat = True
-            self.cooldown = self.attack_cooldown
-
             self.face_enemy(targets[0])
 
             # only attacks the last frame
@@ -538,7 +536,6 @@ class RangerEnemy(Entity):
         else:
             self.attacking = False
             self.in_combat = False
-            self.cooldown = self.animation_cooldown
 
     def create_projectile(self, target):
         pass

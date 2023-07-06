@@ -12,6 +12,7 @@ class Player(Entity):
 
         self.name = 'Player'
         self.facing = 'right'
+        self.actions = ['idle', 'run', 'attack', 'charge']
 
         # hitbox
         self.set_hitbox(0.15, 0.3)
@@ -24,16 +25,36 @@ class Player(Entity):
         self.stats = Stats(100, 50, 20, 0.05, 0.01)
 
         # general animation
-        self.set_animation('player', isFolder=True)
-        self.animation_cooldown = 1500 / len(self.animation_frames[self.facing]['idle'])
-        self.cooldown = self.animation_cooldown
+        self.animation_frames = {
+            'left': {},
+            'right': {}
+        }
 
-        # attack speed and animation
-        self.attack_cooldown = (700 - self.stats.speed) \
+        self.set_animation('player', isFolder=True)
+
+        # animation cooldown
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+
+        self.animation_cooldowns['idle'] = 1500 / \
+            len(self.animation_frames[self.facing]['idle'])
+
+        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
+        self.animation_cooldowns['attack'] = (700 - self.stats.speed) \
             / len(self.animation_frames[self.facing]['attack'])
 
-        if self.attack_cooldown < 50:
-            self.attack_cooldown = 50
+        if self.animation_cooldowns['attack'] < 50:
+            self.animation_cooldowns['attack'] = 50
+
+        self.animation_cooldowns['charge'] = self.animation_cooldowns['idle']
+
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+        # attack cooldown
+        self.attack_cooldown = self.animation_cooldowns['attack']
+
+        # charge
+        self.charging = False
+        self.charge_cooldown = 2000
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
@@ -64,15 +85,30 @@ class Player(Entity):
         super().movement()
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
-        # attacks on click
         self.in_combat = False
-        if pygame.mouse.get_pressed()[0]:
-            # trigger attack animation
+
+        # attacks in a circular swing on left click
+        if (not self.charging
+                and pygame.mouse.get_pressed()[0]):
+            
+            self.swing(target_group)
+
+        # attacks in a powerful thrust on right click
+        # if pygame.mouse.get_pressed()[1] and not self.attacking:
+            # self.charge(target_group)
+
+        # clear attack animation if not in combat
+        if not self.in_combat:
+            self.attacking = False
+            self.charging = False
+
+    def swing(self, target_group: pygame.sprite.Group):
+        # trigger attack animation
+        if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
             self.in_combat = True
             if not self.attacking:
                 self.frame = 0
-                self.attacking = True 
-                self.cooldown = self.attack_cooldown
+                self.attacking = True
 
             # checks if the player rect overlaps an enemy rect
             colliding_sprites = pygame.sprite.spritecollide(
@@ -92,13 +128,12 @@ class Player(Entity):
                 mask = pygame.mask.from_surface(self.image)
                 offset = (sprite.hitbox.x - self.rect.x,
                           sprite.hitbox.y - self.rect.y)
-                
+
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
                     # only attacks the penultimate frame
-                    if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown
-                            and self.frame == len(self.animation_frames[self.facing]['attack']) - 1
+                    if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
                             and sprite not in targets_hit):
 
                         sprite.hurt(self.stats)
@@ -108,10 +143,8 @@ class Player(Entity):
             if targets_hit:
                 self.attack_time = pygame.time.get_ticks()
 
-        # clear attack animation if not in combat
-        if not self.in_combat:
-            self.attacking = False
-            self.cooldown = self.animation_cooldown
+    def charge(self, target_group: pygame.sprite.Group):
+        pass
 
     def check_state(self):
         if not self.attacking:
@@ -186,8 +219,8 @@ class Player(Entity):
         if self.stats.health < 0:
             # sprite dies
             self.stats.health = 0
-            #self.animation_time = pygame.time.get_ticks()
-            #self.cooldown = self.game.player.animation_cooldown
+            # self.animation_time = pygame.time.get_ticks()
+            # self.cooldown = self.game.player.animation_cooldown
 
     def update(self):
         '''Handles events'''

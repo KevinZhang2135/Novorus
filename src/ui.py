@@ -452,8 +452,8 @@ class HealthBar(Bar):
         pygame.draw.rect(
             self.screen,
             PECAN,
-            self.total_bar, 
-            2, 
+            self.total_bar,
+            2,
             self.bar.height // 2
         )
 
@@ -467,18 +467,18 @@ class HealthBar(Bar):
         # only display the bar when the player has health
         if ratio > 0:
             pygame.draw.rect(
-                self.screen, 
+                self.screen,
                 RED,
-                self.bar, 
-                0, 
+                self.bar,
+                0,
                 self.bar.height // 2
             )
 
             pygame.draw.rect(
-                self.screen, 
+                self.screen,
                 BLOOD_RED,
-                self.bar, 
-                2, 
+                self.bar,
+                2,
                 self.bar.height // 2
             )
 
@@ -503,18 +503,18 @@ class SpeedBar(Bar):
 
     def draw(self, target):
         pygame.draw.rect(
-            self.screen, 
+            self.screen,
             YELLOW,
-            self.bar, 
-            0, 
+            self.bar,
+            0,
             self.bar.height // 2
         )
 
         pygame.draw.rect(
             self.screen,
             GOLD,
-            self.bar, 
-            2, 
+            self.bar,
+            2,
             self.bar.height // 2
         )
 
@@ -539,18 +539,18 @@ class AttackBar(Bar):
 
     def draw(self, target):
         pygame.draw.rect(
-            self.screen, 
+            self.screen,
             GREY,
-            self.bar, 
-            0, 
+            self.bar,
+            0,
             self.bar.height // 2
         )
 
         pygame.draw.rect(
-            self.screen, 
+            self.screen,
             DARK_GREY,
-            self.bar, 
-            2, 
+            self.bar,
+            2,
             self.bar.height // 2
         )
 

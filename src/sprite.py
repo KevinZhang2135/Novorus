@@ -29,12 +29,14 @@ class Sprite(pygame.sprite.Sprite):
         self.frame = 0
         self.loop_frames = True
 
-        self.animation_cooldown = 0
-        self.animation_time = pygame.time.get_ticks()
         self.animation_frames = {
             'left': [],
             'right': []
         }
+
+        # animation cooldowns
+        self.animation_time = pygame.time.get_ticks()
+        self.animation_cooldown = 0
 
         # masks
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
@@ -63,7 +65,7 @@ class Sprite(pygame.sprite.Sprite):
 
                 images.append(image)
                 shadows.append(Shadow((0, 0, 0, 50), image))
-        
+
         else:
             filename = filepath.split('/')[-1]
             image = IMAGES[filename].copy()
@@ -88,7 +90,6 @@ class Sprite(pygame.sprite.Sprite):
                 flipped=(facing == 'left')
             )
 
-            
             self.animation_frames[facing] = images[0]
             self.shadow_frames[facing] = images[1]
 
@@ -113,7 +114,7 @@ class Sprite(pygame.sprite.Sprite):
         '''Handles animation'''
 
         # loops frames
-        if self.frame >= len(self.animation_frames[self.facing]) and self.loop_frames:
+        if self.loop_frames and self.frame >= len(self.animation_frames[self.facing]):
             self.frame = 0
 
         # set image
@@ -122,7 +123,9 @@ class Sprite(pygame.sprite.Sprite):
             self.shadow = self.shadow_frames[self.facing][self.frame]
 
             # determines whether the animation cooldown is over
-            if pygame.time.get_ticks() - self.animation_time > self.animation_cooldown:
+            if (self.animation_cooldown
+                    and pygame.time.get_ticks() - self.animation_time > self.animation_cooldown):
+
                 self.animation_time = pygame.time.get_ticks()
                 self.frame += 1
 

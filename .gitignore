@@ -2,3 +2,4 @@ src/__pycache__/
 levels/tileset
 *.py[cod]
 *$py.class
+*.exe

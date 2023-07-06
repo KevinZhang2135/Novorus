@@ -10,6 +10,7 @@ class Chest(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.action = 'closed'
+        self.actions = ['closed', 'opened']
 
         # hitbox
         self.hitbox = self.rect.scale_by(0.55, 0.45)
@@ -17,20 +18,20 @@ class Chest(Entity):
         # render
         self.sprite_layer = 3
 
-        # sprites
+        # animation
         self.animation_frames = {
-            'left': {
-                'closed': [],
-                'opened': []
-            },
-
-            'right': {
-                'closed': [],
-                'opened': []
-            }
+            'left': {},
+            'right': {}
         }
 
         self.set_animation('chest', isFolder=True)
+
+        # animation cooldown
+        self.animation_cooldowns = {action: None for action in self.actions}
+        self.animation_cooldowns['closed'] = 0
+        self.animation_cooldowns['opened'] = 0
+
+        self.animation_cooldown = self.animation_cooldowns[self.action]
 
     def check_state(self):
         # checks if the distance of the sprites are within collision distance
@@ -51,6 +52,7 @@ class Chest(Entity):
         self.check_state()
         self.animation()
 
+
 class Torch(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
@@ -63,8 +65,9 @@ class Torch(Sprite):
 
         # animation
         self.set_animation('decor/animated/torch', isFolder=True)
+
+        # animation cooldown
         self.animation_cooldown = 600 / len(self.animation_frames[self.facing])
-        self.cooldown = self.animation_cooldown
 
         # smoke
         self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
@@ -88,7 +91,9 @@ class Torch(Sprite):
             )
 
             smoke.set_animation(
-                f'particles/smoke/smoke{random.randint(1, self.smoke_frames)}')
+                f'particles/smoke/smoke{random.randint(1, self.smoke_frames)}'
+            )
+
             smoke.velocity.y = -4
             smoke.expiration_time = 500
 
@@ -111,10 +116,9 @@ class Totem(Entity):
 
         # animation
         self.set_animation('enemies/totem', isFolder=True)
-        self.animation_cooldown = 700 / \
-            len(self.animation_frames[self.facing]['idle'])
-        
-        self.cooldown = self.animation_cooldown
+
+        # animation cooldown
+        self.animation_cooldown = self.animation_cooldowns[self.action]
 
     def make_exit(self):
         '''Creates portal when all totems are destroyed'''
@@ -145,8 +149,9 @@ class LevelExit(Sprite):
 
         # animation
         self.set_animation('exit', isFolder=True)
+
+        # animation cooldown
         self.animation_cooldown = 700 / len(self.animation_frames[self.facing])
-        self.cooldown = self.animation_cooldown
 
     def transition_level(self):
         if pygame.sprite.spritecollide(self, self.game.player_group, False):
