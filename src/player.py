@@ -19,7 +19,7 @@ class Player(Entity):
 
         # movement
         self.max_velocity = 5
-        self.dash_velocity = self.max_velocity * 5
+        self.dash_velocity = self.max_velocity * 6
 
         # stats
         self.exp = 0
@@ -44,8 +44,9 @@ class Player(Entity):
         # dash
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
-        self.dash_duration = 1000
         self.dash_cooldown = 2000
+        self.dash_duration = 750 # how long a dash lasts
+        
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
@@ -70,10 +71,10 @@ class Player(Entity):
         else:
             # movement decay when input is not received
             if self.dashing:
-                self.velocity *= 0.92
+                self.velocity *= 0.9
 
             else:
-                self.velocity *= 0.8
+                self.velocity *= 0.85
 
             self.acceleration.x = 0
             self.acceleration.y = 0
@@ -89,7 +90,10 @@ class Player(Entity):
             self.swing(target_group)
 
         # attacks in a powerful thrust on right click
-        elif not self.attacking and pygame.mouse.get_pressed()[2]:
+        elif (not self.attacking 
+              and not self.dashing 
+              and pygame.mouse.get_pressed()[2]):
+            
             self.dash()
 
         if self.dashing:
@@ -150,7 +154,7 @@ class Player(Entity):
         # prevents player from moving
         self.in_combat = True
 
-        if not self.dashing and  pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
+        if pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
             # trigger dash animation
             self.frame = 0
             self.dashing = True
@@ -168,6 +172,7 @@ class Player(Entity):
 
     def ram_enemies(self, target_group):
         '''Deals damage to any enemies in collision'''
+        self.in_combat = True
 
         # checks if the player rect overlaps an enemy rect
         colliding_sprites = pygame.sprite.spritecollide(
