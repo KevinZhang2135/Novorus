@@ -15,13 +15,13 @@ class Ghost(MeleeEntity):
         # hitbox
         self.set_hitbox(0.4, 0.5)
 
-        # movement
-        self.detection_distance = 350
-        self.max_velocity = 3
-
         # stats
         self.exp = 25
         self.stats = Stats(100, 10, 10, 0.05, 0.05)
+
+        # movement
+        self.detection_distance = 350
+        self.max_velocity = 3
 
         # general animation
         self.set_animation('enemies/ghost', isFolder=True)
@@ -69,12 +69,12 @@ class Sunflower(RangerEntity):
         # hitbox
         self.set_hitbox(0.25, 0.4)
 
-        # range
-        self.attack_range = 300
-
         # stats
         self.exp = 15
         self.stats = Stats(20, 0, 25, 0, 0)
+
+        # range
+        self.attack_range = 250
 
         # general animation
         self.set_animation('enemies/sunflower', isFolder=True)
@@ -117,14 +117,15 @@ class Acorn(RangerEntity):
         # hitbox
         self.set_hitbox(0.5, 0.5)
 
-        # movement & range
-        self.detection_distance = 500
-        self.attack_range = 250
-        self.max_velocity = 4
-
         # stats
         self.exp = 35
         self.stats = Stats(30, 15, 10, 0.05, 0.05)
+
+        # movement & range
+        self.detection_distance = 500
+        self.max_velocity = 4
+
+        self.attack_range = 250
 
         # general animation
         self.set_animation('enemies/acorn', isFolder=True)

@@ -34,10 +34,10 @@ class Entity(Sprite):
         self.action = 'idle'
         self.actions = ['idle']
 
-        self.attacking = False
         self.in_combat = False
         self.show_stats = True
 
+        # stats
         self.stats = None
 
         # movement
@@ -60,6 +60,7 @@ class Entity(Sprite):
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
         # attack times
+        self.attacking = False
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = 0
 
@@ -438,9 +439,9 @@ class MeleeEntity(Entity):
             if mask.overlap(sprite.rect_mask, offset):
                 self.face_enemy(sprite)
 
+                self.in_combat = True
                 if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
                     # trigger attack animation
-                    self.in_combat = True
                     if not self.attacking:
                         self.frame = 0
                         self.attacking = True

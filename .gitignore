@@ -3,3 +3,4 @@ levels/tileset
 *.py[cod]
 *$py.class
 *.exe
+dist

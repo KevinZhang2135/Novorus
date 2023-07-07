@@ -12,13 +12,14 @@ class Player(Entity):
 
         self.name = 'Player'
         self.facing = 'right'
-        self.actions = ['idle', 'run', 'attack', 'charge']
+        self.actions = ['idle', 'run', 'attack', 'dash']
 
         # hitbox
         self.set_hitbox(0.15, 0.3)
 
         # movement
         self.max_velocity = 5
+        self.dash_velocity = self.max_velocity * 5
 
         # stats
         self.exp = 0
@@ -37,11 +38,14 @@ class Player(Entity):
         self.set_animation_cooldown(800, 800, 600, 600)
 
         # attack cooldown
+        self.targets_hit = []
         self.attack_cooldown = self.animation_cooldowns['attack']
 
-        # charge
-        self.charging = False
-        self.charge_cooldown = 2000
+        # dash
+        self.dashing = False
+        self.dash_time = pygame.time.get_ticks()
+        self.dash_duration = 1000
+        self.dash_cooldown = 2000
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
@@ -56,7 +60,8 @@ class Player(Entity):
 
         # creates movement using falsy and truthy values that evaluate to 0 and 1
         self.acceleration = pygame.math.Vector2(right - left, down - up)
-        if not self.attacking and self.acceleration.length_squared() > 0:  # checks if the player is moving
+
+        if not self.in_combat and self.acceleration.length_squared() > 0:  # checks if the player is moving
             # converts the coordinates to a vector according to the radius
             self.acceleration.scale_to_length(self.max_velocity)
             self.velocity += self.acceleration
@@ -64,7 +69,12 @@ class Player(Entity):
 
         else:
             # movement decay when input is not received
-            self.velocity *= 0.8
+            if self.dashing:
+                self.velocity *= 0.92
+
+            else:
+                self.velocity *= 0.8
+
             self.acceleration.x = 0
             self.acceleration.y = 0
 
@@ -75,24 +85,26 @@ class Player(Entity):
         self.in_combat = False
 
         # attacks in a circular swing on left click
-        if (not self.charging
-                and pygame.mouse.get_pressed()[0]):
-            
+        if not self.dashing and pygame.mouse.get_pressed()[0]:
             self.swing(target_group)
 
         # attacks in a powerful thrust on right click
-        # if pygame.mouse.get_pressed()[1] and not self.attacking:
-            # self.charge(target_group)
+        elif not self.attacking and pygame.mouse.get_pressed()[2]:
+            self.dash()
+
+        if self.dashing:
+            self.ram_enemies(target_group)
 
         # clear attack animation if not in combat
         if not self.in_combat:
             self.attacking = False
-            self.charging = False
 
     def swing(self, target_group: pygame.sprite.Group):
-        # trigger attack animation
+        # prevents player from moving
+        self.in_combat = True
+
         if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
-            self.in_combat = True
+            # trigger attack animation
             if not self.attacking:
                 self.frame = 0
                 self.attacking = True
@@ -109,46 +121,115 @@ class Player(Entity):
                 sprite.hitbox.center
             ))
 
-            targets_hit = []
             for sprite in colliding_sprites:
                 # checks if the player mask overlaps an enemy hitbox
                 mask = pygame.mask.from_surface(self.image)
-                offset = (sprite.hitbox.x - self.rect.x,
-                          sprite.hitbox.y - self.rect.y)
+                offset = (
+                    sprite.hitbox.x - self.rect.x,
+                    sprite.hitbox.y - self.rect.y
+                )
 
                 # when attacking, whole sprite is used as the mask for attack
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
                     # only attacks the penultimate frame
                     if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
-                            and sprite not in targets_hit):
+                            and sprite not in self.targets_hit):
 
                         sprite.hurt(self.stats)
-                        targets_hit.append(sprite)
+                        self.targets_hit.append(sprite)
 
             # reset attack time if targets hit
-            if targets_hit:
+            if self.targets_hit:
                 self.attack_time = pygame.time.get_ticks()
+                self.targets_hit.clear()
 
-    def charge(self, target_group: pygame.sprite.Group):
-        pass
+    def dash(self):
+        '''Dashes a long distance'''
+
+        # prevents player from moving
+        self.in_combat = True
+
+        if not self.dashing and  pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
+            # trigger dash animation
+            self.frame = 0
+            self.dashing = True
+
+            # dashes where the cursor is pointed
+            cursor_pos = self.game.cursor.offset_mouse_pos()
+            self.acceleration = pygame.math.Vector2(
+                cursor_pos[0] - self.hitbox.center[0],
+                cursor_pos[1] - self.hitbox.center[1]
+            )
+
+            if self.acceleration.length_squared() > 0:
+                self.acceleration.scale_to_length(self.dash_velocity)
+                self.velocity = self.acceleration
+
+    def ram_enemies(self, target_group):
+        '''Deals damage to any enemies in collision'''
+
+        # checks if the player rect overlaps an enemy rect
+        colliding_sprites = pygame.sprite.spritecollide(
+            self,
+            target_group,
+            False
+        )
+
+        colliding_sprites.sort(key=lambda sprite: math.dist(
+            self.hitbox.center,
+            sprite.hitbox.center
+        ))
+
+        for sprite in colliding_sprites:
+            # checks if the player mask overlaps an enemy hitbox
+            mask = pygame.mask.from_surface(self.image)
+            offset = (
+                sprite.hitbox.x - self.rect.x,
+                sprite.hitbox.y - self.rect.y
+            )
+
+            # when dashing, whole sprite is used as the mask for attack
+            # damage is done to hitbox
+            if mask.overlap(sprite.rect_mask, offset):
+                # only attacks the penultimate frame
+                if sprite not in self.targets_hit:
+                    sprite.hurt(self.stats)
+                    self.targets_hit.append(sprite)
+
+        # stop dash after duration
+        print(pygame.time.get_ticks() - self.dash_time -
+              self.dash_cooldown, self.dash_duration)
+        if pygame.time.get_ticks() - self.dash_time - self.dash_cooldown > self.dash_duration:
+            self.dash_time = pygame.time.get_ticks()
+            self.dashing = False
+
+            self.targets_hit.clear()
 
     def check_state(self):
-        if not self.attacking:
+        '''Determines what action the player is doing'''
+        if self.velocity.x < 0:
+            self.facing = 'left'
+
+        elif self.velocity.x > 0:
+            self.facing = 'right'
+
+        if not self.in_combat:
             if self.velocity.length_squared() > 0:
                 self.action = 'run'
-
-                if self.velocity.x < 0:
-                    self.facing = 'left'
-
-                elif self.velocity.x > 0:
-                    self.facing = 'right'
 
             else:
                 self.action = 'idle'
 
         else:
-            self.action = 'attack'
+            if self.attacking:
+                self.action = 'attack'
+
+            elif self.dashing:
+                self.action = 'dash'
+
+            else:
+                self.action = 'idle'
 
     def hurt(self, stats):
         text_coords = (
