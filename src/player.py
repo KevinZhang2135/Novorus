@@ -198,8 +198,6 @@ class Player(Entity):
                     self.targets_hit.append(sprite)
 
         # stop dash after duration
-        print(pygame.time.get_ticks() - self.dash_time -
-              self.dash_cooldown, self.dash_duration)
         if pygame.time.get_ticks() - self.dash_time - self.dash_cooldown > self.dash_duration:
             self.dash_time = pygame.time.get_ticks()
             self.dashing = False
