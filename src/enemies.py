@@ -10,6 +10,7 @@ class Ghost(MeleeEntity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
         self.name = 'Ghost'
+        self.actions = ['idle', 'run', 'attack']
 
         # hitbox
         self.set_hitbox(0.4, 0.5)
@@ -26,18 +27,8 @@ class Ghost(MeleeEntity):
         self.set_animation('enemies/ghost', isFolder=True)
 
         # animation cooldown
-        self.animation_cooldowns
-        self.animation_cooldowns['idle'] = 1600 / \
-            len(self.animation_frames[self.facing]['idle'])
-
-        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
-        self.animation_cooldowns['attack'] = (1200 - self.stats.speed) \
-            / len(self.animation_frames[self.facing]['attack'])
-
-        if self.animation_cooldowns['attack'] < 200:
-            self.animation_cooldowns['attack'] = 200
-
-        self.animation_cooldown = self.animation_cooldowns[self.action]
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.set_animation_cooldown(1600, 1600, 1200)
 
         # attack cooldown
         self.attack_cooldown = self.animation_cooldowns['attack']
@@ -47,6 +38,7 @@ class Mimic(MeleeEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Mimic'
+        self.actions = ['idle', 'attack']
         self.show_stats = False
 
         # hitbox
@@ -60,17 +52,8 @@ class Mimic(MeleeEntity):
         self.set_animation('enemies/mimic', isFolder=True)
 
         # animation cooldown
-        self.animation_cooldowns['idle'] = 1600 / \
-            len(self.animation_frames[self.facing]['idle'])
-
-        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
-        self.animation_cooldowns['attack'] = (1200 - self.stats.speed) \
-            / len(self.animation_frames[self.facing]['attack'])
-
-        if self.animation_cooldowns['attack'] < 200:
-            self.animation_cooldowns['attack'] = 200
-
-        self.animation_cooldown = self.animation_cooldowns[self.action]
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.set_animation_cooldown(1600, 1200)
 
         # attack cooldown
         self.attack_cooldown = 200
@@ -80,6 +63,7 @@ class Sunflower(RangerEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Sunflower'
+        self.actions = ['idle', 'attack']
         self.show_stats = False
 
         # hitbox
@@ -96,14 +80,8 @@ class Sunflower(RangerEntity):
         self.set_animation('enemies/sunflower', isFolder=True)
 
         # animation cooldown
-        self.animation_cooldowns['idle'] = 1600 / \
-            len(self.animation_frames[self.facing]['idle'])
-
-        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
-        self.animation_cooldowns['attack'] = (1200 - self.stats.speed) \
-            / len(self.animation_frames[self.facing]['attack'])
-
-        self.animation_cooldown = self.animation_cooldowns[self.action]
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.set_animation_cooldown(1600, 1200)
 
         # attack cooldown
         self.attack_cooldown = 1500
@@ -134,7 +112,8 @@ class Acorn(RangerEntity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
         self.name = 'Angry Acorn'
-
+        self.actions = ['idle', 'run', 'attack']
+        
         # hitbox
         self.set_hitbox(0.5, 0.5)
 
@@ -151,14 +130,8 @@ class Acorn(RangerEntity):
         self.set_animation('enemies/acorn', isFolder=True)
 
         # animation cooldown
-        self.animation_cooldowns['idle'] = 600 / \
-            len(self.animation_frames[self.facing]['idle'])
-
-        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
-        self.animation_cooldowns['attack'] = (1800 - self.stats.speed) \
-            / len(self.animation_frames[self.facing]['attack'])
-
-        self.animation_cooldown = self.animation_cooldowns[self.action]
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.set_animation_cooldown(600, 600, 1800)
 
         # attack cooldown
         self.attack_cooldown = 1500

@@ -34,20 +34,7 @@ class Player(Entity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-
-        self.animation_cooldowns['idle'] = 1500 / \
-            len(self.animation_frames[self.facing]['idle'])
-
-        self.animation_cooldowns['run'] = self.animation_cooldowns['idle']
-        self.animation_cooldowns['attack'] = (700 - self.stats.speed) \
-            / len(self.animation_frames[self.facing]['attack'])
-
-        if self.animation_cooldowns['attack'] < 50:
-            self.animation_cooldowns['attack'] = 50
-
-        self.animation_cooldowns['charge'] = self.animation_cooldowns['idle']
-
-        self.animation_cooldown = self.animation_cooldowns[self.action]
+        self.set_animation_cooldown(800, 800, 600, 600)
 
         # attack cooldown
         self.attack_cooldown = self.animation_cooldowns['attack']

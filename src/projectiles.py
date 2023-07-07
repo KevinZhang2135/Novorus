@@ -29,6 +29,9 @@ class Projectile(Entity):
 
         # hitboxes are not used for collision
         self.set_hitbox(0, 0)
+
+        # shadows
+        self.draw_shadow = False
         
     def rotate_image(self):
         if self.pierce < self.max_pierce:
@@ -156,10 +159,14 @@ class Fireball(Projectile):
         self.max_velocity = 3
 
         self.fade_cooldown = 2500
-        self.animation_cooldown = 250
-        self.cooldown = self.animation_cooldown
         
+        # general animation
         self.set_animation('projectiles/fireball', isFolder=True)
+
+        # animation cooldown
+        self.set_animation_cooldown(1250)
+
+
 
     def kill(self):
         # leaves explosion on death
@@ -175,5 +182,7 @@ class AcornThorn(Projectile):
 
         # hitboxes are not used for collision
         self.set_hitbox(0, 0)
+
+        # general animation
         self.set_animation('projectiles/thorn', isFolder=True)
         

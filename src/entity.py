@@ -68,11 +68,13 @@ class Entity(Sprite):
         self.shadow_frames = deepcopy(self.animation_frames)
 
     def set_animation(self, filepath: str, isFolder=False):
+        '''Sets the animation and corresponding shadows'''
         for facing in self.animation_frames:
             for action in self.actions:
                 path = f'{SPRITE_PATH}/{filepath}/{action}'
 
                 if os.path.exists(path):
+                    # gets (image, shadow)
                     images = self.get_images(
                         path,
                         isFolder=isFolder,
@@ -86,7 +88,19 @@ class Entity(Sprite):
         self.image = self.animation_frames[self.facing][self.action][self.frame]
         self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
 
+    def set_animation_cooldown(self, *cooldowns):
+        '''Sets the animation cooldown by the ticks for one cycle of animation per action'''
+
+        # maps cooldowns
+        for i, action in enumerate(self.actions):
+            self.animation_cooldowns[action] = cooldowns[i] / \
+                len(self.animation_frames['right'][action])
+        
+        # sets animation cooldown
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
     def line_of_sight(self, point):
+        '''Determines whether the line of sight is not obstructed by walls'''
         distance = dist(self.hitbox.center, point)
 
         # filters walls beyond point
@@ -362,15 +376,10 @@ class Entity(Sprite):
 class MeleeEntity(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.actions = ['idle', 'run', 'attack']
-
         # movement
         self.detection_distance = 0
         self.max_velocity = 0
-
-        # animation cooldowns
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-
+        
     def movement(self):
         '''Handles movement'''
         self.acceleration = pygame.math.Vector2(
@@ -436,8 +445,6 @@ class MeleeEntity(Entity):
                         self.frame = 0
                         self.attacking = True
 
-                    
-
                     # only attacks the last frame
                     if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
                             and sprite not in targets_hit):
@@ -456,14 +463,9 @@ class MeleeEntity(Entity):
 class RangerEntity(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.actions = ['idle', 'run', 'attack']
-
         # movement
         self.detection_distance = 0
         self.max_velocity = 0
-
-        # animation cooldowns
-        self.animation_cooldowns = {action: 0 for action in self.actions}
 
         # attack
         self.attack_range = 0
@@ -503,6 +505,8 @@ class RangerEntity(Entity):
         super().movement()
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
+        # Attacks closest target with a projectile
+
         # checks if the target rect is within attack range
         targets = target_group.sprites()
         targets.sort(key=lambda sprite: dist(
@@ -514,7 +518,7 @@ class RangerEntity(Entity):
         if (len(targets) > 0
                 and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range
                 and self.line_of_sight(targets[0].hitbox.center)):
-            
+
             self.in_combat = True
             self.face_enemy(targets[0])
 

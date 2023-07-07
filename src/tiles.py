@@ -27,10 +27,7 @@ class Chest(Entity):
         self.set_animation('chest', isFolder=True)
 
         # animation cooldown
-        self.animation_cooldowns = {action: None for action in self.actions}
-        self.animation_cooldowns['closed'] = 0
-        self.animation_cooldowns['opened'] = 0
-
+        self.animation_cooldowns = {action: 0 for action in self.actions}
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
     def check_state(self):
@@ -51,7 +48,6 @@ class Chest(Entity):
     def update(self):
         self.check_state()
         self.animation()
-
 
 class Torch(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
@@ -118,6 +114,7 @@ class Totem(Entity):
         self.set_animation('enemies/totem', isFolder=True)
 
         # animation cooldown
+        self.animation_cooldowns = {action: 0 for action in self.actions}
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
     def make_exit(self):
