@@ -453,6 +453,7 @@ class Level:
         # randomly flips vertically
         if random.randint(0, 1):
             decor.facing = 'left'
+            decor.animation()
 
     def add_animated_decor(self, id: int, coords: list):
         match id:

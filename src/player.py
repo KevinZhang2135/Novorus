@@ -19,7 +19,7 @@ class Player(Entity):
 
         # movement
         self.max_velocity = 5
-        self.dash_velocity = self.max_velocity * 6
+        self.dash_velocity = self.max_velocity * 5
 
         # stats
         self.exp = 0
@@ -45,7 +45,7 @@ class Player(Entity):
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
         self.dash_cooldown = 2000
-        self.dash_duration = 750 # how long a dash lasts
+        self.dash_duration = 800 # how long a dash lasts
         
 
         # inventory
@@ -71,7 +71,7 @@ class Player(Entity):
         else:
             # movement decay when input is not received
             if self.dashing:
-                self.velocity *= 0.9
+                self.velocity *= 0.925
 
             else:
                 self.velocity *= 0.85
