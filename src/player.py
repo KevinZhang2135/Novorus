@@ -44,25 +44,26 @@ class Player(Entity):
         # dash
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
-        self.dash_cooldown = 2000
-        self.dash_duration = 800 # how long a dash lasts
-        
+        self.dash_cooldown = 200
+        self.dash_duration = 750  # how long a dash lasts
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
 
     def movement(self):
         '''Handles movement'''
-        keys = pygame.key.get_pressed()
-        left = keys[pygame.K_LEFT] or keys[pygame.K_a]
-        right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
-        down = keys[pygame.K_DOWN] or keys[pygame.K_s]
-        up = keys[pygame.K_UP] or keys[pygame.K_w]
+        self.acceleration = pygame.math.Vector2()
+        if not self.in_combat:
+            keys = pygame.key.get_pressed()
+            left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+            right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+            down = keys[pygame.K_DOWN] or keys[pygame.K_s]
+            up = keys[pygame.K_UP] or keys[pygame.K_w]
 
-        # creates movement using falsy and truthy values that evaluate to 0 and 1
-        self.acceleration = pygame.math.Vector2(right - left, down - up)
+            # creates movement using falsy and truthy values that evaluate to 0 and 1
+            self.acceleration.xy = right - left, down - up
 
-        if not self.in_combat and self.acceleration.length_squared() > 0:  # checks if the player is moving
+        if self.acceleration.length() > 0 and not self.in_combat:  # checks if the player is moving
             # converts the coordinates to a vector according to the radius
             self.acceleration.scale_to_length(self.max_velocity)
             self.velocity += self.acceleration
@@ -76,8 +77,7 @@ class Player(Entity):
             else:
                 self.velocity *= 0.85
 
-            self.acceleration.x = 0
-            self.acceleration.y = 0
+            self.acceleration.xy = 0, 0
 
         # movement decay when the speed is low
         super().movement()
@@ -90,10 +90,10 @@ class Player(Entity):
             self.swing(target_group)
 
         # attacks in a powerful thrust on right click
-        elif (not self.attacking 
-              and not self.dashing 
+        elif (not self.attacking
+              and not self.dashing
               and pygame.mouse.get_pressed()[2]):
-            
+
             self.dash()
 
         if self.dashing:
@@ -166,9 +166,11 @@ class Player(Entity):
                 cursor_pos[1] - self.hitbox.center[1]
             )
 
-            if self.acceleration.length_squared() > 0:
+            if self.acceleration.length() > 0:
                 self.acceleration.scale_to_length(self.dash_velocity)
                 self.velocity = self.acceleration
+
+                self.dash_time = pygame.time.get_ticks()
 
     def ram_enemies(self, target_group):
         '''Deals damage to any enemies in collision'''
@@ -203,7 +205,7 @@ class Player(Entity):
                     self.targets_hit.append(sprite)
 
         # stop dash after duration
-        if pygame.time.get_ticks() - self.dash_time - self.dash_cooldown > self.dash_duration:
+        if pygame.time.get_ticks() - self.dash_time > self.dash_duration:
             self.dash_time = pygame.time.get_ticks()
             self.dashing = False
 
