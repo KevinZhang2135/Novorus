@@ -44,7 +44,7 @@ class Player(Entity):
         # dash
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
-        self.dash_cooldown = 200
+        self.dash_cooldown = 1000
         self.dash_duration = 750  # how long a dash lasts
 
         # inventory
