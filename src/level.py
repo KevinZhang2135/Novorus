@@ -110,6 +110,7 @@ class Level:
             'player': self.set_player_coords,
             'terrain': self.add_terrain,
             'terrain_overlay': self.add_terrain_overlay,
+            'instructions': self.add_instructions,
             'walls': self.add_walls,
             'enemies': self.add_enemies,
             'chests': self.add_chests,
@@ -144,7 +145,7 @@ class Level:
 
     def add_terrain(self, id: int, coords: list):
         sprites = [f'path/path{i}' for i in range(1, 32)] \
-            + [f'grassy/grassy{i}' for i in range(1, 12)] \
+            + [f'grassy/grassy{i}' for i in range(1, 12)]
 
         size = (TILE_SIZE,) * 2
         terrain_tile = Sprite(
@@ -171,6 +172,19 @@ class Level:
 
         terrain_tile.set_animation(f'terrain_overlay/{sprites[id]}')
         terrain_tile.sprite_layer = 2
+
+    def add_instructions(self, id: int, coords: list):
+        sprites = ['dash_path', 'inventory_path', 'move_path', 'slash_path']
+
+        size = (TILE_SIZE,) * 2
+        terrain_tile = Sprite(
+            coords,
+            size,
+            self.game,
+            self.game.camera_group
+        )
+
+        terrain_tile.set_animation(f'instructions/{sprites[id]}')
 
     def add_walls(self, id: int, coords: list):
         sprites = (
