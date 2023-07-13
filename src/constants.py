@@ -42,9 +42,11 @@ ITEM_PATH = '../items'
 IMAGES = {}
 for (path, dirs, files) in os.walk(SPRITE_PATH, topdown=True):
     for file in files:
-        IMAGES[file[:-4]] = pygame.image.load(
-            os.path.join(path, file)
-        ).convert_alpha()
+        file_name, extension = file.split('.')
+        if extension == 'png':
+            IMAGES[file_name] = pygame.image.load(
+                os.path.join(path, file)
+            ).convert_alpha()
 
 # retrieving text files for tooltips
 ITEM_TOOLTIPS = {}
@@ -85,6 +87,7 @@ def color_image(image: pygame.Surface, color: list, transparency=255):
 
     return image
 
+
 def draw_polygon_alpha(surface, color, points):
     # zips points into x's and y's
     x, y = zip(*points)
@@ -96,6 +99,6 @@ def draw_polygon_alpha(surface, color, points):
     target_rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
     shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
 
-    pygame.draw.polygon(shape_surf, color, [(x - min_x, y - min_y) for x, y in points])
+    pygame.draw.polygon(shape_surf, color, [
+                        (x - min_x, y - min_y) for x, y in points])
     surface.blit(shape_surf, target_rect)
-
