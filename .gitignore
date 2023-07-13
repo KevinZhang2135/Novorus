@@ -4,3 +4,4 @@ levels/tileset
 *$py.class
 *.exe
 dist
+.DS_Store
