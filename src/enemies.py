@@ -17,7 +17,7 @@ class Ghost(MeleeEntity):
 
         # stats
         self.exp = 25
-        self.stats = Stats(100, 10, 10, 0.05, 0.05)
+        self.stats = Stats(100, 10, 15, 0.05, 0.05)
 
         # movement
         self.detection_distance = 350
@@ -46,7 +46,7 @@ class Mimic(MeleeEntity):
 
         # stats
         self.exp = 50
-        self.stats = Stats(350, 0, 15, 0.25, 0)
+        self.stats = Stats(350, 0, 25, 0.25, 0)
 
         # animation
         self.set_animation('enemies/mimic', isFolder=True)
@@ -71,7 +71,7 @@ class Sunflower(RangerEntity):
 
         # stats
         self.exp = 15
-        self.stats = Stats(20, 0, 25, 0, 0)
+        self.stats = Stats(20, 0, 30, 0, 0)
 
         # range
         self.attack_range = 250
@@ -119,7 +119,7 @@ class Acorn(RangerEntity):
 
         # stats
         self.exp = 35
-        self.stats = Stats(30, 15, 10, 0.05, 0.05)
+        self.stats = Stats(30, 15, 15, 0.1, 0.05)
 
         # movement & range
         self.detection_distance = 500
