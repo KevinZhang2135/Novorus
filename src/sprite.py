@@ -2,7 +2,6 @@ from constants import *
 from shadow import Shadow
 
 import pygame
-import math
 from copy import deepcopy
 
 
@@ -50,8 +49,13 @@ class Sprite(pygame.sprite.Sprite):
     def get_images(self, filepath: str, isFolder=False, flipped=False):
         images = []
         shadows = []
+        
         if isFolder:
-            for path in os.listdir(f'{SPRITE_PATH}/{filepath}'):
+            # sorts filenames by length and then alphabetically
+            filepaths = os.listdir(f'{SPRITE_PATH}/{filepath}')
+            filepaths.sort(key=lambda filename: (len(filename), filename))
+
+            for path in filepaths:
                 filename = path[:-4].split('/')[-1]
                 image = IMAGES[filename].copy()
                 image = pygame.transform.scale(
@@ -62,7 +66,8 @@ class Sprite(pygame.sprite.Sprite):
                 if flipped:
                     # flips image over y-axis
                     image = pygame.transform.flip(image, True, False)
-
+                
+                # creates image and shadow
                 images.append(image)
                 shadows.append(Shadow((0, 0, 0, 50), image))
 

@@ -1,3 +1,4 @@
+from constants import pygame
 from constants import *
 from sprite import Sprite
 
@@ -68,6 +69,13 @@ class Dust(Particle):
         self.set_animation(f'particles/dust/dust{random.randint(1, 3)}')
         self.velocity.y = -2
 
+class DustTrail(Particle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.loop_frames = False
+        self.animation_cooldown = 100
+
+        self.set_animation('particles/dust_trail', isFolder=True)
 
 class TextPopUp(Particle):
     def __init__(self, coords: list, game, group: pygame.sprite.Group):

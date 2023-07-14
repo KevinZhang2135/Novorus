@@ -166,11 +166,27 @@ class Player(Entity):
                 cursor_pos[1] - self.hitbox.center[1]
             )
 
+            # dash movement
             if self.acceleration.length() > 0:
                 self.acceleration.scale_to_length(self.dash_velocity)
                 self.velocity = self.acceleration
 
+                # resets dash time for dash duration
                 self.dash_time = pygame.time.get_ticks()
+
+                # creates dust trail
+                dust_pos = [self.hitbox.centerx, self.hitbox.bottom]
+                dust_pos[0] += (self.hitbox.width / 2) * \
+                    (1 if self.facing == 'right' else -1)
+                
+                dust_trail = DustTrail(
+                    dust_pos,
+                    (self.hitbox.width * 5,) * 2,
+                    self.game,
+                    self.game.camera_group
+                )
+
+                dust_trail.facing = ('left' if self.velocity.x < 0 else 'right')
 
     def ram_enemies(self, target_group):
         '''Deals damage to any enemies in collision'''
