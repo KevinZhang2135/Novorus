@@ -4,6 +4,7 @@ from sprite import Sprite
 from entity import *
 
 import pygame
+from random import randint
 
 
 class Chest(Entity):
@@ -49,6 +50,7 @@ class Chest(Entity):
         self.check_state()
         self.animation()
 
+
 class Torch(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
@@ -66,8 +68,8 @@ class Torch(Sprite):
         self.animation_cooldown = 600 / len(self.animation_frames[self.facing])
 
         # smoke
-        self.smoke_time = pygame.time.get_ticks() + random.randint(1000, 2000)
-        self.smoke_cooldown = randomize(4000, 0.2)
+        self.smoke_time = pygame.time.get_ticks()
+        self.smoke_cooldown = randomize(400, 0.2)
 
         self.smoke_frames = len(
             os.listdir(f'{SPRITE_PATH}/particles/smoke')
@@ -77,21 +79,17 @@ class Torch(Sprite):
         "Creates smoke every interval"
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
-            self.smoke_cooldown = randomize(4000, 0.2)
+            smoke_pos = list(self.hitbox.midtop)
+            smoke_pos[0] += randint(width := -self.hitbox.width // 3, -width)
+            smoke_pos[1] -= self.hitbox.width // 4
 
-            smoke = Particle(
-                self.rect.center,
-                [randomize(25, 0.1) for i in range(2)],
+            # creates circle particle for smoke
+            Smoke(
+                smoke_pos,
+                (randomize(self.hitbox.width, 0.1), ) * 2,
                 self.game,
                 self.game.camera_group
             )
-
-            smoke.set_animation(
-                f'particles/smoke/smoke{random.randint(1, self.smoke_frames)}'
-            )
-
-            smoke.velocity.y = -4
-            smoke.expiration_time = 500
 
     def update(self):
         self.animation()

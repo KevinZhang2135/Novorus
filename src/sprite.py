@@ -49,7 +49,7 @@ class Sprite(pygame.sprite.Sprite):
     def get_images(self, filepath: str, isFolder=False, flipped=False):
         images = []
         shadows = []
-        
+
         if isFolder:
             # sorts filenames by length and then alphabetically
             filepaths = os.listdir(f'{SPRITE_PATH}/{filepath}')
@@ -125,7 +125,8 @@ class Sprite(pygame.sprite.Sprite):
         # set image
         if self.frame < len(self.animation_frames[self.facing]):
             self.image = self.animation_frames[self.facing][self.frame]
-            self.shadow = self.shadow_frames[self.facing][self.frame]
+            if self.draw_shadow:
+                self.shadow = self.shadow_frames[self.facing][self.frame]
 
             # determines whether the animation cooldown is over
             if (self.animation_cooldown

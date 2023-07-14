@@ -89,7 +89,8 @@ class Sunflower(RangerEntity):
     def face_enemy(self, target: Sprite):
         # does not turn towards target
         pass
-
+    
+    
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size) * 2, ) * 2
 

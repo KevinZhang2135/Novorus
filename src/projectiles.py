@@ -90,6 +90,7 @@ class Projectile(Entity):
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
                         and abs(center_distance.y) < collision_distance.y):
+                    
                     self.velocity.xy = 0, 0
                     self.fade_cooldown = 0
 
@@ -110,8 +111,10 @@ class Projectile(Entity):
             if (sprite not in self.damaged_targets and self.pierce < self.max_pierce):
                 # checks if mask overlaps an enemy hitbox
                 mask = pygame.mask.from_surface(self.image)
-                offset = (sprite.hitbox.x - self.rect.x,
-                      sprite.hitbox.y - self.rect.y)
+                offset = (
+                    sprite.hitbox.x - self.rect.x,
+                    sprite.hitbox.y - self.rect.y
+                )
                 
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):

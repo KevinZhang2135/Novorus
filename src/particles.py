@@ -1,4 +1,3 @@
-from constants import pygame
 from constants import *
 from sprite import Sprite
 
@@ -24,7 +23,7 @@ class Particle(Sprite):
 
         # hitboxes are not used for collision
         self.set_hitbox(0, 0)
-        
+
     def movement(self):
         '''Handles movement'''
         self.velocity += self.acceleration
@@ -62,12 +61,14 @@ class Explosion(Particle):
 
         self.set_animation('particles/explosion', isFolder=True)
 
+
 class Dust(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
 
         self.set_animation(f'particles/dust/dust{random.randint(1, 3)}')
         self.velocity.y = -2
+
 
 class DustTrail(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
@@ -76,6 +77,51 @@ class DustTrail(Particle):
         self.animation_cooldown = 100
 
         self.set_animation('particles/dust_trail', isFolder=True)
+
+
+class CircleParticle(Particle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.loop_frames = False
+        self.color = None
+
+    def set_circles(self, size):
+        for facing in self.animation_frames:
+            for radius in range(width := size[0] // 2, width // 2, -width // 20):
+                circle_surface = pygame.Surface(size, pygame.SRCALPHA)
+                center = list(map(lambda x: x / 2, size))
+
+                pygame.draw.circle(
+                    circle_surface, 
+                    self.color, 
+                    center, 
+                    radius
+                )
+
+                self.animation_frames[facing].append(circle_surface)
+
+        self.image = self.animation_frames[self.facing][self.frame]
+
+    def update(self):
+        self.movement()
+        self.animation()
+        self.expire()
+
+
+class Smoke(CircleParticle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        # render
+        self.animation_cooldown = 100
+        self.fade_cooldown = 500
+        self.color = random.choice((ASH, BLACK))
+
+        self.set_circles(size)
+        
+        # movement
+        self.velocity.y = -0.5
+        self.acceleration.y = -0.05
+
 
 class TextPopUp(Particle):
     def __init__(self, coords: list, game, group: pygame.sprite.Group):
