@@ -107,6 +107,15 @@ class CircleParticle(Particle):
 
         self.image = self.animation_frames[self.facing][self.frame]
 
+    def movement(self):
+        '''Handles movement'''
+        self.velocity += self.acceleration
+
+        self.set_coords(
+            self.coords.x + self.velocity.x,
+            self.coords.y + self.velocity.y
+        )
+
     def update(self):
         self.movement()
         self.animation()
@@ -124,8 +133,7 @@ class Smoke(CircleParticle):
         self.set_circles(size)
         
         # movement
-        self.velocity.y = -0.5
-        self.acceleration.y = -0.05
+        self.velocity.y = -0.25
 
 
 class TextPopUp(Particle):
