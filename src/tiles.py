@@ -65,15 +65,11 @@ class Torch(Sprite):
         self.set_animation('decor/animated/torch', isFolder=True)
 
         # animation cooldown
-        self.animation_cooldown = 600 / len(self.animation_frames[self.facing])
+        self.animation_cooldown = 800 / len(self.animation_frames[self.facing])
 
         # smoke
         self.smoke_time = pygame.time.get_ticks()
-        self.smoke_cooldown = randomize(400, 0.2)
-
-        self.smoke_frames = len(
-            os.listdir(f'{SPRITE_PATH}/particles/smoke')
-        )
+        self.smoke_cooldown = randomize(500, 0.2)
 
     def draw_smoke(self):
         "Creates smoke every interval"
