@@ -86,19 +86,24 @@ class CircleParticle(Particle):
         self.color = None
 
     def set_circles(self, size):
+        # creates an animation of shrinking circles
+        animation_frames = []
+        for radius in range(width := size[0] // 2, width // 2, -width // 20):
+            circle_surface = pygame.Surface(size, pygame.SRCALPHA)
+            center = list(map(lambda x: x / 2, size))
+
+            pygame.draw.circle(
+                circle_surface, 
+                self.color, 
+                center, 
+                radius
+            )
+
+            animation_frames.append(circle_surface)
+
+        # set circle image
         for facing in self.animation_frames:
-            for radius in range(width := size[0] // 2, width // 2, -width // 20):
-                circle_surface = pygame.Surface(size, pygame.SRCALPHA)
-                center = list(map(lambda x: x / 2, size))
-
-                pygame.draw.circle(
-                    circle_surface, 
-                    self.color, 
-                    center, 
-                    radius
-                )
-
-                self.animation_frames[facing].append(circle_surface)
+            self.animation_frames[facing] = animation_frames
 
         self.image = self.animation_frames[self.facing][self.frame]
 

@@ -535,7 +535,7 @@ class RangerEntity(Entity):
                     self.attack_time = pygame.time.get_ticks()
                     self.attacking = False
 
-                    create_projectile(targets[0])
+                    self.create_projectile(targets[0])
 
         # cancels attack when target moves outside attack range
         else:
