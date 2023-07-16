@@ -170,8 +170,9 @@ class Level:
             self.game.camera_group
         )
 
-        terrain_tile.set_animation(f'terrain_overlay/{sprites[id]}')
         terrain_tile.sprite_layer = 2
+        terrain_tile.set_animation(f'terrain_overlay/{sprites[id]}')
+        
 
     def add_instructions(self, id: int, coords: list):
         sprites = ['dash_path', 'inventory_path', 'move_path', 'slash_path']
@@ -203,9 +204,11 @@ class Level:
             (self.game.camera_group, self.game.collision_group)
         )
 
-        wall.set_animation(f'walls/{sprites[id]}')
         wall.sprite_layer = 3
         wall.draw_shadow = True
+
+        wall.set_animation(f'walls/{sprites[id]}')
+        
 
         match id:
             case 0:
@@ -268,9 +271,12 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/flower1')
                 decor.set_hitbox(0.25, 0.4)
-                decor.sprite_layer = 3
+                
 
             # bush1
             case 1:
@@ -287,9 +293,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/bush1')
                 decor.set_hitbox(0.6, 0.5)
-                decor.sprite_layer = 3
 
             # bush2
             case 2:
@@ -306,9 +314,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/bush2')
                 decor.set_hitbox(0.6, 0.3)
-                decor.sprite_layer = 3
 
             # rock1
             case 3:
@@ -325,9 +335,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/rock1')
                 decor.set_hitbox(0.4, 0.3, offsety=0.1)
-                decor.sprite_layer = 3
 
             # rock2
             case 4:
@@ -344,9 +356,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/rock2')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
-                decor.sprite_layer = 3
 
             # rock3
             case 5:
@@ -363,9 +377,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/rock3')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
-                decor.sprite_layer = 3
 
             # rock4
             case 6:
@@ -382,9 +398,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/rock4')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
-                decor.sprite_layer = 3
 
             # oak tree
             case 7:
@@ -401,9 +419,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/oak_tree')
                 decor.set_hitbox(0.4, 0.6)
-                decor.sprite_layer = 3
 
             # pine tree
             case 8:
@@ -420,9 +440,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/pine_tree')
                 decor.set_hitbox(0.3, 0.6)
-                decor.sprite_layer = 3
 
             # sakura tree
             case 9:
@@ -439,9 +461,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/sakura_tree')
                 decor.set_hitbox(0.3, 0.6)
-                decor.sprite_layer = 3
 
             # dead tree
             case 10:
@@ -458,11 +482,11 @@ class Level:
                     self.game.camera_group
                 )
 
+                decor.sprite_layer = 3
+                decor.draw_shadow = True
+
                 decor.set_animation(f'{path}/dead_tree')
                 decor.set_hitbox(0.3, 0.65)
-                decor.sprite_layer = 3
-
-        decor.draw_shadow = True
 
         # randomly flips vertically
         if random.randint(0, 1):

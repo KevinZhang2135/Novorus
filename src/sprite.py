@@ -69,7 +69,8 @@ class Sprite(pygame.sprite.Sprite):
                 
                 # creates image and shadow
                 images.append(image)
-                shadows.append(Shadow((0, 0, 0, 50), image))
+                if self.draw_shadow:
+                    shadows.append(Shadow((0, 0, 0, 50), image))
 
         else:
             filename = filepath.split('/')[-1]
@@ -81,7 +82,8 @@ class Sprite(pygame.sprite.Sprite):
                 image = pygame.transform.flip(image, True, False)
 
             images.append(image)
-            shadows.append(Shadow((0, 0, 0, 50), image))
+            if self.draw_shadow:
+                shadows.append(Shadow((0, 0, 0, 50), image))
 
         return images, shadows
 
@@ -96,11 +98,13 @@ class Sprite(pygame.sprite.Sprite):
             )
 
             self.animation_frames[facing] = images[0]
-            self.shadow_frames[facing] = images[1]
+            if self.draw_shadow:
+                self.shadow_frames[facing] = images[1]
 
         # sets image
         self.image = self.animation_frames[self.facing][self.frame]
-        self.shadow = self.shadow_frames[self.facing][self.frame]
+        if self.draw_shadow:
+            self.shadow = self.shadow_frames[self.facing][self.frame]
 
     def set_coords(self, x: float, y: float):
         self.coords.xy = x, y

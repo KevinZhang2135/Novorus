@@ -83,11 +83,13 @@ class Entity(Sprite):
                     )
 
                     self.animation_frames[facing][action] = images[0]
-                    self.shadow_frames[facing][action] = images[1]
+                    if self.draw_shadow:
+                        self.shadow_frames[facing][action] = images[1]
 
         # sets image
         self.image = self.animation_frames[self.facing][self.action][self.frame]
-        self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
+        if self.draw_shadow:
+            self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
 
     def set_animation_cooldown(self, *cooldowns):
         '''Sets the animation cooldown by the ticks for one cycle of animation per action'''
@@ -265,35 +267,6 @@ class Entity(Sprite):
         if not self.animation_frames[self.facing][self.action]:
             self.action = 'idle'
 
-    def check_death(self):
-        if self.stats.health <= 0:
-            # sprite dies
-            self.stats.health = 0
-
-            # creates dust particles on death
-            for i in range(5):
-                x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
-                x = randint(
-                    self.hitbox.centerx - x_offset,
-                    self.hitbox.centerx + x_offset
-                )
-
-                y_offset = round((self.hitbox.bottom - self.hitbox.top) / 4)
-                y = randint(
-                    self.hitbox.centery - y_offset,
-                    self.hitbox.centery + y_offset
-                )
-
-                Dust(
-                    (x, y),
-                    [randomize(self.hitbox.width / 2, 0.05) for i in range(2)],
-                    self.game,
-                    self.game.camera_group
-                )
-
-            self.kill()
-            del self
-
     def hurt(self, stats):
         text_coords = (
             random.randint(
@@ -344,6 +317,34 @@ class Entity(Sprite):
             text.set_text(COMICORO[20].render('Dodged', True, GOLD))
             text.velocity.y = -5
 
+    def check_death(self):
+        if self.stats.health <= 0:
+            # sprite dies
+            self.stats.health = 0
+
+            # creates dust particles on death
+            x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
+            x = randint(
+                self.hitbox.centerx - x_offset,
+                self.hitbox.centerx + x_offset
+            )
+
+            y_offset = round((self.hitbox.bottom - self.hitbox.top) / 4)
+            y = randint(
+                self.hitbox.centery - y_offset,
+                self.hitbox.centery + y_offset
+            )
+
+            DustExplosion(
+                (x, y),
+                (randomize(self.hitbox.width, 0.05) * 2,) * 2,
+                self.game,
+                self.game.camera_group
+            )
+
+            self.kill()
+            del self
+
     def animation(self):
         '''Handles animation'''
         self.animation_cooldown = self.animation_cooldowns[self.action]
@@ -355,7 +356,8 @@ class Entity(Sprite):
         # set image
         if self.frame < len(self.animation_frames[self.facing][self.action]):
             self.image = self.animation_frames[self.facing][self.action][self.frame]
-            self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
+            if self.draw_shadow:
+                self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
 
             # determines whether the animation cooldown is over
             if (self.animation_cooldown

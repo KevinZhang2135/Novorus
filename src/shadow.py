@@ -16,6 +16,7 @@ class Shadow:
         # zips coords into its separate x's and y's
         x, y = zip(*points)
 
+
         # determines bounds of rect
         min_x, min_y, max_x, max_y = min(x), min(y), max(x), max(y)
 

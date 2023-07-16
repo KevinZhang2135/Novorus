@@ -15,6 +15,7 @@ class Particle(Sprite):
         # render
         self.alpha = 255
         self.sprite_layer = 5
+        self.draw_shadow = False
 
         # fade
         self.fade = True
@@ -62,11 +63,14 @@ class Explosion(Particle):
         self.set_animation('particles/explosion', isFolder=True)
 
 
-class Dust(Particle):
+class DustExplosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
+        self.loop_frames = False
+        self.animation_cooldown = 100
+        self.fade_cooldown = 500
 
-        self.set_animation(f'particles/dust/dust{random.randint(1, 3)}')
+        self.set_animation('particles/dust_explosion', isFolder=True)
         self.velocity.y = -2
 
 

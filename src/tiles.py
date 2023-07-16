@@ -76,13 +76,13 @@ class Torch(Sprite):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
             smoke_pos = list(self.hitbox.midtop)
-            smoke_pos[0] += randint(width := -self.hitbox.width // 3, -width)
+            smoke_pos[0] += randint(width := -self.hitbox.width // 4, -width)
             smoke_pos[1] -= self.hitbox.width // 4
 
             # creates circle particle for smoke
             Smoke(
                 smoke_pos,
-                (randomize(self.hitbox.width, 0.1), ) * 2,
+                (randomize(self.hitbox.width * 1.1, 0.1), ) * 2,
                 self.game,
                 self.game.camera_group
             )
