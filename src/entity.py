@@ -322,7 +322,7 @@ class Entity(Sprite):
             # sprite dies
             self.stats.health = 0
 
-            # creates dust particles on death
+            # creates dust cloud on death
             x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
             x = randint(
                 self.hitbox.centerx - x_offset,
@@ -335,9 +335,11 @@ class Entity(Sprite):
                 self.hitbox.centery + y_offset
             )
 
-            DustExplosion(
+            dust_width = randomize(min(*self.hitbox.size), 0.05) * 3
+
+            DeathExplosion(
                 (x, y),
-                (randomize(self.hitbox.width, 0.05) * 2,) * 2,
+                (dust_width,) * 2,
                 self.game,
                 self.game.camera_group
             )
