@@ -89,12 +89,12 @@ class CircleParticle(Particle):
         self.loop_frames = False
         self.color = None
 
-    def set_circles(self, size):
+    def set_circles(self):
         # creates an animation of shrinking circles
         animation_frames = []
-        for radius in range(width := size[0] // 2, width // 2, -width // 20):
-            circle_surface = pygame.Surface(size, pygame.SRCALPHA)
-            center = list(map(lambda x: x / 2, size))
+        for radius in range(width := round(self.size.x / 2), width // 2, -width // 20):
+            circle_surface = pygame.Surface(self.size, pygame.SRCALPHA)
+            center = list(map(lambda x: x / 2, self.size))
 
             pygame.draw.circle(
                 circle_surface, 
@@ -134,7 +134,7 @@ class Smoke(CircleParticle):
         self.fade_cooldown = 500
         self.color = random.choice((ASH, BLACK))
 
-        self.set_circles(size)
+        self.set_circles()
         
         # movement
         self.velocity.y = -0.25

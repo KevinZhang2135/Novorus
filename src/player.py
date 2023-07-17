@@ -175,10 +175,8 @@ class Player(Entity):
                 self.dash_time = pygame.time.get_ticks()
 
                 # creates dust trail
-                dust_pos = [self.hitbox.centerx, self.hitbox.bottom]
-                dust_pos[0] += (self.hitbox.width / 2) * \
-                    (1 if self.facing == 'right' else -1)
-                
+                dust_pos = self.hitbox.midbottom
+
                 dust_trail = DustTrail(
                     dust_pos,
                     (self.hitbox.width * 5,) * 2,
@@ -186,7 +184,8 @@ class Player(Entity):
                     self.game.camera_group
                 )
 
-                dust_trail.facing = ('left' if self.velocity.x < 0 else 'right')
+                dust_trail.facing = (
+                    'left' if self.velocity.x < 0 else 'right')
 
     def ram_enemies(self, target_group):
         '''Deals damage to any enemies in collision'''
@@ -226,6 +225,19 @@ class Player(Entity):
             self.dashing = False
 
             self.targets_hit.clear()
+
+        else:
+            # creates dust circles when dashing
+            dust_trail = CircleParticle(
+                self.hitbox.midbottom,
+                (randomize(self.hitbox.width * 0.2, 0.1), ) * 2,
+                self.game,
+                self.game.camera_group
+            )
+
+            dust_trail.fade_cooldown = 50
+            dust_trail.color = DARK_GREY
+            dust_trail.set_circles()
 
     def check_state(self):
         '''Determines what action the player is doing'''
