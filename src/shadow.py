@@ -3,6 +3,7 @@ from constants import *
 import pygame
 import math
 
+
 class Shadow:
     def __init__(self, color, image):
         points = []
@@ -16,7 +17,6 @@ class Shadow:
         # zips coords into its separate x's and y's
         x, y = zip(*points)
 
-
         # determines bounds of rect
         min_x, min_y, max_x, max_y = min(x), min(y), max(x), max(y)
 
@@ -25,6 +25,8 @@ class Shadow:
         self.surface = pygame.Surface(target_rect.size, pygame.SRCALPHA)
 
         if len(points) > 2:
-            pygame.draw.polygon(self.surface, color, [(x - min_x, y - min_y) for x, y in points])
-
-    
+            pygame.draw.polygon(
+                self.surface, 
+                color, 
+                [(x - min_x, y - min_y) for x, y in points]
+            )

@@ -89,8 +89,7 @@ class Sunflower(RangerEntity):
     def face_enemy(self, target: Sprite):
         # does not turn towards target
         pass
-    
-    
+
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size) * 2, ) * 2
 
@@ -114,7 +113,7 @@ class Acorn(RangerEntity):
         super().__init__(coords, size, game, groups)
         self.name = 'Angry Acorn'
         self.actions = ['idle', 'run', 'attack']
-        
+
         # hitbox
         self.set_hitbox(0.5, 0.5)
 

@@ -98,7 +98,7 @@ class Entity(Sprite):
         for i, action in enumerate(self.actions):
             self.animation_cooldowns[action] = cooldowns[i] / \
                 len(self.animation_frames['right'][action])
-        
+
         # sets animation cooldown
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
@@ -384,7 +384,7 @@ class MeleeEntity(Entity):
         # movement
         self.detection_distance = 0
         self.max_velocity = 0
-        
+
     def movement(self):
         '''Handles movement'''
         self.acceleration = pygame.math.Vector2(

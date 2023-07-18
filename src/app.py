@@ -18,8 +18,7 @@ class App:
         self.resolution = 1920, 1080
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF | pygame.FULLSCREEN,
-            16
+            pygame.DOUBLEBUF | pygame.FULLSCREEN
         )
 
         self.clock = pygame.time.Clock()
@@ -76,7 +75,6 @@ class App:
 
             # redraws sprites and images
             self.camera_group.render(
-                self.player,
                 show_hitboxes=False,
                 show_rects=False
             )

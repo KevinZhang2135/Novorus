@@ -32,7 +32,7 @@ class Projectile(Entity):
 
         # shadows
         self.draw_shadow = False
-        
+
     def rotate_image(self):
         if self.pierce < self.max_pierce:
             self.angle = 0
@@ -45,7 +45,8 @@ class Projectile(Entity):
             elif self.velocity.y < 0:
                 self.angle = math.pi * 3 / 2
 
-        self.image = pygame.transform.rotate(self.image, self.angle * (180 / math.pi))
+        self.image = pygame.transform.rotate(
+            self.image, self.angle * (180 / math.pi))
         self.image = pygame.transform.flip(self.image, False, True)
 
     def set_target(self, coords: list, stats: Stats, group: pygame.sprite.Group):
@@ -68,7 +69,7 @@ class Projectile(Entity):
                 self.game.collision_group,
                 False
             )
-            
+
             sprites.sort(key=lambda sprite: math.dist(
                 self.hitbox.center,
                 sprite.hitbox.center
@@ -90,7 +91,7 @@ class Projectile(Entity):
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
                         and abs(center_distance.y) < collision_distance.y):
-                    
+
                     self.velocity.xy = 0, 0
                     self.fade_cooldown = 0
 
@@ -115,12 +116,12 @@ class Projectile(Entity):
                     sprite.hitbox.x - self.rect.x,
                     sprite.hitbox.y - self.rect.y
                 )
-                
+
                 # damage is done to hitbox
                 if mask.overlap(sprite.rect_mask, offset):
                     # inflict damage
                     sprite.hurt(self.stats)
-                    
+
                     # piercing checks
                     self.pierce += 1
                     self.damaged_targets.append(sprite)
@@ -162,19 +163,22 @@ class Fireball(Projectile):
         self.max_velocity = 3
 
         self.fade_cooldown = 2500
-        
+
         # general animation
         self.set_animation('projectiles/fireball', isFolder=True)
 
         # animation cooldown
         self.set_animation_cooldown(1250)
 
-
-
     def kill(self):
         # leaves explosion on death
         super().kill()
-        Explosion(self.rect.center, self.rect.size, self.game, self.game.camera_group)
+        Explosion(
+            self.rect.center, 
+            self.rect.size,
+            self.game,
+            self.game.camera_group
+        )
 
 
 class AcornThorn(Projectile):
@@ -188,4 +192,3 @@ class AcornThorn(Projectile):
 
         # general animation
         self.set_animation('projectiles/thorn', isFolder=True)
-        
