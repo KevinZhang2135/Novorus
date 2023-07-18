@@ -143,6 +143,14 @@ class Player(Entity):
                         sprite.hurt(self.stats)
                         self.targets_hit.append(sprite)
 
+                        # creates slash particle
+                        SwordSlash(
+                            sprite.hitbox.center,
+                            (self.hitbox.width * 3,) * 2,
+                            self.game,
+                            self.game.camera_group
+                        )
+
             # reset attack time if targets hit
             if self.targets_hit:
                 self.attack_time = pygame.time.get_ticks()

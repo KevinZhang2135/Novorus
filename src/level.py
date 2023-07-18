@@ -172,7 +172,6 @@ class Level:
 
         terrain_tile.sprite_layer = 2
         terrain_tile.set_animation(f'terrain_overlay/{sprites[id]}')
-        
 
     def add_instructions(self, id: int, coords: list):
         sprites = ['dash_path', 'inventory_path', 'move_path', 'slash_path']
@@ -208,7 +207,6 @@ class Level:
         wall.draw_shadow = True
 
         wall.set_animation(f'walls/{sprites[id]}')
-        
 
         match id:
             case 0:
@@ -276,7 +274,6 @@ class Level:
 
                 decor.set_animation(f'{path}/flower1')
                 decor.set_hitbox(0.25, 0.4)
-                
 
             # bush1
             case 1:

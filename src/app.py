@@ -76,7 +76,6 @@ class App:
 
             # redraws sprites and images
             self.camera_group.render(
-                self.player,
                 show_hitboxes=False,
                 show_rects=False
             )

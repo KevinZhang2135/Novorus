@@ -46,9 +46,6 @@ class Sprite(pygame.sprite.Sprite):
         self.shadow = None
         self.shadow_frames = deepcopy(self.animation_frames)
 
-        # lighting
-        self.draw_light = False
-
     def get_images(self, filepath: str, isFolder=False, flipped=False):
         images = []
         shadows = []
@@ -69,7 +66,7 @@ class Sprite(pygame.sprite.Sprite):
                 if flipped:
                     # flips image over y-axis
                     image = pygame.transform.flip(image, True, False)
-                
+
                 # creates image and shadow
                 images.append(image)
                 if self.draw_shadow:

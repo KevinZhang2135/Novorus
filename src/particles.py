@@ -16,6 +16,7 @@ class Particle(Sprite):
         self.alpha = 255
         self.sprite_layer = 5
         self.draw_shadow = False
+        self.loop_frames = False
 
         # fade
         self.fade = True
@@ -57,9 +58,9 @@ class Particle(Sprite):
 class Explosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.loop_frames = False
-        self.animation_cooldown = 100
 
+        # render
+        self.animation_cooldown = 100
         self.set_animation('particles/explosion', isFolder=True)
 
         # lighting
@@ -69,17 +70,20 @@ class Explosion(Particle):
 class DeathExplosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.loop_frames = False
+
+        # render
         self.animation_cooldown = 100
         self.fade_cooldown = 400
 
         self.set_animation('particles/death_explosion', isFolder=True)
         self.velocity.y = -2
 
+
 class DustExplosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.loop_frames = False
+
+        # render
         self.animation_cooldown = 100
         self.fade_cooldown = 600
 
@@ -89,33 +93,33 @@ class DustExplosion(Particle):
 class DustTrail(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.loop_frames = False
+        
+        # render
         self.animation_cooldown = 100
-
         self.set_animation('particles/dust_trail', isFolder=True)
+
+class SwordSlash(Particle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+
+        # render
+        self.facing = random.choice(('left', 'right'))
+        self.animation_cooldown = 100
+        self.fade_cooldown = 200
+
+        self.set_animation('particles/sword_slash', isFolder=True)
 
 
 class CircleParticle(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.loop_frames = False
         self.color = None
 
     def set_circles(self):
         # creates an animation of shrinking circles
         animation_frames = []
         for radius in range(width := round(self.size.x / 2), width // 2, -width // 20):
-            circle_surface = pygame.Surface(self.size, pygame.SRCALPHA)
-            center = list(map(lambda x: x / 2, self.size))
-
-            pygame.draw.circle(
-                circle_surface, 
-                self.color, 
-                center, 
-                radius
-            )
-
-            animation_frames.append(circle_surface)
+            animation_frames.append(get_circle_surface(radius, self.color))
 
         # set circle image
         for facing in self.animation_frames:
@@ -147,7 +151,7 @@ class Smoke(CircleParticle):
         self.color = random.choice((ASH, BLACK))
 
         self.set_circles()
-        
+
         # movement
         self.velocity.y = -0.25
 
