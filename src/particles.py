@@ -73,6 +73,15 @@ class DeathExplosion(Particle):
         self.set_animation('particles/death_explosion', isFolder=True)
         self.velocity.y = -2
 
+class DustExplosion(Particle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.loop_frames = False
+        self.animation_cooldown = 100
+        self.fade_cooldown = 600
+
+        self.set_animation('particles/dust_explosion', isFolder=True)
+
 
 class DustTrail(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
