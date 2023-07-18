@@ -47,6 +47,7 @@ class CameraGroup(pygame.sprite.Group):
 
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
+            # draws shadows
             if sprite.draw_shadow and sprite.shadow:
                 shadow_pos = sprite.hitbox.bottomleft - self.offset
                 shadow_pos.y -= sprite.shadow.surface.get_height()
@@ -54,6 +55,10 @@ class CameraGroup(pygame.sprite.Group):
 
             offset_pos = sprite.rect.topleft - self.offset
             self.screen.blit(sprite.image, offset_pos)
+
+            # draws light
+            if sprite.draw_light:
+                self.screen.blit(sprite.image, offset_pos, special_flags=pygame.BLEND_RGB_ADD)
 
             # draws sprite hitboxes
             show_hitboxes and self.draw_hitboxes(sprite)

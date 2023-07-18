@@ -62,6 +62,9 @@ class Explosion(Particle):
 
         self.set_animation('particles/explosion', isFolder=True)
 
+        # lighting
+        self.draw_light = True
+
 
 class DeathExplosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
