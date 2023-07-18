@@ -102,17 +102,7 @@ class CircleParticle(Particle):
         # creates an animation of shrinking circles
         animation_frames = []
         for radius in range(width := round(self.size.x / 2), width // 2, -width // 20):
-            circle_surface = pygame.Surface(self.size, pygame.SRCALPHA)
-            center = list(map(lambda x: x / 2, self.size))
-
-            pygame.draw.circle(
-                circle_surface, 
-                self.color, 
-                center, 
-                radius
-            )
-
-            animation_frames.append(circle_surface)
+            animation_frames.append(get_circle_surface(radius, self.color))
 
         # set circle image
         for facing in self.animation_frames:
