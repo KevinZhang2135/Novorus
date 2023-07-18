@@ -89,6 +89,21 @@ def color_image(image: pygame.Surface, color: list, transparency=255):
     return image
 
 
+def get_circle_surface(radius, color):
+    '''Returns a circle surface'''
+    circle_surface = pygame.Surface((radius * 2,) * 2, pygame.SRCALPHA)
+    center = (radius,) * 2
+
+    pygame.draw.circle(
+        circle_surface,
+        color,
+        center,
+        radius
+    )
+
+    return circle_surface
+
+
 def draw_polygon_alpha(surface, color, points):
     '''Draws a polygon with transparency'''
 
@@ -102,6 +117,10 @@ def draw_polygon_alpha(surface, color, points):
     target_rect = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
     shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
 
-    pygame.draw.polygon(shape_surf, color, [
-                        (x - min_x, y - min_y) for x, y in points])
+    pygame.draw.polygon(
+        shape_surf,
+        color,
+        [(x - min_x, y - min_y) for x, y in points]
+    )
+
     surface.blit(shape_surf, target_rect)
