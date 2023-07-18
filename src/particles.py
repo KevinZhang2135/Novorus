@@ -67,8 +67,8 @@ class DeathExplosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
         self.loop_frames = False
-        self.animation_cooldown = 150
-        self.fade_cooldown = 600
+        self.animation_cooldown = 100
+        self.fade_cooldown = 400
 
         self.set_animation('particles/death_explosion', isFolder=True)
         self.velocity.y = -2
