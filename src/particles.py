@@ -1,3 +1,4 @@
+from constants import pygame
 from constants import *
 from sprite import Sprite
 
@@ -54,6 +55,16 @@ class Particle(Sprite):
         self.animation()
         self.expire()
 
+class SmallExplosion(Particle):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+
+        # render
+        self.animation_cooldown = 150
+        self.fade_cooldown = 150
+
+        self.set_animation('particles/small_explosion', isFolder=True)
+
 
 class Explosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
@@ -62,9 +73,6 @@ class Explosion(Particle):
         # render
         self.animation_cooldown = 100
         self.set_animation('particles/explosion', isFolder=True)
-
-        # lighting
-        self.draw_light = True
 
 
 class DeathExplosion(Particle):

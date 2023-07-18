@@ -18,8 +18,7 @@ class App:
         self.resolution = 1920, 1080
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF | pygame.FULLSCREEN,
-            16
+            pygame.DOUBLEBUF | pygame.FULLSCREEN
         )
 
         self.clock = pygame.time.Clock()

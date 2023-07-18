@@ -227,6 +227,14 @@ class Player(Entity):
                     sprite.hurt(self.stats)
                     self.targets_hit.append(sprite)
 
+                    # creates small explosion particle
+                    SmallExplosion(
+                        sprite.hitbox.center,
+                        (self.hitbox.width * 3,) * 2,
+                        self.game,
+                        self.game.camera_group
+                    )
+
         # stop dash after duration
         if pygame.time.get_ticks() - self.dash_time > self.dash_duration:
             self.dash_time = pygame.time.get_ticks()
