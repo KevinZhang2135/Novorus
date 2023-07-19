@@ -669,7 +669,7 @@ class Cursor(Sprite):
         mouse_pos = list(pygame.mouse.get_pos())
         mouse_pos[0] += self.game.camera_group.offset.x
         mouse_pos[1] += self.game.camera_group.offset.y
-
+        
         return mouse_pos
 
     def update(self):

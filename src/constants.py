@@ -7,6 +7,7 @@ pygame.display.set_mode()
 
 # tile pixel size
 TILE_SIZE = 100
+HALF_TILE_SIZE = TILE_SIZE / 2
 STARTING_FLOOR = 1
 
 # file paths

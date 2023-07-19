@@ -146,20 +146,21 @@ class Player(Entity):
                         sprite.hurt(self.stats)
                         self.targets_hit.append(sprite)
 
-                        # randomizes slash position
-                        pos_offset = tuple(
+                        # randomizes particle position
+                        offset = tuple(
                             map(lambda x: x // 4, sprite.hitbox.size)
                         )
 
-                        slash_pos = list(sprite.hitbox.center)
-                        slash_pos[0] += random.randint(-pos_offset[0],
-                                                       pos_offset[0])
-                        slash_pos[1] += random.randint(-pos_offset[1],
-                                                       pos_offset[1])
+                        offset_pos = list(sprite.hitbox.center)
+                        for i in range(len(offset_pos)):
+                            offset_pos[i] += random.randint(
+                                -offset[i],
+                                offset[i]
+                            )
 
                         # creates slash particle
                         SwordSlash(
-                            slash_pos,
+                            offset_pos,
                             (self.hitbox.width * 3,) * 2,
                             self.game,
                             self.game.camera_group
@@ -241,20 +242,21 @@ class Player(Entity):
                     sprite.hurt(self.stats)
                     self.targets_hit.append(sprite)
 
-                    # randomizes slash position
-                    pos_offset = tuple(
+                    # # randomizes particle position
+                    offset = tuple(
                         map(lambda x: x // 4, sprite.hitbox.size)
                     )
 
-                    explo_pos = list(sprite.hitbox.center)
-                    explo_pos[0] += random.randint(-pos_offset[0],
-                                                   pos_offset[0])
-                    explo_pos[1] += random.randint(-pos_offset[1],
-                                                   pos_offset[1])
+                    offset_pos = list(sprite.hitbox.center)
+                    for i in range(len(offset_pos)):
+                        offset_pos[i] += random.randint(
+                            -offset[i],
+                            offset[i]
+                        )
 
                     # creates small explosion particle
                     SmallExplosion(
-                        explo_pos,
+                        offset_pos,
                         (self.hitbox.width * 3,) * 2,
                         self.game,
                         self.game.camera_group

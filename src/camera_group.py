@@ -1,6 +1,8 @@
 from constants import *
+from color import Color
 
 import pygame
+import math
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -11,35 +13,49 @@ class CameraGroup(pygame.sprite.Group):
 
         # camera offset
         self.offset = pygame.math.Vector2()
-        self.half_width = self.screen.get_width() / 2
-        self.half_height = self.screen.get_height() / 2
+
+        # camera rect
+        self.camera_rect = pygame.Rect(
+            0, 
+            0, 
+            self.screen.get_width(), 
+            self.screen.get_height()
+        )
+
+        # dimensions
+        self.half_width = round(self.screen.get_width() / 2)
+        self.half_height = round(self.screen.get_height() / 2)
 
     def center_target(self, target):
-        self.offset.x = -TILE_SIZE / 2
-        self.offset.y = -TILE_SIZE / 2
+        self.offset.xy = -HALF_TILE_SIZE, -HALF_TILE_SIZE
 
         # stops scrolling screen when the player is past right edge of the screen
-        if (target.rect.centerx >= self.game.level.size.x - self.half_width):
+        if (target.coords.x >= self.game.level.size.x - self.half_width):
             self.offset.x = self.game.level.size.x \
                 - self.screen.get_width() \
-                - TILE_SIZE / 2
+                - HALF_TILE_SIZE
 
         # starts scrolling screen when the player is in the middle of the screen
-        elif (target.rect.centerx > self.half_width):
-            self.offset.x = target.rect.centerx \
+        elif (target.coords.x > self.half_width):
+            self.offset.x = target.coords.x \
                 - self.half_width \
-                - TILE_SIZE / 2
+                - HALF_TILE_SIZE
 
         # stops scrolling screen when the player is past bottom edge of the screen
-        if (target.rect.centery >= self.game.level.size.y - self.half_height - TILE_SIZE / 2):
+        if (target.coords.y >= self.game.level.size.y - self.half_height - HALF_TILE_SIZE):
             self.offset.y = self.game.level.size.y \
                 - self.screen.get_height() \
-                - TILE_SIZE / 2
+                - HALF_TILE_SIZE
 
         # starts scrolling screen when the player is in the middle of the screen
-        elif (target.rect.centery > self.half_height - TILE_SIZE / 2):
-            self.offset.y = target.rect.centery \
+        elif (target.coords.y > self.half_height - HALF_TILE_SIZE):
+            self.offset.y = target.coords.y \
                 - self.half_height
+
+    def check_bounds(self, sprite) -> bool:
+        # Returns True if sprite is within bounding coords to optimize updates and draws
+
+        pass
 
     def render(self, show_hitboxes: bool = False, show_rects: bool = False):
         '''Draws the screen according to player movement'''
@@ -93,5 +109,6 @@ class CameraGroup(pygame.sprite.Group):
 
     def update(self):
         "Updates all sprites"
+        # self.check_chunk()
         for sprite in self.sprites():
             sprite.update()

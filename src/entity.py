@@ -5,7 +5,7 @@ from sprite import Sprite
 
 import pygame
 from math import dist
-from random import randint
+import random
 from copy import deepcopy
 
 
@@ -269,13 +269,19 @@ class Entity(Sprite):
             self.action = 'idle'
 
     def hurt(self, stats):
-        text_coords = (
-            random.randint(
-                round((self.hitbox.left + self.hitbox.centerx) / 2),
-                round((self.hitbox.right + self.hitbox.centerx) / 2)
-            ),
-            self.hitbox.top
+        # deals damage to sprite
+
+        # randomizes particle position
+        offset = tuple(
+            map(lambda x: x // 4, self.hitbox.size)
         )
+
+        offset_pos = list(self.hitbox.center)
+        for i in range(len(offset_pos)):
+            offset_pos[i] += random.randint(
+                -offset[i],
+                offset[i]
+            )
 
         dodge = self.stats.dodge_chance > random.randint(0, 100) / 100
         if not dodge:
@@ -288,7 +294,7 @@ class Entity(Sprite):
                 damage *= 2
 
                 text = TextPopUp(
-                    text_coords,
+                    offset_pos,
                     self.game,
                     self.game.camera_group
                 )
@@ -302,7 +308,7 @@ class Entity(Sprite):
             # non-crit damage
             else:
                 text = TextPopUp(
-                    text_coords,
+                    offset_pos,
                     self.game,
                     self.game.camera_group
                 )
@@ -310,11 +316,12 @@ class Entity(Sprite):
                 text.set_text(COMICORO[25].render(str(damage), True, Color.RED))
                 text.velocity.y = -5
 
+            # takes damage
             self.stats.health -= damage
 
         # damage is dodged
         else:
-            text = TextPopUp(text_coords, self.game, self.game.camera_group)
+            text = TextPopUp(offset_pos, self.game, self.game.camera_group)
             text.set_text(COMICORO[20].render('Dodged', True, Color.GOLD))
             text.velocity.y = -5
 
@@ -325,13 +332,13 @@ class Entity(Sprite):
 
             # creates dust cloud on death
             x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
-            x = randint(
+            x = random.randint(
                 self.hitbox.centerx - x_offset,
                 self.hitbox.centerx + x_offset
             )
 
             y_offset = round((self.hitbox.bottom - self.hitbox.top) / 4)
-            y = randint(
+            y = random.randint(
                 self.hitbox.centery - y_offset,
                 self.hitbox.centery + y_offset
             )

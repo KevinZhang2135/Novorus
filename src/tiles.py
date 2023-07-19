@@ -5,7 +5,7 @@ from sprite import Sprite
 from entity import *
 
 import pygame
-from random import randint
+import random
 
 
 class Chest(Entity):
@@ -77,7 +77,11 @@ class Torch(Sprite):
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
             smoke_pos = list(self.hitbox.midtop)
-            smoke_pos[0] += randint(width := -self.hitbox.width // 4, -width)
+            smoke_pos[0] += random.randint(
+                width := -self.hitbox.width // 4, 
+                -width
+            )
+            
             smoke_pos[1] -= self.hitbox.width // 4
 
             # creates circle particle for smoke
@@ -123,13 +127,19 @@ class Totem(Entity):
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
     def hurt(self, stats):
-        text_coords = (
-            random.randint(
-                round((self.hitbox.left + self.hitbox.centerx) / 2),
-                round((self.hitbox.right + self.hitbox.centerx) / 2)
-            ),
-            self.hitbox.top
+        # deals damage to sprite
+
+        # randomizes particle position
+        offset = tuple(
+            map(lambda x: x // 4, self.hitbox.size)
         )
+
+        offset_pos = list(self.hitbox.center)
+        for i in range(len(offset_pos)):
+            offset_pos[i] += random.randint(
+                -offset[i],
+                offset[i]
+            )
 
         # randomizes damage between 0.9 and 1.1
         damage = randomize(stats.attack, 0.15)
@@ -140,7 +150,7 @@ class Totem(Entity):
             damage *= 2
 
             text = TextPopUp(
-                text_coords,
+                offset_pos,
                 self.game,
                 self.game.camera_group
             )
@@ -154,7 +164,7 @@ class Totem(Entity):
         # non-crit damage
         else:
             text = TextPopUp(
-                text_coords,
+                offset_pos,
                 self.game,
                 self.game.camera_group
             )
@@ -162,27 +172,33 @@ class Totem(Entity):
             text.set_text(COMICORO[25].render(str(damage), True, Color.RED))
             text.velocity.y = -5
 
+        # takes damage
         self.stats.health -= damage
 
-        for i in range(3):
-            # creates circle particle for smoke
-            smoke = CircleParticle(
-                (0, 0),
-                (randomize(self.hitbox.width * 1.1, 0.1), ) * 2,
+        for i in range(random.randint(3, 6)):
+            # creates circle particle for sparks
+            sparks = CircleParticle(
+                self.hitbox.center,
+                (randomize(self.hitbox.width * 0.3, 0.5), ) * 2,
                 self.game,
                 self.game.camera_group
             )
 
-            # smoke render
-            smoke.animation_cooldown = 100
-            smoke.fade_cooldown = 500
-            smoke.color = random.choice((Color.ASH, Color.BLACK))
+            # sparks render
+            sparks.animation_cooldown = 25
+            sparks.fade_cooldown = 150
+            sparks.color = random.choice((
+                Color.SKY_BLUE1,
+                Color.SKY_BLUE2,
+                Color.SKY_BLUE3
+            ))
 
-            smoke.set_circles()
+            sparks.set_circles()
 
-            # smoke movement
-            smoke.velocity.y = -0.25
-            
+            # sparks movement
+            sparks.velocity.x = random.uniform(-2, 2)
+            sparks.velocity.y = -2
+            sparks.acceleration.y = 0.3
 
     def check_death(self):
         if self.stats.health <= 0:
@@ -191,13 +207,13 @@ class Totem(Entity):
 
             # creates dust cloud on death
             x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
-            x = randint(
+            x = random.randint(
                 self.hitbox.centerx - x_offset,
                 self.hitbox.centerx + x_offset
             )
 
             y_offset = round((self.hitbox.bottom - self.hitbox.top) / 4)
-            y = randint(
+            y = random.randint(
                 self.hitbox.centery - y_offset,
                 self.hitbox.centery + y_offset
             )
