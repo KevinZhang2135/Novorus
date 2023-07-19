@@ -197,7 +197,7 @@ class Totem(Entity):
 
             # sparks movement
             sparks.velocity.x = random.uniform(-2, 2)
-            sparks.velocity.y = -2
+            sparks.velocity.y = -3
             sparks.acceleration.y = 0.3
 
     def check_death(self):
