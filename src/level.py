@@ -1,4 +1,5 @@
 from constants import *
+from color import Color
 from tiles import *
 
 from enemies import *
@@ -30,7 +31,7 @@ class Level:
             self.screen.get_height()
         )
 
-        text = COMICORO[50].render(f'Floor {self.floor_level}', True, BLACK)
+        text = COMICORO[50].render(f'Floor {self.floor_level}', True, Color.BLACK)
         text_rect = text.get_rect(
             center=(
                 self.screen.get_width() / 2,
@@ -59,7 +60,7 @@ class Level:
                 text = COMICORO[50].render(
                     f'Floor {self.floor_level}',
                     True,
-                    BLACK
+                    Color.BLACK
                 )
 
                 self.floor_level_text[0] = text
@@ -516,7 +517,7 @@ class Level:
         if self.transitioning:
             pygame.draw.rect(
                 self.screen,
-                BLACK,
+                Color.BLACK,
                 self.level_transition_rect
             )
 

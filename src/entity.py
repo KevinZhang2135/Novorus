@@ -1,4 +1,5 @@
 from constants import *
+from color import Color
 from particles import *
 from sprite import Sprite
 
@@ -293,7 +294,7 @@ class Entity(Sprite):
                 )
 
                 text.set_text(COMICORO[35].render(
-                    str(damage), True, BLOOD_RED)
+                    str(damage), True, Color.BLOOD_RED)
                 )
 
                 text.velocity.y = -5
@@ -306,7 +307,7 @@ class Entity(Sprite):
                     self.game.camera_group
                 )
 
-                text.set_text(COMICORO[25].render(str(damage), True, RED))
+                text.set_text(COMICORO[25].render(str(damage), True, Color.RED))
                 text.velocity.y = -5
 
             self.stats.health -= damage
@@ -314,7 +315,7 @@ class Entity(Sprite):
         # damage is dodged
         else:
             text = TextPopUp(text_coords, self.game, self.game.camera_group)
-            text.set_text(COMICORO[20].render('Dodged', True, GOLD))
+            text.set_text(COMICORO[20].render('Dodged', True, Color.GOLD))
             text.velocity.y = -5
 
     def check_death(self):

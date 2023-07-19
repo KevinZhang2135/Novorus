@@ -1,9 +1,11 @@
+from color import Color
 from ui import *
 from particles import *
 from projectiles import *
 
 import pygame
 import math
+import random
 
 
 class Player(Entity):
@@ -35,7 +37,7 @@ class Player(Entity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(800, 800, 600, 600)
+        self.set_animation_cooldown(800, 800, 500, 600)
 
         # attack cooldown
         self.targets_hit = []
@@ -140,12 +142,24 @@ class Player(Entity):
                     if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
                             and sprite not in self.targets_hit):
 
+                        # deals damage
                         sprite.hurt(self.stats)
                         self.targets_hit.append(sprite)
 
+                        # randomizes slash position
+                        pos_offset = tuple(
+                            map(lambda x: x // 4, sprite.hitbox.size)
+                        )
+
+                        slash_pos = list(sprite.hitbox.center)
+                        slash_pos[0] += random.randint(-pos_offset[0],
+                                                       pos_offset[0])
+                        slash_pos[1] += random.randint(-pos_offset[1],
+                                                       pos_offset[1])
+
                         # creates slash particle
                         SwordSlash(
-                            sprite.hitbox.center,
+                            slash_pos,
                             (self.hitbox.width * 3,) * 2,
                             self.game,
                             self.game.camera_group
@@ -184,7 +198,6 @@ class Player(Entity):
 
                 # creates dust trail
                 dust_pos = self.hitbox.midbottom
-
                 dust_trail = DustTrail(
                     dust_pos,
                     (self.hitbox.width * 5,) * 2,
@@ -224,12 +237,24 @@ class Player(Entity):
             if mask.overlap(sprite.rect_mask, offset):
                 # only attacks the penultimate frame
                 if sprite not in self.targets_hit:
+                    # deals damage
                     sprite.hurt(self.stats)
                     self.targets_hit.append(sprite)
 
+                    # randomizes slash position
+                    pos_offset = tuple(
+                        map(lambda x: x // 4, sprite.hitbox.size)
+                    )
+
+                    explo_pos = list(sprite.hitbox.center)
+                    explo_pos[0] += random.randint(-pos_offset[0],
+                                                   pos_offset[0])
+                    explo_pos[1] += random.randint(-pos_offset[1],
+                                                   pos_offset[1])
+
                     # creates small explosion particle
                     SmallExplosion(
-                        sprite.hitbox.center,
+                        explo_pos,
                         (self.hitbox.width * 3,) * 2,
                         self.game,
                         self.game.camera_group
@@ -252,7 +277,7 @@ class Player(Entity):
             )
 
             dust_trail.fade_cooldown = 50
-            dust_trail.color = DARK_GREY
+            dust_trail.color = Color.DARK_GREY
             dust_trail.set_circles()
 
     def check_state(self):
@@ -305,7 +330,8 @@ class Player(Entity):
                     self.game.camera_group
                 )
 
-                text.set_text(COMICORO[35].render(str(damage), True, ORANGE))
+                text.set_text(COMICORO[35].render(
+                    str(damage), True, Color.ORANGE))
                 text.velocity.y = -5
 
             # non-crit damage
@@ -319,7 +345,7 @@ class Player(Entity):
                 text.set_text(COMICORO[25].render(
                     str(damage),
                     True,
-                    TANGERINE
+                    Color.TANGERINE
                 ))
 
                 text.velocity.y = -5
@@ -329,7 +355,7 @@ class Player(Entity):
         # damage is dodged
         else:
             text = TextPopUp(text_coords, self.game, self.game.camera_group)
-            text.set_text(COMICORO[20].render('Dodged', True, GOLD))
+            text.set_text(COMICORO[20].render('Dodged', True, Color.GOLD))
             text.velocity.y = -5
 
     def check_death(self):

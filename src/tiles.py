@@ -1,4 +1,5 @@
 from constants import *
+from color import Color
 from particles import *
 from sprite import Sprite
 from entity import *
@@ -80,12 +81,22 @@ class Torch(Sprite):
             smoke_pos[1] -= self.hitbox.width // 4
 
             # creates circle particle for smoke
-            Smoke(
+            smoke = CircleParticle(
                 smoke_pos,
                 (randomize(self.hitbox.width * 1.1, 0.1), ) * 2,
                 self.game,
                 self.game.camera_group
             )
+
+            # smoke render
+            smoke.animation_cooldown = 100
+            smoke.fade_cooldown = 500
+            smoke.color = random.choice((Color.ASH, Color.BLACK))
+
+            smoke.set_circles()
+
+            # smoke movement
+            smoke.velocity.y = -0.25
 
     def update(self):
         self.animation()
@@ -111,15 +122,67 @@ class Totem(Entity):
         self.animation_cooldowns = {action: 0 for action in self.actions}
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
-    def make_exit(self):
-        '''Creates portal when all totems are destroyed'''
-        if not self.game.totem_group.sprites():
-            LevelExit(
-                self.hitbox.midbottom,
-                (TILE_SIZE * 0.5, ) * 2,
+    def hurt(self, stats):
+        text_coords = (
+            random.randint(
+                round((self.hitbox.left + self.hitbox.centerx) / 2),
+                round((self.hitbox.right + self.hitbox.centerx) / 2)
+            ),
+            self.hitbox.top
+        )
+
+        # randomizes damage between 0.9 and 1.1
+        damage = randomize(stats.attack, 0.15)
+
+        # doubles damage if crit
+        crit = stats.crit_chance >= random.randint(0, 100) / 100
+        if crit:
+            damage *= 2
+
+            text = TextPopUp(
+                text_coords,
                 self.game,
                 self.game.camera_group
             )
+
+            text.set_text(COMICORO[35].render(
+                str(damage), True, Color.BLOOD_RED)
+            )
+
+            text.velocity.y = -5
+
+        # non-crit damage
+        else:
+            text = TextPopUp(
+                text_coords,
+                self.game,
+                self.game.camera_group
+            )
+
+            text.set_text(COMICORO[25].render(str(damage), True, Color.RED))
+            text.velocity.y = -5
+
+        self.stats.health -= damage
+
+        for i in range(3):
+            # creates circle particle for smoke
+            smoke = CircleParticle(
+                (0, 0),
+                (randomize(self.hitbox.width * 1.1, 0.1), ) * 2,
+                self.game,
+                self.game.camera_group
+            )
+
+            # smoke render
+            smoke.animation_cooldown = 100
+            smoke.fade_cooldown = 500
+            smoke.color = random.choice((Color.ASH, Color.BLACK))
+
+            smoke.set_circles()
+
+            # smoke movement
+            smoke.velocity.y = -0.25
+            
 
     def check_death(self):
         if self.stats.health <= 0:
@@ -150,6 +213,16 @@ class Totem(Entity):
 
             self.kill()
             del self
+
+    def make_exit(self):
+        '''Creates portal when all totems are destroyed'''
+        if not self.game.totem_group.sprites():
+            LevelExit(
+                self.hitbox.midbottom,
+                (TILE_SIZE * 0.5, ) * 2,
+                self.game,
+                self.game.camera_group
+            )
 
     def update(self):
         self.check_state()

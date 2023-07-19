@@ -55,6 +55,7 @@ class Particle(Sprite):
         self.animation()
         self.expire()
 
+
 class SmallExplosion(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
@@ -101,10 +102,11 @@ class DustExplosion(Particle):
 class DustTrail(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        
+
         # render
         self.animation_cooldown = 100
         self.set_animation('particles/dust_trail', isFolder=True)
+
 
 class SwordSlash(Particle):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
@@ -148,20 +150,6 @@ class CircleParticle(Particle):
         self.movement()
         self.animation()
         self.expire()
-
-
-class Smoke(CircleParticle):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
-        super().__init__(coords, size, game, groups)
-        # render
-        self.animation_cooldown = 100
-        self.fade_cooldown = 500
-        self.color = random.choice((ASH, BLACK))
-
-        self.set_circles()
-
-        # movement
-        self.velocity.y = -0.25
 
 
 class TextPopUp(Particle):

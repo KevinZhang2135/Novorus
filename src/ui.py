@@ -1,4 +1,5 @@
 from constants import *
+from color import Color
 from sprite import Sprite
 
 import pygame
@@ -35,7 +36,7 @@ class Menu(pygame.sprite.Group):
         )
 
         # menu text
-        text = COMICORO[50].render('Menu', True, BLACK)
+        text = COMICORO[50].render('Menu', True, Color.BLACK)
         text_rect = text.get_rect(
             center=(
                 self.screen.get_width() / 2,
@@ -46,7 +47,7 @@ class Menu(pygame.sprite.Group):
         self.menu_text = text, text_rect
 
         # exit text
-        text = COMICORO[50].render('Exit', True, BLACK)
+        text = COMICORO[50].render('Exit', True, Color.BLACK)
         text_rect = text.get_rect(
             center=(
                 self.screen.get_width() / 2,
@@ -54,9 +55,11 @@ class Menu(pygame.sprite.Group):
             )
         )
 
+        # turns yellow upon hover
         self.exit_text = text, text_rect
-        self.yellow_exit_text = color_image(  # turns yellow upon hover
-            self.exit_text[0], YELLOW
+        self.yellow_exit_text = color_image(
+            self.exit_text[0],
+            Color.YELLOW
         )
 
     def menu_popup(self):
@@ -65,13 +68,13 @@ class Menu(pygame.sprite.Group):
             self.game.state['unpaused'] = False
             pygame.draw.rect(
                 self.screen,
-                BROWN,
+                Color.BROWN,
                 self.menu_rect
             )
 
             pygame.draw.rect(
                 self.screen,
-                DARK_BROWN,
+                Color.DARK_BROWN,
                 self.menu_rect,
                 5
             )
@@ -239,10 +242,10 @@ class Inventory(pygame.sprite.Group):
             (self.inventory_rect.left, self.inventory_rect.top)
         )
 
-        self.inventory_surface.fill(BROWN)
+        self.inventory_surface.fill(Color.BROWN)
         pygame.draw.rect(
             self.screen,
-            DARK_BROWN,
+            Color.DARK_BROWN,
             self.inventory_rect,
             5
         )
@@ -277,7 +280,12 @@ class Inventory(pygame.sprite.Group):
 
                 # displays item count when the player has multiple copies
                 if item.count > 1:
-                    text = COMICORO[25].render(str(item.count), True, WHITE)
+                    text = COMICORO[25].render(
+                        str(item.count),
+                        True,
+                        Color.WHITE
+                    )
+
                     text_rect = text.get_rect(
                         bottomright=(
                             item.rect.right - 5,
@@ -371,7 +379,7 @@ class Item(pygame.sprite.Sprite):
 
         # reading tooltip
         for line in tooltip:
-            text = COMICORO[20].render(line, True, WHITE)
+            text = COMICORO[20].render(line, True, Color.WHITE)
             text_rect = text.get_rect(center=self.rect.center)
             self.tooltip_text.append([text, text_rect])
 
@@ -391,13 +399,13 @@ class Item(pygame.sprite.Sprite):
 
             pygame.draw.rect(
                 self.screen,
-                DARK_BROWN,
+                Color.DARK_BROWN,
                 self.tooltip_rect
             )
 
             pygame.draw.rect(
                 self.screen,
-                DARK_BROWN,
+                Color.DARK_BROWN,
                 self.tooltip_rect,
                 5
             )
@@ -433,7 +441,7 @@ class Bar(pygame.sprite.Sprite):
         self.total_bar = self.bar.copy()
 
         # bar text
-        text = COMICORO[20].render(str(""), True, BLACK)
+        text = COMICORO[20].render(str(""), True, Color.BLACK)
         text_rect = text.get_rect(midleft=self.bar.midleft)
         text_rect.left += self.total_bar.width * 0.25
         self.stat_text = [text, text_rect]
@@ -451,7 +459,7 @@ class HealthBar(Bar):
     def draw(self, target: pygame.sprite.Sprite):
         pygame.draw.rect(
             self.screen,
-            PECAN,
+            Color.PECAN,
             self.total_bar,
             2,
             self.bar.height // 2
@@ -468,7 +476,7 @@ class HealthBar(Bar):
         if ratio > 0:
             pygame.draw.rect(
                 self.screen,
-                RED,
+                Color.RED,
                 self.bar,
                 0,
                 self.bar.height // 2
@@ -476,7 +484,7 @@ class HealthBar(Bar):
 
             pygame.draw.rect(
                 self.screen,
-                BLOOD_RED,
+                Color.BLOOD_RED,
                 self.bar,
                 2,
                 self.bar.height // 2
@@ -486,7 +494,7 @@ class HealthBar(Bar):
         self.stat_text[0] = COMICORO[20].render(
             str(target.stats.health),
             True,
-            BLACK
+            Color.BLACK
         )
 
         self.screen.blit(*self.stat_text)
@@ -504,7 +512,7 @@ class SpeedBar(Bar):
     def draw(self, target):
         pygame.draw.rect(
             self.screen,
-            YELLOW,
+            Color.YELLOW,
             self.bar,
             0,
             self.bar.height // 2
@@ -512,7 +520,7 @@ class SpeedBar(Bar):
 
         pygame.draw.rect(
             self.screen,
-            GOLD,
+            Color.GOLD,
             self.bar,
             2,
             self.bar.height // 2
@@ -522,7 +530,7 @@ class SpeedBar(Bar):
         self.stat_text[0] = COMICORO[20].render(
             str(target.stats.speed),
             True,
-            BLACK
+            Color.BLACK
         )
 
         self.screen.blit(*self.stat_text)
@@ -540,7 +548,7 @@ class AttackBar(Bar):
     def draw(self, target):
         pygame.draw.rect(
             self.screen,
-            GREY,
+            Color.GREY,
             self.bar,
             0,
             self.bar.height // 2
@@ -548,7 +556,7 @@ class AttackBar(Bar):
 
         pygame.draw.rect(
             self.screen,
-            DARK_GREY,
+            Color.DARK_GREY,
             self.bar,
             2,
             self.bar.height // 2
@@ -558,7 +566,7 @@ class AttackBar(Bar):
         self.stat_text[0] = COMICORO[20].render(
             str(target.stats.attack),
             True,
-            BLACK
+            Color.BLACK
         )
 
         self.screen.blit(*self.stat_text)
@@ -589,7 +597,7 @@ class BarGroup(pygame.sprite.Group):
         self.rect = pygame.Rect(self.coords, (self.width, self.height))
 
         # name text
-        name_text = COMICORO[25].render('', True, BLACK)
+        name_text = COMICORO[25].render('', True, Color.BLACK)
         name_text_rect = name_text.get_rect(
             center=(
                 self.coords.x + self.width / 4,
@@ -614,10 +622,10 @@ class BarGroup(pygame.sprite.Group):
 
         # draws the card of the target's health, speed, and attack
         if target and target.show_stats:
-            pygame.draw.rect(self.screen, BROWN, self.rect)
+            pygame.draw.rect(self.screen, Color.BROWN, self.rect)
             pygame.draw.rect(
                 self.screen,
-                DARK_BROWN,
+                Color.DARK_BROWN,
                 self.rect,
                 3,
             )
@@ -626,7 +634,7 @@ class BarGroup(pygame.sprite.Group):
             self.name_text[0] = COMICORO[25].render(
                 f'{target.name}',
                 True,
-                BLACK
+                Color.BLACK
             )
 
             self.screen.blit(*self.name_text)
