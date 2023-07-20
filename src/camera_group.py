@@ -14,14 +14,6 @@ class CameraGroup(pygame.sprite.Group):
         # camera offset
         self.offset = pygame.math.Vector2()
 
-        # camera rect
-        self.camera_rect = pygame.Rect(
-            0, 
-            0, 
-            self.screen.get_width(), 
-            self.screen.get_height()
-        )
-
         # dimensions
         self.half_width = round(self.screen.get_width() / 2)
         self.half_height = round(self.screen.get_height() / 2)
@@ -52,10 +44,20 @@ class CameraGroup(pygame.sprite.Group):
             self.offset.y = target.coords.y \
                 - self.half_height
 
-    def check_bounds(self, sprite) -> bool:
+    def check_bounds(self, sprite: pygame.sprite.Sprite) -> bool:
         # Returns True if sprite is within bounding coords to optimize updates and draws
-
-        pass
+        topleft_bound = self.offset
+        bottomright_bound = self.offset + self.screen.get_size()
+        
+        if (sprite.rect.right > topleft_bound.x
+                and sprite.rect.left < bottomright_bound.x):
+            return True
+        
+        elif (sprite.rect.bottom > topleft_bound.y
+                and sprite.rect.top < bottomright_bound.y):
+            return True
+        
+        return False
 
     def render(self, show_hitboxes: bool = False, show_rects: bool = False):
         '''Draws the screen according to player movement'''
@@ -63,19 +65,21 @@ class CameraGroup(pygame.sprite.Group):
 
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
-            if sprite.draw_shadow and sprite.shadow:
-                shadow_pos = sprite.hitbox.bottomleft - self.offset
-                shadow_pos.y -= sprite.shadow.surface.get_height()
-                self.screen.blit(sprite.shadow.surface, shadow_pos)
+            # optimizes sprite draws
+            if self.check_bounds(sprite):
+                if sprite.draw_shadow and sprite.shadow:
+                    shadow_pos = sprite.hitbox.bottomleft - self.offset
+                    shadow_pos.y -= sprite.shadow.surface.get_height()
+                    self.screen.blit(sprite.shadow.surface, shadow_pos)
 
-            offset_pos = sprite.rect.topleft - self.offset
-            self.screen.blit(sprite.image, offset_pos)
+                offset_pos = sprite.rect.topleft - self.offset
+                self.screen.blit(sprite.image, offset_pos)
 
-            # draws sprite hitboxes
-            show_hitboxes and self.draw_hitboxes(sprite)
+                # draws sprite hitboxes
+                show_hitboxes and self.draw_hitboxes(sprite)
 
-            # draws sprite rects
-            show_rects and self.draw_rects(sprite)
+                # draws sprite rects
+                show_rects and self.draw_rects(sprite)
 
     def draw_hitboxes(self, sprite):
         hitbox = pygame.Rect(
@@ -109,6 +113,7 @@ class CameraGroup(pygame.sprite.Group):
 
     def update(self):
         "Updates all sprites"
-        # self.check_chunk()
         for sprite in self.sprites():
-            sprite.update()
+            # optimizes sprite updates
+            if self.check_bounds(sprite):
+                sprite.update()

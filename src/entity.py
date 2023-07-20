@@ -201,10 +201,10 @@ class Entity(Sprite):
 
                         self.velocity.y = 0
 
-            screen_left = TILE_SIZE / 2
-            screen_right = self.game.level.rect.right - TILE_SIZE / 2
-            screen_top = -TILE_SIZE / 2
-            screen_bottom = self.game.level.rect.bottom - TILE_SIZE / 2
+            screen_left = -HALF_TILE_SIZE
+            screen_right = self.game.level.rect.right - HALF_TILE_SIZE
+            screen_top = -HALF_TILE_SIZE
+            screen_bottom = self.game.level.rect.bottom - HALF_TILE_SIZE
 
             # left edge map
             if self.hitbox.left < screen_left:
