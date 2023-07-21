@@ -83,6 +83,7 @@ class Torch(Sprite):
             
             smoke_pos[1] -= self.hitbox.width // 4
 
+        
             # creates circle particle for smoke
             smoke = CircleParticle(
                 smoke_pos,
