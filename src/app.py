@@ -5,6 +5,7 @@ from ui import *
 from player import Player
 
 import pygame
+import multiprocessing
 
 
 class App:
@@ -21,16 +22,13 @@ class App:
             pygame.DOUBLEBUF | pygame.FULLSCREEN
         )
 
+        # ticks and state
         self.clock = pygame.time.Clock()
-
         self.state = {
             'unpaused': True,
             'runtime': True,
             'fullscreen': True
         }
-
-    def run(self):
-        pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION])
 
         # sprite groups
         self.camera_group = CameraGroup(self)
@@ -63,6 +61,8 @@ class App:
         # levels and map
         self.level = Level(STARTING_FLOOR, self)
 
+    def run(self):
+        pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION])
         while self.state['runtime']:
             # event handling
             for event in pygame.event.get():
@@ -70,31 +70,8 @@ class App:
                 if event.type == pygame.QUIT:
                     self.state['runtime'] = False
 
-            # fills a surface with the rgb color
-            self.screen.fill((105, 162, 97))
-
-            # redraws sprites and images
-            self.camera_group.render(
-                show_hitboxes=False,
-                show_rects=False
-            )
-
-            self.player_bars.draw(self.player_group, always_show=True)
-            self.enemy_bars.draw(self.enemy_group)
-
-            self.menu.draw()
-            self.player.inventory.draw()
-            self.level.draw()
-            self.cursor_group.draw(self.screen)
-
-            # updates
-            if self.state['unpaused'] and not self.level.transitioning:
-                self.camera_group.update()
-
-            self.cursor_group.update()
-            self.menu.update()
-            self.player.inventory.update()
-            self.level.update()
+            self.draw()
+            self.update()
 
             # updates screen
             pygame.display.update()
@@ -103,6 +80,37 @@ class App:
         # closes pygame application
         pygame.font.quit()
         pygame.quit()
+
+    def draw(self):
+        '''Redraws sprites, images, and surfaces'''
+
+        # fills a surface with the rgb color
+        self.screen.fill((105, 162, 97))
+
+        # redraws sprites and images
+        self.camera_group.render(
+            show_hitboxes=False,
+            show_rects=False
+        )
+
+        self.player_bars.draw(self.player_group, always_show=True)
+        self.enemy_bars.draw(self.enemy_group)
+
+        # ui
+        self.menu.draw()
+        self.player.inventory.draw()
+        self.level.draw()
+        self.cursor_group.draw(self.screen)
+
+    def update(self):
+        '''Updates all sprites and ui'''
+        if self.state['unpaused'] and not self.level.transitioning:
+            self.camera_group.update()
+
+        self.cursor_group.update()
+        self.menu.update()
+        self.player.inventory.update()
+        self.level.update()
 
 
 if __name__ == "__main__":
