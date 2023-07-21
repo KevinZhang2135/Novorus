@@ -61,7 +61,7 @@ class App:
         self.level = Level(STARTING_FLOOR, self)
 
     def run(self):
-        pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION])
+        pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEMOTION])
         while self.state['runtime']:
             # event handling
             for event in pygame.event.get():

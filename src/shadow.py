@@ -29,3 +29,5 @@ class Shadow:
                 color, 
                 [(x - min_x, y - min_y) for x, y in points]
             )
+
+        self.surface.convert_alpha()

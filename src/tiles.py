@@ -174,7 +174,7 @@ class Totem(Entity):
         # takes damage
         self.stats.health -= damage
 
-        for i in range(random.randint(3, 6)):
+        for i in range(random.randint(6, 9)):
             # creates circle particle for sparks
             sparks = CircleParticle(
                 self.hitbox.center,

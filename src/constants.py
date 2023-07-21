@@ -80,7 +80,7 @@ def get_circle_surface(radius, color):
         radius
     )
 
-    return circle_surface
+    return circle_surface.convert_alpha()
 
 
 def draw_polygon_alpha(surface, color, points):
