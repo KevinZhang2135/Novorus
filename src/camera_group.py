@@ -1,8 +1,6 @@
 from constants import *
-from color import Color
 
 import pygame
-import math
 
 
 class CameraGroup(pygame.sprite.Group):

@@ -3,7 +3,6 @@ from color import Color
 from sprite import Sprite
 
 import pygame
-import math
 
 
 class Menu(pygame.sprite.Group):

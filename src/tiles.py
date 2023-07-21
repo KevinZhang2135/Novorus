@@ -5,7 +5,6 @@ from sprite import Sprite
 from entity import *
 
 import pygame
-import random
 
 
 class Chest(Entity):

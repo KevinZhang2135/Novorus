@@ -4,8 +4,6 @@ from particles import *
 from sprite import Sprite
 
 import pygame
-from math import dist
-import random
 from copy import deepcopy
 
 
@@ -105,12 +103,12 @@ class Entity(Sprite):
 
     def line_of_sight(self, point):
         '''Determines whether the line of sight is not obstructed by walls'''
-        distance = dist(self.hitbox.center, point)
+        distance = math.dist(self.hitbox.center, point)
 
         # filters walls beyond point
         walls = [
             wall for wall in self.game.collision_group.sprites()
-            if dist(self.hitbox.center, wall.hitbox.center) < distance
+            if math.dist(self.hitbox.center, wall.hitbox.center) < distance
         ]
 
         for wall in walls:
@@ -144,7 +142,7 @@ class Entity(Sprite):
                 False
             )
 
-            sprites.sort(key=lambda sprite: dist(
+            sprites.sort(key=lambda sprite: math.dist(
                 self.hitbox.center,
                 sprite.hitbox.center
             ))
@@ -432,7 +430,7 @@ class MeleeEntity(Entity):
         )
 
         # sorts sprites by distance
-        colliding_sprites.sort(key=lambda sprite: dist(
+        colliding_sprites.sort(key=lambda sprite: math.dist(
             self.hitbox.center,
             sprite.hitbox.center
         ))
@@ -489,7 +487,7 @@ class RangerEntity(Entity):
             self.game.player.rect.centery - self.rect.centery
         )
 
-        player_distance = dist(
+        player_distance = math.dist(
             self.hitbox.center,
             self.game.player.hitbox.center
         )
@@ -522,14 +520,14 @@ class RangerEntity(Entity):
 
         # checks if the target rect is within attack range
         targets = target_group.sprites()
-        targets.sort(key=lambda sprite: dist(
+        targets.sort(key=lambda sprite: math.dist(
             self.hitbox.center,
             sprite.hitbox.center
         ))
 
         # attacks when target is within attack range
         if (len(targets) > 0
-                and dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range
+                and math.dist(self.hitbox.center, targets[0].hitbox.center) < self.attack_range
                 and self.line_of_sight(targets[0].hitbox.center)):
 
             self.in_combat = True

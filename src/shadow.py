@@ -1,7 +1,6 @@
 from constants import *
 
 import pygame
-import math
 
 
 class Shadow:

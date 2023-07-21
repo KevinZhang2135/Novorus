@@ -4,8 +4,6 @@ from particles import *
 from projectiles import *
 
 import pygame
-import math
-import random
 
 
 class Player(Entity):

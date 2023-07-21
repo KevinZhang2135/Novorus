@@ -7,9 +7,7 @@ from entity import *
 from sprite import Sprite
 
 import pygame
-import os
 import csv
-import random
 
 
 class Level:

@@ -1,5 +1,8 @@
+from color import Color
+
 import pygame
 import os
+import math
 import random
 
 pygame.init()
