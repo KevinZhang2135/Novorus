@@ -271,7 +271,7 @@ class Player(Entity):
             # creates dust circles when dashing
             dust_trail = CircleParticle(
                 self.hitbox.midbottom,
-                (randomize(self.hitbox.width * 0.2, 0.1), ) * 2,
+                (randomize(self.hitbox.width * 0.2, 0.1),) * 2,
                 self.game,
                 self.game.camera_group
             )

@@ -47,12 +47,12 @@ class App:
         self.enemy_bars = BarGroup((2, self.player_bars.height + 4), self)
 
         # hud
-        self.cursor = Cursor((50, 50), self, self.cursor_group)
+        self.cursor = Cursor((HALF_TILE_SIZE,) * 2, self, self.cursor_group)
 
         # player
         self.player = Player(
             (0, 0),
-            (TILE_SIZE * 1.75, ) * 2,
+            (TILE_SIZE * 1.75,) * 2,
             self,
             (self.camera_group, self.player_group)
         )

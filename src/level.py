@@ -226,7 +226,8 @@ class Level:
             Acorn
         )
 
-        size = (50, 80, 90, 60)
+        size = (50, TILE_SIZE * 0.8, 90, 60)
+
         enemy = enemies[id](
             coords,
             [size[id]] * 2,
@@ -240,7 +241,7 @@ class Level:
         )
 
     def add_chests(self, id: int, coords: list):
-        size = (80, ) * 2
+        size = (TILE_SIZE * 0.8,) * 2
         chest = Chest(
             coords,
             size,

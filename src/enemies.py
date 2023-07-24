@@ -91,7 +91,7 @@ class Sunflower(RangerEntity):
         pass
 
     def create_projectile(self, target):
-        projectile_size = (max(*self.hitbox.size) * 2, ) * 2
+        projectile_size = (max(*self.hitbox.size) * 2,) * 2
 
         # creates projectile
         projectile = Fireball(
@@ -138,7 +138,7 @@ class Acorn(RangerEntity):
         self.attack_cooldown = 1500
 
     def create_projectile(self, target):
-        projectile_size = (max(*self.hitbox.size), ) * 2
+        projectile_size = (max(*self.hitbox.size),) * 2
 
         # creates projectile
         projectile = AcornThorn(

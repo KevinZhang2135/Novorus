@@ -87,7 +87,7 @@ class Torch(Sprite):
             # creates circle particle for smoke
             smoke = CircleParticle(
                 smoke_pos,
-                (randomize(self.hitbox.width * 1.1, 0.1), ) * 2,
+                (randomize(self.hitbox.width * 1.1, 0.1),) * 2,
                 self.game,
                 self.game.camera_group
             )
@@ -179,7 +179,7 @@ class Totem(Entity):
             # creates circle particle for sparks
             sparks = CircleParticle(
                 self.hitbox.center,
-                (randomize(self.hitbox.width * 0.3, 0.5), ) * 2,
+                (randomize(self.hitbox.width * 0.3, 0.5),) * 2,
                 self.game,
                 self.game.camera_group
             )
@@ -235,7 +235,7 @@ class Totem(Entity):
         if not self.game.totem_group.sprites():
             LevelExit(
                 self.hitbox.midbottom,
-                (TILE_SIZE * 0.5, ) * 2,
+                (TILE_SIZE * 0.5,) * 2,
                 self.game,
                 self.game.camera_group
             )
