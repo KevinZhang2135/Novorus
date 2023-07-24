@@ -69,33 +69,12 @@ class App:
                 if event.type == pygame.QUIT:
                     self.state['runtime'] = False
 
-            '''Redraws sprites, images, and surfaces'''
+            
             # fills a surface with the rgb color
             self.screen.fill((105, 162, 97))
-
-            # redraws sprites and images
-            self.camera_group.render(
-                show_hitboxes=False,
-                show_rects=False
-            )
-
-            self.player_bars.draw(self.player_group, always_show=True)
-            self.enemy_bars.draw(self.enemy_group)
-
-            # ui
-            self.menu.draw()
-            self.player.inventory.draw()
-            self.level.draw()
-            self.cursor_group.draw(self.screen)
-
-            '''Updates all sprites and ui'''
-            if self.state['unpaused'] and not self.level.transitioning:
-                self.camera_group.update()
-
-            self.cursor_group.update()
-            self.menu.update()
-            self.player.inventory.update()
-            self.level.update()
+            
+            self.draw()
+            self.update()
 
             # updates screen
             pygame.display.update()
@@ -104,6 +83,32 @@ class App:
         # closes pygame application
         pygame.font.quit()
         pygame.quit()
+
+    def draw(self):
+        '''Redraws sprites, images, and surfaces'''
+        self.camera_group.render(
+            show_hitboxes=False,
+            show_rects=False
+        )
+
+        # ui
+        self.player_bars.draw(self.player_group, always_show=True)
+        self.enemy_bars.draw(self.enemy_group)
+
+        self.menu.draw()
+        self.player.inventory.draw()
+        self.level.draw()
+        self.cursor_group.draw(self.screen)
+
+    def update(self):
+        '''Updates all sprites and ui'''
+        if self.state['unpaused'] and not self.level.transitioning:
+            self.camera_group.update()
+
+        self.cursor_group.update()
+        self.menu.update()
+        self.player.inventory.update()
+        self.level.update()
 
 if __name__ == "__main__":
     App().run()

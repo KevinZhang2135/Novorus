@@ -270,9 +270,10 @@ class Entity(Sprite):
         # deals damage to sprite
 
         # randomizes particle position
-        offset = tuple(
-            map(lambda x: x // 4, self.hitbox.size)
-        )
+        offset = tuple(map(
+            lambda x: x // 4,
+            self.hitbox.size
+        ))
 
         offset_pos = list(self.hitbox.center)
         for i in range(len(offset_pos)):

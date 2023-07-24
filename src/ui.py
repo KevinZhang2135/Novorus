@@ -267,7 +267,8 @@ class Inventory(pygame.sprite.Group):
                 # displays item
                 item.rect.x = column * (self.item_box.get_width() + 15) + 20
                 item.rect.y = row * (self.item_box.get_height() + 15) \
-                    + 20 - self.scroll
+                    + 20 \
+                    - self.scroll
 
                 self.inventory_surface.blit(
                     item.image,
@@ -310,8 +311,10 @@ class Inventory(pygame.sprite.Group):
             if len(self.sprites()) > 30:
                 if events:
                     mousewheel_event = events[0]  # gets mouse wheel event
-                    self.scroll_acceleration = self.scroll_max_velocity * \
-                        -mousewheel_event.y / abs(mousewheel_event.y)
+                    self.scroll_acceleration = self.scroll_max_velocity \
+                        * -mousewheel_event.y \
+                        / abs(mousewheel_event.y)
+                    
 
                     self.scroll_velocity += self.scroll_acceleration
                     self.scroll_velocity *= 0.5
@@ -332,8 +335,8 @@ class Inventory(pygame.sprite.Group):
                 self.scroll += self.scroll_velocity
 
                 # prevents scrolling beyond the inventory
-                max_scroll = (math.ceil((len(self.sprites()) - 1) / 5) - 6) \
-                    * (self.item_box.get_height() + 15)
+                max_scroll = ((math.ceil((len(self.sprites()) - 1) / 5) - 6) \
+                    * (self.item_box.get_height() + 15))
 
                 if self.scroll < 0:
                     self.scroll = 0

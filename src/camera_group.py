@@ -39,22 +39,21 @@ class CameraGroup(pygame.sprite.Group):
 
         # starts scrolling screen when the player is in the middle of the screen
         elif (target.coords.y > self.half_height - HALF_TILE_SIZE):
-            self.offset.y = target.coords.y \
-                - self.half_height
+            self.offset.y = target.coords.y - self.half_height
 
     def check_bounds(self, sprite: pygame.sprite.Sprite) -> bool:
         # Returns True if sprite is within bounding coords to optimize updates and draws
         topleft_bound = self.offset
         bottomright_bound = self.offset + self.screen.get_size()
-        
+
         if (sprite.rect.right > topleft_bound.x
                 and sprite.rect.left < bottomright_bound.x):
             return True
-        
+
         elif (sprite.rect.bottom > topleft_bound.y
                 and sprite.rect.top < bottomright_bound.y):
             return True
-        
+
         return False
 
     def render(self, show_hitboxes: bool = False, show_rects: bool = False):

@@ -30,12 +30,10 @@ class Level:
         )
 
         text = COMICORO[50].render(f'Floor {self.floor_level}', True, Color.BLACK)
-        text_rect = text.get_rect(
-            center=(
-                self.screen.get_width() / 2,
-                self.screen.get_height() - 50
-            )
-        )
+        text_rect = text.get_rect(center=(
+            self.screen.get_width() / 2,
+            self.screen.get_height() - 50
+        ))
 
         self.floor_level_text = [text, text_rect]
         self.read_csv_level()
@@ -173,7 +171,7 @@ class Level:
         terrain_tile.set_animation(f'terrain_overlay/{sprites[id]}')
 
     def add_instructions(self, id: int, coords: list):
-        sprites = ['dash_path', 'inventory_path', 'move_path', 'slash_path']
+        sprites = ('dash_path', 'inventory_path', 'move_path', 'slash_path')
 
         size = (TILE_SIZE,) * 2
         terrain_tile = Sprite(
