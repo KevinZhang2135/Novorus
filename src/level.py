@@ -226,7 +226,12 @@ class Level:
             Acorn
         )
 
-        size = (50, TILE_SIZE * 0.8, 90, 60)
+        size = (
+            HALF_TILE_SIZE, 
+            TILE_SIZE * 0.8, 
+            TILE_SIZE * 0.9, 
+            TILE_SIZE * 0.6
+        )
 
         enemy = enemies[id](
             coords,
