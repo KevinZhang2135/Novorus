@@ -17,9 +17,11 @@ class Player(Entity):
         # hitbox
         self.set_hitbox(0.15, 0.3)
 
-        # movement
+        # movement & range
         self.max_velocity = 5
         self.dash_velocity = self.max_velocity * 5
+
+        self.melee_range = max(self.hitbox.size) * 1.25
 
         # stats
         self.exp = 0
@@ -113,56 +115,40 @@ class Player(Entity):
                 self.frame = 0
                 self.attacking = True
 
-            # checks if the player rect overlaps an enemy rect
-            colliding_sprites = pygame.sprite.spritecollide(
-                self,
-                target_group,
-                False
-            )
-
-            colliding_sprites.sort(key=lambda sprite: math.dist(
-                self.hitbox.center,
-                sprite.hitbox.center
-            ))
+            # checks if target is within melee range
+            colliding_sprites = [
+                sprite for sprite in target_group.sprites()
+                if math.dist(self.hitbox.center, sprite.hitbox.center) <= self.melee_range
+            ]
 
             for sprite in colliding_sprites:
-                # checks if the player mask overlaps an enemy hitbox
-                mask = pygame.mask.from_surface(self.image)
-                offset = (
-                    sprite.hitbox.x - self.rect.x,
-                    sprite.hitbox.y - self.rect.y
-                )
+                # only attacks the penultimate frame
+                if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
+                        and sprite not in self.targets_hit):
 
-                # when attacking, whole sprite is used as the mask for attack
-                # damage is done to hitbox
-                if mask.overlap(sprite.rect_mask, offset):
-                    # only attacks the penultimate frame
-                    if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
-                            and sprite not in self.targets_hit):
+                    # deals damage
+                    sprite.hurt(self.stats)
+                    self.targets_hit.append(sprite)
 
-                        # deals damage
-                        sprite.hurt(self.stats)
-                        self.targets_hit.append(sprite)
+                    # randomizes particle position
+                    offset = tuple(
+                        map(lambda x: x // 4, sprite.hitbox.size)
+                    )
 
-                        # randomizes particle position
-                        offset = tuple(
-                            map(lambda x: x // 4, sprite.hitbox.size)
+                    offset_pos = list(sprite.hitbox.center)
+                    for i in range(len(offset_pos)):
+                        offset_pos[i] += random.randint(
+                            -offset[i],
+                            offset[i]
                         )
 
-                        offset_pos = list(sprite.hitbox.center)
-                        for i in range(len(offset_pos)):
-                            offset_pos[i] += random.randint(
-                                -offset[i],
-                                offset[i]
-                            )
-
-                        # creates slash particle
-                        SwordSlash(
-                            offset_pos,
-                            (self.hitbox.width * 3,) * 2,
-                            self.game,
-                            self.game.camera_group
-                        )
+                    # creates slash particle
+                    SwordSlash(
+                        offset_pos,
+                        (self.hitbox.width * 3,) * 2,
+                        self.game,
+                        self.game.camera_group
+                    )
 
             # reset attack time if targets hit
             if self.targets_hit:

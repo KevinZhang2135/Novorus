@@ -61,7 +61,11 @@ class CameraGroup(pygame.sprite.Group):
         self.center_target(self.game.player)
 
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
-        for sprite in sorted(self.sprites(), key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)):
+        for sprite in sorted(
+            self.sprites(), 
+            key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)
+        ):
+            
             # optimizes sprite draws
             if self.check_bounds(sprite):
                 if sprite.draw_shadow and sprite.shadow:
