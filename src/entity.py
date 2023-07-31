@@ -62,6 +62,7 @@ class Entity(Sprite):
         self.attacking = False
         self.attack_time = pygame.time.get_ticks()
         self.attack_cooldown = 0
+        self.impact_frame = 0
 
         # shadows
         self.draw_shadow = True
@@ -458,7 +459,7 @@ class MeleeEntity(Entity):
                         self.attacking = True
 
                     # only attacks the last frame
-                    if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
+                    if (self.frame == self.impact_frame
                             and sprite not in targets_hit):
 
                         sprite.hurt(self.stats)
@@ -542,7 +543,7 @@ class RangerEntity(Entity):
                     self.attacking = True
 
                 # shoot projectile after animation ends
-                if (self.frame == len(self.animation_frames[self.facing]['attack'])):
+                if (self.frame == self.impact_frame):
                     self.attack_time = pygame.time.get_ticks()
                     self.attacking = False
 

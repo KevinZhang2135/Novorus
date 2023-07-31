@@ -42,6 +42,7 @@ class Player(Entity):
         # attack cooldown
         self.targets_hit = []
         self.attack_cooldown = self.animation_cooldowns['attack']
+        self.impact_frame = len(self.animation_frames[self.facing]['attack']) - 1
 
         # dash
         self.dashing = False

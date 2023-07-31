@@ -227,7 +227,7 @@ class Level:
         )
 
         size = (
-            HALF_TILE_SIZE, 
+            TILE_SIZE * 0.7, 
             TILE_SIZE * 0.8, 
             TILE_SIZE * 0.9, 
             TILE_SIZE * 0.6

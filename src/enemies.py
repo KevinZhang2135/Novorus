@@ -13,7 +13,7 @@ class Ghost(MeleeEntity):
         self.actions = ['idle', 'run', 'attack']
 
         # hitbox
-        self.set_hitbox(0.4, 0.5)
+        self.set_hitbox(0.25, 0.25)
 
         # stats
         self.exp = 25
@@ -21,17 +21,59 @@ class Ghost(MeleeEntity):
 
         # movement
         self.detection_distance = 350
-        self.max_velocity = 3
+        self.max_velocity = 2.5
 
         # general animation
         self.set_animation('enemies/ghost', isFolder=True)
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1600, 1600, 1200)
+        self.set_animation_cooldown(1200, 1200, 1050)
 
         # attack cooldown
         self.attack_cooldown = self.animation_cooldowns['attack']
+        self.impact_frame = len(
+            self.animation_frames[self.facing]['attack']) - 1
+
+        # smoke
+        self.smoke_time = pygame.time.get_ticks()
+        self.smoke_cooldown = 50
+
+    def animation(self):
+        super().animation()
+
+        # draws smoke trail
+        if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
+            self.smoke_time = pygame.time.get_ticks()
+            smoke_pos = list(self.hitbox.midbottom)
+            smoke_pos[0] += random.randint(
+                -self.hitbox.width // 4,
+                self.hitbox.width // 4
+            )
+
+            if self.velocity.x:
+                smoke_pos[0] += self.hitbox.width // 2 \
+                    * -self.velocity.x / abs(self.velocity.x)
+                
+                smoke_pos[1] -= self.hitbox.height // 4
+
+            # creates circle particle for smoke
+            smoke = CircleParticle(
+                smoke_pos,
+                (randomize(self.hitbox.width * 0.7, 0.1),) * 2,
+                self.game,
+                self.game.camera_group
+            )
+
+            # smoke render
+            smoke.animation_cooldown = 500
+            smoke.fade_cooldown = 50
+            smoke.color = random.choice((Color.ASH, Color.BLACK))
+
+            smoke.set_circles()
+
+            # smoke movement
+            smoke.velocity.y = 0.2
 
 
 class Mimic(MeleeEntity):
@@ -57,6 +99,7 @@ class Mimic(MeleeEntity):
 
         # attack cooldown
         self.attack_cooldown = 200
+        self.impact_frame = len(self.animation_frames[self.facing]['attack'])
 
 
 class Sunflower(RangerEntity):
@@ -85,6 +128,7 @@ class Sunflower(RangerEntity):
 
         # attack cooldown
         self.attack_cooldown = 1500
+        self.impact_frame = len(self.animation_frames[self.facing]['attack'])
 
     def face_enemy(self, target: Sprite):
         # does not turn towards target
@@ -136,6 +180,8 @@ class Acorn(RangerEntity):
 
         # attack cooldown
         self.attack_cooldown = 1500
+        self.impact_frame = len(
+            self.animation_frames[self.facing]['attack']) - 1
 
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size),) * 2
