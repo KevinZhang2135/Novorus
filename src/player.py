@@ -123,8 +123,8 @@ class Player(Entity):
             ]
 
             for sprite in colliding_sprites:
-                # only attacks the penultimate frame
-                if (self.frame == len(self.animation_frames[self.facing]['attack']) - 1
+                # only attacks during the impact frame
+                if (self.frame == self.impact_frame
                         and sprite not in self.targets_hit):
 
                     # deals damage

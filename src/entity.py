@@ -393,6 +393,8 @@ class MeleeEntity(Entity):
         self.detection_distance = 0
         self.max_velocity = 0
 
+        self.targets_hit = []
+
     def movement(self):
         '''Handles movement'''
         self.acceleration = pygame.math.Vector2(
@@ -423,50 +425,33 @@ class MeleeEntity(Entity):
         super().movement()
 
     def attack_enemy(self, target_group: pygame.sprite.Group):
-        # checks if the rect overlaps an enemy rect
+        # checks if target is within melee range
         self.in_combat = False
-        colliding_sprites = pygame.sprite.spritecollide(
-            self,
-            target_group,
-            False
-        )
+        colliding_sprites = [
+            sprite for sprite in target_group.sprites()
+            if math.dist(self.hitbox.center, sprite.hitbox.center) <= self.melee_range
+        ]
 
-        # sorts sprites by distance
-        colliding_sprites.sort(key=lambda sprite: math.dist(
-            self.hitbox.center,
-            sprite.hitbox.center
-        ))
-
-        targets_hit = []
         for sprite in colliding_sprites:
-            # checks if mask overlaps an enemy hitbox
-            mask = pygame.mask.from_surface(self.image)
-            offset = (
-                sprite.hitbox.x - self.rect.x,
-                sprite.hitbox.y - self.rect.y
-            )
+            self.in_combat = True
+            self.face_enemy(sprite)
+            
+            if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
+                # trigger attack animation
+                if not self.attacking:
+                    self.frame = 0
+                    self.attacking = True
 
-            # when attacking, whole sprite is used as the mask for attack
-            # damage is done to hitbox
-            if mask.overlap(sprite.rect_mask, offset):
-                self.face_enemy(sprite)
+                # only attacks during the impact frame
+                if (self.frame == self.impact_frame
+                        and sprite not in self.targets_hit):
 
-                self.in_combat = True
-                if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
-                    # trigger attack animation
-                    if not self.attacking:
-                        self.frame = 0
-                        self.attacking = True
+                    sprite.hurt(self.stats)
+                    self.targets_hit.append(sprite)
 
-                    # only attacks the last frame
-                    if (self.frame == self.impact_frame
-                            and sprite not in targets_hit):
-
-                        sprite.hurt(self.stats)
-                        targets_hit.append(sprite)
-
-        if targets_hit:
+        if self.targets_hit:
             self.attack_time = pygame.time.get_ticks()
+            self.targets_hit.clear()
 
         # clear attack animation if not in combat
         if not self.in_combat:

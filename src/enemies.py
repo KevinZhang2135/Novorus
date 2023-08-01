@@ -19,9 +19,11 @@ class Ghost(MeleeEntity):
         self.exp = 25
         self.stats = Stats(100, 10, 15, 0.05, 0.05)
 
-        # movement
+        # movement and range
         self.detection_distance = 350
         self.max_velocity = 2.5
+
+        self.melee_range = max(self.hitbox.size) * 2.25
 
         # general animation
         self.set_animation('enemies/ghost', isFolder=True)
@@ -32,8 +34,8 @@ class Ghost(MeleeEntity):
 
         # attack cooldown
         self.attack_cooldown = self.animation_cooldowns['attack']
-        self.impact_frame = len(
-            self.animation_frames[self.facing]['attack']) - 1
+        self.impact_frame = len(self.animation_frames[self.facing]['attack']) \
+            - 3
 
         # smoke
         self.smoke_time = pygame.time.get_ticks()
@@ -54,7 +56,7 @@ class Ghost(MeleeEntity):
             if self.velocity.x:
                 smoke_pos[0] += self.hitbox.width // 2 \
                     * -self.velocity.x / abs(self.velocity.x)
-                
+
                 smoke_pos[1] -= self.hitbox.height // 4
 
             # creates circle particle for smoke
@@ -99,7 +101,8 @@ class Mimic(MeleeEntity):
 
         # attack cooldown
         self.attack_cooldown = 200
-        self.impact_frame = len(self.animation_frames[self.facing]['attack'])
+        self.impact_frame = len(self.animation_frames[self.facing]['attack']) \
+            - 1
 
 
 class Sunflower(RangerEntity):
@@ -128,7 +131,8 @@ class Sunflower(RangerEntity):
 
         # attack cooldown
         self.attack_cooldown = 1500
-        self.impact_frame = len(self.animation_frames[self.facing]['attack'])
+        self.impact_frame = len(self.animation_frames[self.facing]['attack']) \
+            - 1
 
     def face_enemy(self, target: Sprite):
         # does not turn towards target
@@ -180,8 +184,8 @@ class Acorn(RangerEntity):
 
         # attack cooldown
         self.attack_cooldown = 1500
-        self.impact_frame = len(
-            self.animation_frames[self.facing]['attack']) - 1
+        self.impact_frame = len(self.animation_frames[self.facing]['attack']) \
+            - 1
 
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size),) * 2
