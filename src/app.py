@@ -52,7 +52,7 @@ class App:
         # player
         self.player = Player(
             (0, 0),
-            (TILE_SIZE * 1.75,) * 2,
+            (TILE_SIZE * 1.5,) * 2,
             self,
             (self.camera_group, self.player_group)
         )
