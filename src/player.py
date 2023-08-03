@@ -15,9 +15,9 @@ class Player(Entity):
         self.actions = ['idle', 'run', 'attack', 'dash']
 
         # hitbox
-        self.set_hitbox(0.15, 0.3)
+        self.set_hitbox(0.15, 0.4, offsety=0.05)
 
-        # movement & range
+        # movement and range
         self.max_velocity = 5
         self.dash_velocity = self.max_velocity * 5
 
@@ -37,7 +37,7 @@ class Player(Entity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(900, 900, 900, 600)
+        self.set_animation_cooldown(1000, 800, 900, 600)
 
         # attack cooldown
         self.targets_hit = []
@@ -191,8 +191,7 @@ class Player(Entity):
                     self.game.camera_group
                 )
 
-                dust_trail.facing = (
-                    'left' if self.velocity.x < 0 else 'right')
+                dust_trail.facing = 'left' if self.velocity.x < 0 else 'right'
 
     def ram_enemies(self, target_group):
         '''Deals damage to any enemies in collision'''
@@ -253,19 +252,6 @@ class Player(Entity):
             self.dashing = False
 
             self.targets_hit.clear()
-
-        else:
-            # creates dust circles when dashing
-            dust_trail = CircleParticle(
-                self.hitbox.midbottom,
-                (randomize(self.hitbox.width * 0.2, 0.1),) * 2,
-                self.game,
-                self.game.camera_group
-            )
-
-            dust_trail.fade_cooldown = 50
-            dust_trail.color = Color.DARK_GREY
-            dust_trail.set_circles()
 
     def check_state(self):
         '''Determines what action the player is doing'''

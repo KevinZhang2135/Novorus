@@ -389,9 +389,10 @@ class Entity(Sprite):
 class MeleeEntity(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        # movement
+        # movement and range
         self.detection_distance = 0
         self.max_velocity = 0
+        self.melee_range = 0
 
         self.targets_hit = []
 
@@ -461,11 +462,9 @@ class MeleeEntity(Entity):
 class RangerEntity(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        # movement
+        # movement and range
         self.detection_distance = 0
         self.max_velocity = 0
-
-        # attack
         self.attack_range = 0
 
     def movement(self):

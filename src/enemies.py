@@ -30,7 +30,7 @@ class Ghost(MeleeEntity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1200, 1200, 1050)
+        self.set_animation_cooldown(1200, 1200, 1400)
 
         # attack cooldown
         self.attack_cooldown = self.animation_cooldowns['attack']
@@ -169,10 +169,9 @@ class Acorn(RangerEntity):
         self.exp = 35
         self.stats = Stats(30, 15, 15, 0.1, 0.05)
 
-        # movement & range
+        # movement and range
         self.detection_distance = 500
         self.max_velocity = 4
-
         self.attack_range = 250
 
         # general animation
