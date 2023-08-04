@@ -110,21 +110,6 @@ class Torch(Sprite):
 class Totem(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.name = 'Mysterious Totem'
-
-        # hitbox
-        self.set_hitbox(0.225, 0.375)
-
-        # stats
-        self.exp = 25
-        self.stats = Stats(300, 0, 0, 0, 0)
-
-        # animation
-        self.set_animation('enemies/totem', isFolder=True)
-
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.animation_cooldown = self.animation_cooldowns[self.action]
 
     def hurt(self, stats):
         # deals damage to sprite
@@ -246,6 +231,44 @@ class Totem(Entity):
         self.make_exit()
         self.animation()
 
+
+class Totem1(Totem):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.name = 'Mysterious Totem'
+
+        # hitbox
+        self.set_hitbox(0.3, 0.875)
+
+        # stats
+        self.exp = 25
+        self.stats = Stats(300, 0, 0, 0, 0)
+
+        # animation
+        self.set_animation('enemies/totem1', isFolder=True)
+
+        # animation cooldown
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+class Totem2(Totem):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.name = 'Mysterious Totem'
+
+        # hitbox
+        self.set_hitbox(0.3, 0.4)
+
+        # stats
+        self.exp = 25
+        self.stats = Stats(250, 0, 0, 0, 0)
+
+        # animation
+        self.set_animation('enemies/totem2', isFolder=True)
+
+        # animation cooldown
+        self.animation_cooldowns = {action: 100 for action in self.actions}
+        self.animation_cooldown = self.animation_cooldowns[self.action]
 
 class LevelExit(Sprite):
     def __init__(self, coords: list, size: list, game, groups):

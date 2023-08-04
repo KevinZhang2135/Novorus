@@ -506,12 +506,22 @@ class Level:
                 )
 
     def add_totems(self, id: int, coords: list):
-        totem = Totem(
-            coords,
-            (TILE_SIZE * 1.75,) * 2,
-            self.game,
-            (self.game.camera_group, self.game.enemy_group, self.game.totem_group)
-        )
+        match id:
+            case 0:
+                totem = Totem1(
+                    coords,
+                    (TILE_SIZE,) * 2,
+                    self.game,
+                    (self.game.camera_group, self.game.enemy_group, self.game.totem_group)
+                )
+
+            case 1:
+                totem = Totem2(
+                    coords,
+                    (TILE_SIZE,) * 2,
+                    self.game,
+                    (self.game.camera_group, self.game.enemy_group, self.game.totem_group)
+                )
 
     def draw(self):
         self.screen.blit(*self.floor_level_text)
