@@ -16,6 +16,20 @@ class CameraGroup(pygame.sprite.Group):
         self.half_width = round(self.screen.get_width() / 2)
         self.half_height = round(self.screen.get_height() / 2)
 
+        # lighting
+        self.light_colors = (Color.GOLD, Color.SKY_BLUE1, Color.BLACK)
+        self.light_sizes = [i for i in range(0, 200, 10)]
+        self.lights = {}
+
+        for light_color in self.light_colors:
+            self.lights[light_color] = {}
+
+            for light_radius in self.light_sizes:
+                self.lights[light_color][light_radius] = get_circle_surface(
+                    light_radius,
+                    light_color + (64,)
+                )
+
     def center_target(self, target):
         self.offset.xy = -HALF_TILE_SIZE, -HALF_TILE_SIZE
 
@@ -62,17 +76,20 @@ class CameraGroup(pygame.sprite.Group):
 
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(
-            self.sprites(), 
+            self.sprites(),
             key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)
         ):
-            
+
             # optimizes sprite draws
             if self.check_bounds(sprite):
+                # draws shadows
                 if sprite.draw_shadow and sprite.shadow:
-                    shadow_pos = sprite.hitbox.bottomleft - self.offset
-                    shadow_pos.y -= sprite.shadow.surface.get_height()
-                    self.screen.blit(sprite.shadow.surface, shadow_pos)
+                    self.draw_shadow(sprite)
 
+                # draws lighting
+                sprite.draw_light and self.draw_lighting(sprite)
+
+                # draws sprite
                 offset_pos = sprite.rect.topleft - self.offset
                 self.screen.blit(sprite.image, offset_pos)
 
@@ -81,6 +98,21 @@ class CameraGroup(pygame.sprite.Group):
 
                 # draws sprite rects
                 show_rects and self.draw_rects(sprite)
+
+    def draw_shadow(self, sprite):
+        shadow_pos = sprite.hitbox.bottomleft - self.offset
+        shadow_pos.y -= sprite.shadow.surface.get_height()
+        self.screen.blit(sprite.shadow.surface, shadow_pos)
+
+    def draw_lighting(self, sprite):
+        light = self.lights[sprite.light_color][sprite.light_radius]
+        light_pos = (
+            sprite.hitbox.centerx - sprite.light_radius,
+            sprite.hitbox.centery - sprite.light_radius
+        )
+
+        light_pos -= self.offset
+        self.screen.blit(light, light_pos)
 
     def draw_hitboxes(self, sprite):
         hitbox = pygame.Rect(

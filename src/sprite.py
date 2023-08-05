@@ -46,6 +46,11 @@ class Sprite(pygame.sprite.Sprite):
         self.shadow = None
         self.shadow_frames = deepcopy(self.animation_frames)
 
+        # lighting
+        self.draw_light = False
+        self.light_color = None
+        self.light_radius = 0
+
     def get_images(self, filepath: str, isFolder=False, flipped=False):
         images = []
         shadows = []

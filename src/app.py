@@ -1,5 +1,5 @@
 from constants import *
-from camera_group import *
+from camera_group import CameraGroup
 from level import *
 from ui import *
 from player import Player
@@ -22,6 +22,7 @@ class App:
         )
 
         # ticks and state
+        self.events = []
         self.clock = pygame.time.Clock()
         self.state = {
             'unpaused': True,
@@ -61,18 +62,19 @@ class App:
         self.level = Level(STARTING_FLOOR, self)
 
     def run(self):
-        pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEMOTION])
+        pygame.event.set_allowed((pygame.QUIT, pygame.MOUSEWHEEL))
+
         while self.state['runtime']:
             # event handling
-            for event in pygame.event.get():
-                # checks for quit event
-                if event.type == pygame.QUIT:
-                    self.state['runtime'] = False
+            self.events = pygame.event.get()
 
-            
+            # checks for quit event
+            if pygame.QUIT in self.events:
+                self.state['runtime'] = False
+
             # fills a surface with the rgb color
             self.screen.fill((105, 162, 97))
-            
+
             self.draw()
             self.update()
 
@@ -109,6 +111,7 @@ class App:
         self.menu.update()
         self.player.inventory.update()
         self.level.update()
+
 
 if __name__ == "__main__":
     App().run()

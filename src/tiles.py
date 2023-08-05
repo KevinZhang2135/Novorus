@@ -71,19 +71,19 @@ class Torch(Sprite):
         self.smoke_time = pygame.time.get_ticks()
         self.smoke_cooldown = randomize(500, 0.2)
 
+
     def draw_smoke(self):
         "Creates smoke every interval"
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             self.smoke_time = pygame.time.get_ticks()
             smoke_pos = list(self.hitbox.midtop)
             smoke_pos[0] += random.randint(
-                width := -self.hitbox.width // 4, 
+                width := -self.hitbox.width // 4,
                 -width
             )
-            
+
             smoke_pos[1] -= self.hitbox.width // 4
 
-        
             # creates circle particle for smoke
             smoke = CircleParticle(
                 smoke_pos,
@@ -251,6 +251,7 @@ class Totem1(Totem):
         self.animation_cooldowns = {action: 0 for action in self.actions}
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
+
 class Totem2(Totem):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
@@ -269,6 +270,7 @@ class Totem2(Totem):
         # animation cooldown
         self.animation_cooldowns = {action: 100 for action in self.actions}
         self.animation_cooldown = self.animation_cooldowns[self.action]
+
 
 class LevelExit(Sprite):
     def __init__(self, coords: list, size: list, game, groups):

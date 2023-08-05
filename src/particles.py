@@ -15,7 +15,7 @@ class Particle(Sprite):
 
         # render
         self.alpha = 255
-        self.sprite_layer = 5
+        self.sprite_layer = 4
         self.draw_shadow = False
         self.loop_frames = False
 
@@ -41,7 +41,7 @@ class Particle(Sprite):
         '''Fades particle after its fade time
            Deletes the particle if it has no alpha'''
         if pygame.time.get_ticks() - self.fade_time > self.fade_cooldown:
-            self.alpha -= 10
+            self.alpha -= 8
             if self.alpha > 0 and self.fade:
                 self.image.set_alpha(self.alpha)
 

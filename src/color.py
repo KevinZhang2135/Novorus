@@ -30,3 +30,5 @@ class Color:
     BROWN = (131, 106, 83)
     PECAN = (115, 93, 71)
     DARK_BROWN = (104, 84, 66)
+
+    TEMP = (10, 10, 10)

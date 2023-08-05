@@ -170,6 +170,7 @@ class Fireball(Projectile):
         # animation cooldown
         self.set_animation_cooldown(1250)
 
+
     def kill(self):
         # leaves explosion on death
         super().kill()

@@ -86,12 +86,12 @@ class Level:
 
             # reads csv
             with open(os.path.join(f'{LEVEL_PATH}/{self.floor_level}', path)) as file:
-                csv_file = list(csv.reader(file))
+                csv_file = tuple(csv.reader(file))
                 self.create_tile_group(csv_file, path)
 
                 if not row:  # determines the dimensions of the first csv_file
-                    self.size.x = len(list(csv_file)[0]) * TILE_SIZE
-                    self.size.y = len(list(csv_file)) * TILE_SIZE
+                    self.size.x = len(csv_file[0]) * TILE_SIZE
+                    self.size.y = len(csv_file) * TILE_SIZE
 
                     self.rect = pygame.Rect(0, 0, *self.size)
                     row += 1

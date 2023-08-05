@@ -128,9 +128,15 @@ class Button(Sprite):
 
     def set_images(self, inactive_sprite, active_sprite):
         self.inactive_sprite = pygame.transform.scale(
-            inactive_sprite, self.rect.size)
+            inactive_sprite, 
+            self.rect.size
+        )
+
         self.active_sprite = pygame.transform.scale(
-            active_sprite, self.rect.size)
+            active_sprite, 
+            self.rect.size
+        )
+        
         self.image = self.inactive_sprite
 
     def press_button(self):
@@ -302,19 +308,20 @@ class Inventory(pygame.sprite.Group):
 
     def scroll_inventory(self):
         """Scrolls the inventory with the mouse wheel"""
-        events = pygame.event.get(  # gets a list of filtered events
-            eventtype=pygame.MOUSEWHEEL
-        )
+        events = [
+            event for event in self.game.events
+            if event.type == pygame.MOUSEWHEEL
+        ]
 
         # scrolls when mouse is colliding with the inventory
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
             if len(self.sprites()) > 30:
                 if events:
                     mousewheel_event = events[0]  # gets mouse wheel event
+
                     self.scroll_acceleration = self.scroll_max_velocity \
                         * -mousewheel_event.y \
                         / abs(mousewheel_event.y)
-                    
 
                     self.scroll_velocity += self.scroll_acceleration
                     self.scroll_velocity *= 0.5
@@ -335,8 +342,8 @@ class Inventory(pygame.sprite.Group):
                 self.scroll += self.scroll_velocity
 
                 # prevents scrolling beyond the inventory
-                max_scroll = ((math.ceil((len(self.sprites()) - 1) / 5) - 6) \
-                    * (self.item_box.get_height() + 15))
+                max_scroll = (math.ceil((len(self.sprites()) - 1) / 5) - 6) \
+                    * (self.item_box.get_height() + 15)
 
                 if self.scroll < 0:
                     self.scroll = 0
@@ -671,7 +678,7 @@ class Cursor(Sprite):
         mouse_pos = list(pygame.mouse.get_pos())
         mouse_pos[0] += self.game.camera_group.offset.x
         mouse_pos[1] += self.game.camera_group.offset.y
-        
+
         return mouse_pos
 
     def update(self):
