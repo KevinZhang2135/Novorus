@@ -113,7 +113,7 @@ class Sunflower(RangerEntity):
         self.show_stats = False
 
         # hitbox
-        self.set_hitbox(0.3, 0.4)
+        self.set_hitbox(0.25, 0.3)
 
         # stats
         self.exp = 15

@@ -28,14 +28,7 @@ class Level:
             self.screen.get_width(),
             self.screen.get_height()
         )
-
-        text = COMICORO[50].render(f'Floor {self.floor_level}', True, Color.BLACK)
-        text_rect = text.get_rect(center=(
-            self.screen.get_width() / 2,
-            self.screen.get_height() - 50
-        ))
-
-        self.floor_level_text = [text, text_rect]
+        
         self.read_csv_level()
 
     def transition_level(self):
@@ -51,15 +44,6 @@ class Level:
                 # updates level map
                 self.clear_level()
                 self.read_csv_level()
-
-                # updates floor level text
-                text = COMICORO[50].render(
-                    f'Floor {self.floor_level}',
-                    True,
-                    Color.BLACK
-                )
-
-                self.floor_level_text[0] = text
 
                 self.game.player.velocity.x = 0
                 self.game.player.velocity.y = 0
@@ -276,7 +260,7 @@ class Level:
                 decor.draw_shadow = True
 
                 decor.set_animation(f'{path}/flower1')
-                decor.set_hitbox(0.25, 0.4)
+                decor.set_hitbox(0.25, 0.3)
 
             # bush1
             case 1:
@@ -524,8 +508,6 @@ class Level:
                 )
 
     def draw(self):
-        self.screen.blit(*self.floor_level_text)
-
         if self.transitioning:
             pygame.draw.rect(
                 self.screen,

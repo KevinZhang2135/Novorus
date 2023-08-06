@@ -44,8 +44,8 @@ class App:
         self.menu = Menu(self)
 
         # ui bars
-        self.player_bars = BarGroup((2, 2), self)
-        self.enemy_bars = BarGroup((2, self.player_bars.height + 4), self)
+        #self.player_bars = BarGroup((2, 2), self)
+        #self.enemy_bars = BarGroup((2, self.player_bars.height + 4), self)
 
         # hud
         self.cursor = Cursor((HALF_TILE_SIZE,) * 2, self, self.cursor_group)
@@ -94,8 +94,8 @@ class App:
         )
 
         # ui
-        self.player_bars.draw(self.player_group, always_show=True)
-        self.enemy_bars.draw(self.enemy_group)
+        #self.player_bars.draw(self.player_group, always_show=True)
+        #self.enemy_bars.draw(self.enemy_group)
 
         self.menu.draw()
         self.player.inventory.draw()
