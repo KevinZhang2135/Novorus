@@ -451,12 +451,12 @@ class PlayerHealthBar(Sprite):
 
         self.background_surface = color_image(
             self.background_surface,
-            Color.CREAM,
+            Color.BLACK,
             128
         )
 
         # text
-        self.health_text = COMICORO[35].render(str(""), True, Color.BLACK)
+        self.health_text = COMICORO[35].render(str(""), True, Color.CREAM)
         
     def set_target(self, target: pygame.sprite.Sprite):
         self.target = target
