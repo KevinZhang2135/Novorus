@@ -25,10 +25,14 @@ class CameraGroup(pygame.sprite.Group):
             self.lights[light_color] = {}
 
             for light_radius in self.light_sizes:
-                self.lights[light_color][light_radius] = get_circle_surface(
-                    light_radius,
-                    light_color + (64,)
+                image = IMAGES['soft_light'].copy()
+                image = color_image(image, light_color, transparency=64)
+                image = pygame.transform.scale(
+                    image,
+                    (light_radius * 2,) * 2
                 )
+
+                self.lights[light_color][light_radius] = image
 
     def center_target(self, target):
         self.offset.xy = -HALF_TILE_SIZE, -HALF_TILE_SIZE
@@ -86,12 +90,12 @@ class CameraGroup(pygame.sprite.Group):
                 if sprite.draw_shadow and sprite.shadow:
                     self.draw_shadow(sprite)
 
-                # draws lighting
-                sprite.draw_light and self.draw_lighting(sprite)
-
                 # draws sprite
                 offset_pos = sprite.rect.topleft - self.offset
                 self.screen.blit(sprite.image, offset_pos)
+
+                # draws lighting
+                sprite.draw_light and self.draw_lighting(sprite)
 
                 # draws sprite hitboxes
                 show_hitboxes and self.draw_hitboxes(sprite)
