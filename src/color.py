@@ -19,6 +19,7 @@ class Color:
 
     # neutrals
     WHITE = (255, 255, 255)
+    CREAM = (242, 233, 211)
     LIGHT_GREY = (210, 210, 210)
     GREY = (188, 188, 188)
     DARK_GREY = (168, 168, 168)

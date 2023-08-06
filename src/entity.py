@@ -299,10 +299,7 @@ class Entity(Sprite):
                     self.game.camera_group
                 )
 
-                text.set_text(COMICORO[35].render(
-                    str(damage), True, Color.BLOOD_RED)
-                )
-
+                text.set_text(str(damage), 35, Color.BLOOD_RED)
                 text.velocity.y = -5
 
             # non-crit damage
@@ -313,7 +310,7 @@ class Entity(Sprite):
                     self.game.camera_group
                 )
 
-                text.set_text(COMICORO[25].render(str(damage), True, Color.RED))
+                text.set_text(str(damage), 25, Color.RED)
                 text.velocity.y = -5
 
             # takes damage
@@ -322,7 +319,7 @@ class Entity(Sprite):
         # damage is dodged
         else:
             text = TextPopUp(offset_pos, self.game, self.game.camera_group)
-            text.set_text(COMICORO[20].render('Dodged', True, Color.GOLD))
+            text.set_text('Dodged', 20, Color.GOLD)
             text.velocity.y = -5
 
     def check_death(self):

@@ -43,12 +43,14 @@ class App:
         # menu
         self.menu = Menu(self)
 
-        # ui bars
-        #self.player_bars = BarGroup((2, 2), self)
-        #self.enemy_bars = BarGroup((2, self.player_bars.height + 4), self)
-
-        # hud
+        # ui
         self.cursor = Cursor((HALF_TILE_SIZE,) * 2, self, self.cursor_group)
+        self.player_health_bar = PlayerHealthBar(
+            (TILE_SIZE * 2 + 5, HALF_TILE_SIZE / 2 + 5), 
+            (TILE_SIZE * 4, HALF_TILE_SIZE),
+            self,
+            ()
+        )
 
         # player
         self.player = Player(
@@ -57,6 +59,8 @@ class App:
             self,
             (self.camera_group, self.player_group)
         )
+
+        self.player_health_bar.set_target(self.player)
 
         # levels and map
         self.level = Level(STARTING_FLOOR, self)
@@ -94,23 +98,23 @@ class App:
         )
 
         # ui
-        #self.player_bars.draw(self.player_group, always_show=True)
-        #self.enemy_bars.draw(self.enemy_group)
-
         self.menu.draw()
         self.player.inventory.draw()
         self.level.draw()
         self.cursor_group.draw(self.screen)
+        self.player_health_bar.draw()
 
     def update(self):
         '''Updates all sprites and ui'''
         if self.state['unpaused'] and not self.level.transitioning:
             self.camera_group.update()
 
-        self.cursor_group.update()
+        
         self.menu.update()
         self.player.inventory.update()
         self.level.update()
+        self.cursor_group.update()
+        self.player_health_bar.update()
 
 
 if __name__ == "__main__":

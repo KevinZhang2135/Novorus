@@ -68,7 +68,7 @@ def color_image(image: pygame.Surface, color: list, transparency=255):
     return image
 
 
-def get_circle_surface(radius, color):
+def get_circle_surface(radius: float, color: list):
     '''Returns a circle surface'''
     circle_surface = pygame.Surface((radius * 2,) * 2, pygame.SRCALPHA)
     center = (radius,) * 2
@@ -80,10 +80,10 @@ def get_circle_surface(radius, color):
         radius
     )
 
-    return circle_surface.convert_alpha()
+    return circle_surface
 
 
-def draw_polygon_alpha(surface, color, points):
+def draw_polygon_alpha(surface: pygame.Surface, color: list, points: list):
     '''Draws a polygon with transparency'''
 
     # zips points into x's and y's

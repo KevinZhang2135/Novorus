@@ -303,8 +303,8 @@ class Player(Entity):
                     self.game.camera_group
                 )
 
-                text.set_text(COMICORO[35].render(
-                    str(damage), True, Color.ORANGE))
+                text.set_text(str(damage), 25, Color.ORANGE)
+                
                 text.velocity.y = -5
 
             # non-crit damage
@@ -315,11 +315,11 @@ class Player(Entity):
                     self.game.camera_group
                 )
 
-                text.set_text(COMICORO[25].render(
+                text.set_text(
                     str(damage),
-                    True,
+                    25,
                     Color.TANGERINE
-                ))
+                )
 
                 text.velocity.y = -5
 
@@ -328,15 +328,13 @@ class Player(Entity):
         # damage is dodged
         else:
             text = TextPopUp(text_coords, self.game, self.game.camera_group)
-            text.set_text(COMICORO[20].render('Dodged', True, Color.GOLD))
+            text.set_text('Dodged', 20, Color.GOLD)
             text.velocity.y = -5
 
     def check_death(self):
         if self.stats.health < 0:
             # sprite dies
             self.stats.health = 0
-            # self.animation_time = pygame.time.get_ticks()
-            # self.cooldown = self.game.player.animation_cooldown
 
     def update(self):
         '''Handles events'''

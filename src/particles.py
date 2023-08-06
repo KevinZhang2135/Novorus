@@ -156,7 +156,7 @@ class TextPopUp(Particle):
     def __init__(self, coords: list, game, group: pygame.sprite.Group):
         super().__init__(coords, [0, 0], game, group)
 
-    def set_text(self, text):
-        self.image = text
+    def set_text(self, text, font_size, color):
+        self.image = COMICORO[font_size].render(text, True, color)
         self.rect = self.image.get_rect(center=self.coords)
         self.hitbox = pygame.Rect(self.rect)

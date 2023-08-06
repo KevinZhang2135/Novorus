@@ -145,10 +145,7 @@ class Totem(Entity):
                 self.game.camera_group
             )
 
-            text.set_text(COMICORO[35].render(
-                str(damage), True, Color.BLOOD_RED)
-            )
-
+            text.set_text(str(damage), 35, Color.BLOOD_RED)
             text.velocity.y = -5
 
         # non-crit damage
@@ -159,7 +156,7 @@ class Totem(Entity):
                 self.game.camera_group
             )
 
-            text.set_text(COMICORO[25].render(str(damage), True, Color.RED))
+            text.set_text(str(damage), 25, Color.RED)
             text.velocity.y = -5
 
         # takes damage
