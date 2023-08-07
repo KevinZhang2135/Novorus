@@ -46,7 +46,7 @@ class App:
         # ui
         self.cursor = Cursor((HALF_TILE_SIZE,) * 2, self, self.cursor_group)
         self.player_health_bar = PlayerHealthBar(
-            (TILE_SIZE * 2 + 5, HALF_TILE_SIZE / 2 + 5), 
+            (TILE_SIZE * 2 + 5, HALF_TILE_SIZE / 2 + 5),
             (TILE_SIZE * 4, HALF_TILE_SIZE),
             self,
             ()
@@ -97,24 +97,26 @@ class App:
             show_rects=False
         )
 
-        # ui
-        self.menu.draw()
-        self.player.inventory.draw()
         self.level.draw()
-        self.cursor_group.draw(self.screen)
+
         self.player_health_bar.draw()
+        self.player.inventory.draw()
+
+        self.menu.draw()
+        self.cursor_group.draw(self.screen)
 
     def update(self):
         '''Updates all sprites and ui'''
         if self.state['unpaused'] and not self.level.transitioning:
             self.camera_group.update()
 
-        
-        self.menu.update()
-        self.player.inventory.update()
         self.level.update()
-        self.cursor_group.update()
+
         self.player_health_bar.update()
+        self.player.inventory.update()
+
+        self.menu.update()
+        self.cursor_group.update()
 
 
 if __name__ == "__main__":

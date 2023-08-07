@@ -131,8 +131,7 @@ class Sunflower(RangerEntity):
 
         # attack cooldown
         self.attack_cooldown = 1500
-        self.impact_frame = len(self.animation_frames[self.facing]['attack']) \
-            - 1
+        self.impact_frame = 9
 
     def face_enemy(self, target: Sprite):
         # does not turn towards target
@@ -183,8 +182,7 @@ class Acorn(RangerEntity):
 
         # attack cooldown
         self.attack_cooldown = 1500
-        self.impact_frame = len(self.animation_frames[self.facing]['attack']) \
-            - 1
+        self.impact_frame = 5
 
     def create_projectile(self, target):
         projectile_size = (max(*self.hitbox.size),) * 2
@@ -202,3 +200,53 @@ class Acorn(RangerEntity):
             self.stats,
             self.game.player_group
         )
+
+
+class Newtshroom(RangerEntity):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.name = 'Newtshroom'
+        self.actions = ['idle', 'run', 'attack']
+
+        # hitbox
+        self.set_hitbox(0.45, 0.425)
+
+        # stats
+        self.exp = 60
+        self.stats = Stats(120, 10, 10, 0, 0)
+
+        # movement and range
+        self.detection_distance = 550
+        self.max_velocity = 2
+        self.attack_range = 375
+
+        # general animation
+        self.set_animation('enemies/newtshroom', isFolder=True)
+
+        # animation cooldown
+        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.set_animation_cooldown(800, 600, 1200)
+
+        # attack cooldown
+        self.attack_cooldown = 1200
+        self.impact_frame = 6
+
+    def create_projectile(self, target):
+        projectile_size = (max(*self.hitbox.size),) * 2
+
+        # creates projectile
+        for angle in range(-15, 30, 15):
+            projectile = Spore(
+                self.hitbox.center,
+                projectile_size,
+                self.game,
+                self.game.camera_group
+            )
+
+            projectile.set_target(
+                target.hitbox.center,
+                self.stats,
+                self.game.player_group
+            )
+
+            projectile.velocity = projectile.velocity.rotate(angle)

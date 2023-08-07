@@ -25,8 +25,8 @@ class Menu(pygame.sprite.Group):
             IMAGES['paused']
         )
 
-        menu_width = 360
-        menu_height = 360
+        menu_width = TILE_SIZE * 4
+        menu_height = TILE_SIZE * 4
         self.menu_rect = pygame.Rect(
             (self.screen.get_width() - menu_width) / 2,
             (self.screen.get_height() - menu_height) / 2,

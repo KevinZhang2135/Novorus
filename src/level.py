@@ -28,7 +28,7 @@ class Level:
             self.screen.get_width(),
             self.screen.get_height()
         )
-        
+
         self.read_csv_level()
 
     def transition_level(self):
@@ -207,14 +207,16 @@ class Level:
             Ghost,
             Mimic,
             Sunflower,
-            Acorn
+            Acorn,
+            Newtshroom
         )
 
         size = (
             TILE_SIZE * 0.7, 
             TILE_SIZE * 0.8, 
             TILE_SIZE * 0.9, 
-            TILE_SIZE * 0.6
+            TILE_SIZE * 0.6,
+            TILE_SIZE * 0.8
         )
 
         enemy = enemies[id](

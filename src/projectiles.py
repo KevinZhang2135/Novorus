@@ -46,8 +46,12 @@ class Projectile(Entity):
                 self.angle = math.pi * 3 / 2
 
         self.image = pygame.transform.rotate(
-            self.image, self.angle * (180 / math.pi))
+            self.image, 
+            self.angle * (180 / math.pi)
+        )
+
         self.image = pygame.transform.flip(self.image, False, True)
+        self.image.set_alpha(self.alpha)
 
     def set_target(self, coords: list, stats: Stats, group: pygame.sprite.Group):
         self.stats = stats
@@ -59,7 +63,6 @@ class Projectile(Entity):
         )
 
         self.velocity.scale_to_length(self.max_velocity)
-        self.rotate_image()
 
     def collision(self):
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
@@ -136,11 +139,8 @@ class Projectile(Entity):
         '''Fades particle after its fade time
            Deletes the particle if it has no alpha'''
         if pygame.time.get_ticks() - self.fade_time > self.fade_cooldown:
-            self.alpha -= 10
-            if self.alpha > 0 and self.fade:
-                self.image.set_alpha(self.alpha)
-
-            else:
+            self.alpha -= 8
+            if self.alpha < 0:
                 self.kill()
                 del self
 
@@ -161,7 +161,6 @@ class Fireball(Projectile):
         super().__init__(coords, size, game, groups)
         self.fade = False
         self.max_velocity = 3
-
         self.fade_cooldown = 2500
 
         # general animation
@@ -170,12 +169,11 @@ class Fireball(Projectile):
         # animation cooldown
         self.set_animation_cooldown(1250)
 
-
     def kill(self):
         # leaves explosion on death
         super().kill()
         Explosion(
-            self.rect.center, 
+            self.rect.center,
             self.rect.size,
             self.game,
             self.game.camera_group
@@ -188,8 +186,18 @@ class AcornThorn(Projectile):
         self.max_velocity = 5
         self.fade_cooldown = 2000
 
-        # hitboxes are not used for collision
-        self.set_hitbox(0, 0)
-
         # general animation
         self.set_animation('projectiles/thorn', isFolder=True)
+
+
+class Spore(Projectile):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.max_velocity = 4
+        self.fade_cooldown = 2000
+
+        # general animation
+        self.set_animation('projectiles/spore', isFolder=True)
+
+        # animation cooldown
+        self.set_animation_cooldown(500)
