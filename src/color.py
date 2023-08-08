@@ -12,6 +12,9 @@ class Color:
     YELLOW = (255, 231, 45)
     GOLD = (241, 205, 0)
 
+    # greens
+    GRASS_GREEN = (105, 172, 97)
+
     # blues
     SKY_BLUE1 = (84, 101, 153)
     SKY_BLUE2 = (100, 133, 179)

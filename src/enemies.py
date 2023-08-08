@@ -178,11 +178,11 @@ class Acorn(RangerEntity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(600, 600, 1800)
+        self.set_animation_cooldown(600, 600, 1200)
 
         # attack cooldown
         self.attack_cooldown = 1500
-        self.impact_frame = 5
+        self.impact_frame = 6
 
     def create_projectile(self, target):
         projectile_size = (self.hitbox.width * 1.5,) * 2

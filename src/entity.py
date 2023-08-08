@@ -459,6 +459,8 @@ class MeleeEntity(Entity):
 class RangerEntity(Entity):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
+        self.has_fired_projectile = False
+
         # movement and range
         self.detection_distance = 0
         self.max_velocity = 0
@@ -514,7 +516,7 @@ class RangerEntity(Entity):
                 and self.line_of_sight(targets[0].hitbox.center)):
 
             self.in_combat = True
-            self.face_enemy(targets[0])
+            self.face_enemy(targets[0]) # closest enemy
 
             # only attacks the last frame
             if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown):
@@ -522,13 +524,18 @@ class RangerEntity(Entity):
                 if not self.attacking:
                     self.frame = 0
                     self.attacking = True
+                    self.has_fired_projectile = False
 
                 # shoot projectile after animation ends
-                if (self.frame == self.impact_frame):
+                if self.frame == self.impact_frame and not self.has_fired_projectile:
+                    self.create_projectile(targets[0])
+                    self.has_fired_projectile = True
+                    
+                # stops attack animation
+                if self.frame == len(self.animation_frames[self.facing]['attack']) - 1:
                     self.attack_time = pygame.time.get_ticks()
                     self.attacking = False
-
-                    self.create_projectile(targets[0])
+                    
 
         # cancels attack when target moves outside attack range
         else:

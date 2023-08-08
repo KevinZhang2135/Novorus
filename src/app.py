@@ -77,7 +77,7 @@ class App:
                 self.state['runtime'] = False
 
             # fills a surface with the rgb color
-            self.screen.fill((105, 162, 97))
+            self.screen.fill(Color.GRASS_GREEN)
 
             self.draw()
             self.update()
