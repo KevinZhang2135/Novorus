@@ -22,7 +22,7 @@ class Particle(Sprite):
         # fade
         self.fade = True
         self.fade_time = pygame.time.get_ticks()
-        self.fade_cooldown = randomize(1000, 0.1)
+        self.fade_cooldown = 1000
 
         # hitboxes are not used for collision
         self.set_hitbox(0, 0)
@@ -117,6 +117,8 @@ class DustStomp(Particle):
 
         # render
         self.animation_cooldown = 100
+        self.fade_cooldown = 500
+
         self.set_animation('particles/dust_stomp', isFolder=True)
 
 

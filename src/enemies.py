@@ -185,7 +185,7 @@ class Acorn(RangerEntity):
         self.impact_frame = 5
 
     def create_projectile(self, target):
-        projectile_size = (self.hitbox.width * 2,) * 2
+        projectile_size = (self.hitbox.width * 1.5,) * 2
 
         # creates projectile
         projectile = AcornThorn(
