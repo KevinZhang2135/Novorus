@@ -138,7 +138,7 @@ class Sunflower(RangerEntity):
         pass
 
     def create_projectile(self, target):
-        projectile_size = (max(*self.hitbox.size) * 2,) * 2
+        projectile_size = (self.hitbox.width * 2,) * 2
 
         # creates projectile
         projectile = Fireball(
@@ -185,7 +185,7 @@ class Acorn(RangerEntity):
         self.impact_frame = 5
 
     def create_projectile(self, target):
-        projectile_size = (max(*self.hitbox.size),) * 2
+        projectile_size = (self.hitbox.width * 2,) * 2
 
         # creates projectile
         projectile = AcornThorn(
@@ -232,7 +232,7 @@ class Newtshroom(RangerEntity):
         self.impact_frame = 6
 
     def create_projectile(self, target):
-        projectile_size = (max(*self.hitbox.size),) * 2
+        projectile_size = (self.hitbox.width,) * 2
 
         # creates projectile
         for angle in range(-15, 30, 15):
@@ -250,3 +250,16 @@ class Newtshroom(RangerEntity):
             )
 
             projectile.velocity = projectile.velocity.rotate(angle)
+
+        # creates stomp dust
+        dust_size = (self.hitbox.width,) * 2
+        dust_pos = list(self.hitbox.midbottom)
+        dust_pos[1] -= dust_size[1] / 4
+
+        DustStomp(
+            dust_pos,
+            dust_size,
+            self.game,
+            self.game.camera_group
+        )
+
