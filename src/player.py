@@ -25,7 +25,7 @@ class Player(Entity):
 
         # stats
         self.exp = 0
-        self.stats = Stats(100, 50, 20, 0.05, 0.01)
+        self.stats = Stats(200, 50, 20, 0.05, 0.01)
 
         # general animation
         self.animation_frames = {
