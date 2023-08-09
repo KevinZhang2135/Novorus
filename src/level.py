@@ -62,10 +62,9 @@ class Level:
 
     def read_csv_level(self):
         files = os.listdir(f'{LEVEL_PATH}/{self.floor_level}')
-        row = 0
 
         # reads csv files in folder
-        for path in files:
+        for row, path in enumerate(files):
             # checks if file is not csv
             file_extention = os.path.splitext(path)[1]
             if file_extention != '.csv':
@@ -76,14 +75,17 @@ class Level:
             # reads csv
             with open(os.path.join(f'{LEVEL_PATH}/{self.floor_level}', path)) as file:
                 csv_file = tuple(csv.reader(file))
-                self.create_tile_group(csv_file, path)
-
                 if not row:  # determines the dimensions of the first csv_file
                     self.size.x = len(csv_file[0]) * TILE_SIZE
                     self.size.y = len(csv_file) * TILE_SIZE
-
                     self.rect = pygame.Rect(0, 0, *self.size)
-                    row += 1
+
+                    # initializes layers
+                    self.grass_layer = pygame.Surface(self.size, pygame.SRCALPHA)
+                    self.terrain_layer = pygame.Surface(self.size, pygame.SRCALPHA)
+                    self.terrain_overlay_layer = pygame.Surface(self.size, pygame.SRCALPHA)
+
+                self.create_tile_group(csv_file, path)
 
         # draws grass
         self.add_grass()
@@ -134,11 +136,10 @@ class Level:
 
     def add_grass(self):
         '''Places a lot of grass'''
-        self.grass_layer = pygame.Surface(self.size, pygame.SRCALPHA)
-
         num_grass = (self.size.x * self.size.y) // TILE_SIZE**2 * 2
         grass_size = (TILE_SIZE * 2,) * 2
 
+        # draws grass onto surface
         for i in range(int(num_grass)):
             filename = f'grassy{random.randint(1, 7)}'
             coords = (
@@ -153,36 +154,29 @@ class Level:
 
             self.grass_layer.blit(grass, coords)
 
-        self.grass_layer.get_size()
-
     def add_terrain(self, id: int, coords: list):
-        sprites = [f'path/path{i}' for i in range(1, 32)]
+        sprites = [f'path{i}' for i in range(1, 32)]
 
-        size = (TILE_SIZE,) * 2
-        terrain_tile = Sprite(
-            coords,
-            size,
-            self.game,
-            self.game.camera_group
+        terrain_size = (TILE_SIZE,) * 2
+        terrain = pygame.transform.scale(
+            IMAGES[sprites[id]],
+            terrain_size
         )
 
-        terrain_tile.set_animation(f'terrain/{sprites[id]}')
+        self.terrain_layer.blit(terrain, coords)
 
     def add_terrain_overlay(self, id: int, coords: list):
         sprites = [f'bricks{i}' for i in range(1, 5)] \
             + [f'ditch{i}' for i in range(1, 5)] \
             + [f'grassy_patch{i}' for i in range(1, 9)]
 
-        size = (TILE_SIZE,) * 2
-        terrain_tile = Sprite(
-            coords,
-            size,
-            self.game,
-            self.game.camera_group
+        overlay_size = (TILE_SIZE,) * 2
+        overlay = pygame.transform.scale(
+            IMAGES[sprites[id]],
+            overlay_size
         )
 
-        terrain_tile.sprite_layer = 2
-        terrain_tile.set_animation(f'terrain_overlay/{sprites[id]}')
+        self.terrain_overlay_layer.blit(overlay, coords)
 
     def add_instructions(self, id: int, coords: list):
         sprites = ('dash_path', 'inventory_path', 'move_path', 'slash_path')

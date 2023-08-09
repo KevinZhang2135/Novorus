@@ -82,6 +82,16 @@ class CameraGroup(pygame.sprite.Group):
             (-HALF_TILE_SIZE,) * 2 - self.offset.xy
         )
 
+        self.screen.blit(
+            self.game.level.terrain_layer, 
+            (-HALF_TILE_SIZE,) * 2 - self.offset.xy
+        )
+
+        self.screen.blit(
+            self.game.level.terrain_overlay_layer, 
+            (-HALF_TILE_SIZE,) * 2 - self.offset.xy
+        )
+
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(
             self.sprites(),

@@ -92,6 +92,9 @@ class Mimic(MeleeEntity):
         self.exp = 50
         self.stats = Stats(350, 0, 25, 0.25, 0)
 
+        # movement and range
+        self.melee_range = max(self.hitbox.size) * 5
+
         # animation
         self.set_animation('enemies/mimic', isFolder=True)
 
@@ -178,7 +181,7 @@ class Acorn(RangerEntity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(600, 600, 1200)
+        self.set_animation_cooldown(300, 300, 1200)
 
         # attack cooldown
         self.attack_cooldown = 1500
