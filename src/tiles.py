@@ -76,7 +76,6 @@ class Torch(Sprite):
         self.light_radius = 50
         self.light_color = Color.GOLD
 
-
     def draw_smoke(self):
         "Creates smoke every interval"
         if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:

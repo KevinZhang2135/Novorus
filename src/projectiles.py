@@ -140,7 +140,7 @@ class Projectile(Entity):
            Deletes the particle if it has no alpha'''
         if pygame.time.get_ticks() - self.fade_time > self.fade_cooldown:
             self.alpha -= 8
-            if self.alpha < 0:
+            if self.alpha < 0 or not self.fade:
                 self.kill()
                 del self
 

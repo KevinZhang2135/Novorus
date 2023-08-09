@@ -76,9 +76,6 @@ class App:
             if pygame.QUIT in self.events:
                 self.state['runtime'] = False
 
-            # fills a surface with the rgb color
-            self.screen.fill(Color.GRASS_GREEN)
-
             self.draw()
             self.update()
 
@@ -92,6 +89,10 @@ class App:
 
     def draw(self):
         '''Redraws sprites, images, and surfaces'''
+
+        # fills a surface with green
+        self.screen.fill(Color.GRASS_GREEN)
+
         self.camera_group.render(
             show_hitboxes=False,
             show_rects=False

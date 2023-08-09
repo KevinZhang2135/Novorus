@@ -77,6 +77,10 @@ class CameraGroup(pygame.sprite.Group):
     def render(self, show_hitboxes: bool = False, show_rects: bool = False):
         '''Draws the screen according to player movement'''
         self.center_target(self.game.player)
+        self.screen.blit(
+            self.game.level.grass_layer, 
+            (-HALF_TILE_SIZE,) * 2 - self.offset.xy
+        )
 
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(

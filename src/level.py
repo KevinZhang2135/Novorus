@@ -29,6 +29,11 @@ class Level:
             self.screen.get_height()
         )
 
+        # layers
+        self.grass_layer = None
+        self.terrain_layer = None
+        self.terrain_overlay_layer = None
+
         self.read_csv_level()
 
     def transition_level(self):
@@ -80,6 +85,9 @@ class Level:
                     self.rect = pygame.Rect(0, 0, *self.size)
                     row += 1
 
+        # draws grass
+        self.add_grass()
+
     def clear_level(self):
         for sprite in self.game.camera_group.sprites():
             if sprite not in self.game.player_group:
@@ -124,9 +132,31 @@ class Level:
     def set_player_coords(self, id: int, coords: list):
         self.game.player.set_coords(*coords)
 
+    def add_grass(self):
+        '''Places a lot of grass'''
+        self.grass_layer = pygame.Surface(self.size, pygame.SRCALPHA)
+
+        num_grass = (self.size.x * self.size.y) // TILE_SIZE**2 * 2
+        grass_size = (TILE_SIZE * 2,) * 2
+
+        for i in range(int(num_grass)):
+            filename = f'grassy{random.randint(1, 7)}'
+            coords = (
+                random.randint(-HALF_TILE_SIZE, self.size.x + HALF_TILE_SIZE),
+                random.randint(-HALF_TILE_SIZE, self.size.y + HALF_TILE_SIZE)
+            )
+
+            grass = pygame.transform.scale(
+                IMAGES[filename],
+                grass_size
+            )
+
+            self.grass_layer.blit(grass, coords)
+
+        self.grass_layer.get_size()
+
     def add_terrain(self, id: int, coords: list):
-        sprites = [f'path/path{i}' for i in range(1, 32)] \
-            + [f'grassy/grassy{i}' for i in range(1, 12)]
+        sprites = [f'path/path{i}' for i in range(1, 32)]
 
         size = (TILE_SIZE,) * 2
         terrain_tile = Sprite(
@@ -203,28 +233,46 @@ class Level:
                 pass
 
     def add_enemies(self, id: int, coords: list):
-        enemies = (
-            Ghost,
-            Mimic,
-            Sunflower,
-            Acorn,
-            Newtshroom
-        )
+        match id:
+            case 0:
+                enemy = Ghost(
+                    coords,
+                    (TILE_SIZE * 0.7,) * 2,
+                    self.game,
+                    (self.game.camera_group, self.game.enemy_group)
+                )
 
-        size = (
-            TILE_SIZE * 0.7, 
-            TILE_SIZE * 0.8, 
-            TILE_SIZE * 0.9, 
-            TILE_SIZE * 0.6,
-            TILE_SIZE * 0.8
-        )
+            case 1:
+                enemy = Mimic(
+                    coords,
+                    (TILE_SIZE * 0.8,) * 2,
+                    self.game,
+                    (self.game.camera_group, self.game.enemy_group)
+                )
 
-        enemy = enemies[id](
-            coords,
-            [size[id]] * 2,
-            self.game,
-            (self.game.camera_group, self.game.enemy_group)
-        )
+            case 2:
+                enemy = Sunflower(
+                    coords,
+                    (TILE_SIZE * 0.9,) * 2,
+                    self.game,
+                    (self.game.camera_group, self.game.enemy_group)
+                )
+
+            case 3:
+                enemy = Acorn(
+                    coords,
+                    (TILE_SIZE * 0.6,) * 2,
+                    self.game,
+                    (self.game.camera_group, self.game.enemy_group)
+                )
+
+            case 4:
+                enemy = Newtshroom(
+                    coords,
+                    (TILE_SIZE * 0.8,) * 2,
+                    self.game,
+                    (self.game.camera_group, self.game.enemy_group)
+                )
 
         enemy.set_coords(
             enemy.coords.x + random.randint(-25, 25),
@@ -498,7 +546,8 @@ class Level:
                     coords,
                     (TILE_SIZE,) * 2,
                     self.game,
-                    (self.game.camera_group, self.game.enemy_group, self.game.totem_group)
+                    (self.game.camera_group,
+                     self.game.enemy_group, self.game.totem_group)
                 )
 
             case 1:
@@ -506,7 +555,8 @@ class Level:
                     coords,
                     (TILE_SIZE,) * 2,
                     self.game,
-                    (self.game.camera_group, self.game.enemy_group, self.game.totem_group)
+                    (self.game.camera_group,
+                     self.game.enemy_group, self.game.totem_group)
                 )
 
     def draw(self):
