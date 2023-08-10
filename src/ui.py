@@ -11,6 +11,14 @@ class Menu(pygame.sprite.Group):
         self.screen = pygame.display.get_surface()
         self.game = game
 
+        self.background_surface = pygame.Surface(self.game.resolution)
+        self.background_surface = color_image(
+            self.background_surface,
+            Color.BLACK,
+            128
+        )
+
+        # buttons
         self.pause_button = Button(
             self.screen.get_size(),
             (120, 120),
@@ -21,38 +29,38 @@ class Menu(pygame.sprite.Group):
         )
 
         self.pause_button.set_images(
-            IMAGES['menu'],
+            IMAGES['menu_button'],
             IMAGES['paused']
         )
 
-        menu_width = TILE_SIZE * 4
-        menu_height = TILE_SIZE * 4
+        # menu rect and surface
         self.menu_rect = pygame.Rect(
-            (self.screen.get_width() - menu_width) / 2,
-            (self.screen.get_height() - menu_height) / 2,
-            menu_width,
-            menu_height
+            (self.screen.get_width() - TILE_SIZE * 4) / 2,
+            (self.screen.get_height() - TILE_SIZE * 4) / 2,
+            TILE_SIZE * 4,
+            TILE_SIZE * 4
+        )
+
+        self.menu_rect_background = pygame.transform.scale(
+            IMAGES['menu_box'],
+            self.menu_rect.size
         )
 
         # menu text
-        text = COMICORO[50].render('Menu', True, Color.BLACK)
-        text_rect = text.get_rect(
-            center=(
-                self.screen.get_width() / 2,
-                self.screen.get_height() / 2 - 120
-            )
-        )
+        text = COMICORO[50].render('Menu', True, Color.CREAM)
+        text_rect = text.get_rect(center=(
+            self.screen.get_width() / 2,
+            self.screen.get_height() / 2 - 120
+        ))
 
         self.menu_text = text, text_rect
 
         # exit text
-        text = COMICORO[50].render('Exit', True, Color.BLACK)
-        text_rect = text.get_rect(
-            center=(
-                self.screen.get_width() / 2,
-                self.screen.get_height() / 2 + 120
-            )
-        )
+        text = COMICORO[50].render('Exit', True, Color.CREAM)
+        text_rect = text.get_rect(center=(
+            self.screen.get_width() / 2,
+            self.screen.get_height() / 2 + 120
+        ))
 
         # turns yellow upon hover
         self.exit_text = text, text_rect
@@ -65,19 +73,9 @@ class Menu(pygame.sprite.Group):
         # only displays menu when the game is paused
         if self.pause_button.active:
             self.game.state['unpaused'] = False
-            pygame.draw.rect(
-                self.screen,
-                Color.BROWN,
-                self.menu_rect
-            )
 
-            pygame.draw.rect(
-                self.screen,
-                Color.DARK_BROWN,
-                self.menu_rect,
-                5
-            )
-
+            self.screen.blit(self.background_surface, (0, 0))
+            self.screen.blit(self.menu_rect_background, self.menu_rect.topleft)
             self.screen.blit(*self.menu_text)
 
             # exit text turns yellow when hovered upon
@@ -128,12 +126,12 @@ class Button(Sprite):
 
     def set_images(self, inactive_sprite, active_sprite):
         self.inactive_sprite = pygame.transform.scale(
-            inactive_sprite, 
+            inactive_sprite,
             self.rect.size
         )
 
         self.active_sprite = pygame.transform.scale(
-            active_sprite, 
+            active_sprite,
             self.rect.size
         )
 
@@ -180,11 +178,14 @@ class Inventory(pygame.sprite.Group):
         self.screen = pygame.display.get_surface()
         self.game = game
 
+        # buttons
+        inventory_button_size = (
+            self.screen.get_width() - 90,
+            self.screen.get_height()
+        )
+
         self.inventory_button = Button(
-            (
-                self.screen.get_width() - 90,
-                self.screen.get_height()
-            ),
+            inventory_button_size,
             (120, 120),
             self.game,
             self,
@@ -196,19 +197,30 @@ class Inventory(pygame.sprite.Group):
             IMAGES['backpack_opened']
         )
 
-        # inventory background
-        inventory_width = 400
-        inventory_height = 475
+        # inventory rect and surface
         self.inventory_rect = pygame.Rect(
-            4,
-            (self.screen.get_height() - inventory_height) - 4,
-            inventory_width,
-            inventory_height
+            5,
+            (self.screen.get_height() - TILE_SIZE * 4) - 5,
+            TILE_SIZE * 4,
+            TILE_SIZE * 4
         )
 
-        self.inventory_surface = pygame.Surface(
-            (self.inventory_rect.width, self.inventory_rect.height)
+        self.inventory_rect_background = pygame.transform.scale(
+            IMAGES['inventory_box'],
+            self.inventory_rect.size
         )
+
+        margin = 30
+        self.inventory_surface = []
+        self.inventory_surface.append(pygame.Surface(
+            tuple(map(lambda x: x - margin * 2, self.inventory_rect.size)),
+            flags=pygame.SRCALPHA
+        ))
+
+        self.inventory_surface.append(tuple(map(
+            lambda x: x + margin,
+            self.inventory_rect.topleft
+        )))
 
         # inventory items
         self.items = {}
@@ -222,7 +234,7 @@ class Inventory(pygame.sprite.Group):
         self.scroll = 0
         self.scroll_acceleration = 0
         self.scroll_velocity = 0
-        self.scroll_max_velocity = 30
+        self.scroll_max_velocity = 3
 
     def add_item(self, name: str, count: int):
         """Adds items to the inventory, stacking if it is already present"""
@@ -243,40 +255,34 @@ class Inventory(pygame.sprite.Group):
     def show_inventory(self):
         """Displays inventory"""
         self.screen.blit(
-            self.inventory_surface,
-            (self.inventory_rect.left, self.inventory_rect.top)
+            self.inventory_rect_background,
+            self.inventory_rect.topleft
         )
 
-        self.inventory_surface.fill(Color.BROWN)
-        pygame.draw.rect(
-            self.screen,
-            Color.DARK_BROWN,
-            self.inventory_rect,
-            5
-        )
+        self.screen.blit(*self.inventory_surface)
+        self.inventory_surface[0].fill((0, 0, 0, 0))
 
         # displays inventory items
-        column = 0
-        row = 0
+        row, column = 0, 0
         for item in self.sprites():
             if item != self.inventory_button:
                 # displays item box
-                self.inventory_surface.blit(
+                self.inventory_surface[0].blit(
                     self.item_box,
                     (
-                        column * (self.item_box.get_width() + 15) + 20,
-                        row * (self.item_box.get_height() + 15)
-                        + 20 - self.scroll
+                        column * (self.item_box.get_width() + 15),
+                        row * (self.item_box.get_height() + 15) - self.scroll
                     )
                 )
 
                 # displays item
-                item.rect.x = column * (self.item_box.get_width() + 15) + 20
+                item.rect.x = column * \
+                    (self.item_box.get_width() + 15)
+
                 item.rect.y = row * (self.item_box.get_height() + 15) \
-                    + 20 \
                     - self.scroll
 
-                self.inventory_surface.blit(
+                self.inventory_surface[0].blit(
                     item.image,
                     item.rect.topleft
                 )
@@ -289,17 +295,15 @@ class Inventory(pygame.sprite.Group):
                     text = COMICORO[25].render(
                         str(item.count),
                         True,
-                        Color.WHITE
+                        Color.BLACK
                     )
 
-                    text_rect = text.get_rect(
-                        bottomright=(
-                            item.rect.right - 5,
-                            item.rect.bottom - 5
-                        )
-                    )
+                    text_rect = text.get_rect(bottomright=(
+                        item.rect.right - 10,
+                        item.rect.bottom - 7
+                    ))
 
-                    self.inventory_surface.blit(text, text_rect)
+                    self.inventory_surface[0].blit(text, text_rect)
 
                 column += 1
                 if not column % 5 and column != 0:
@@ -383,7 +387,12 @@ class Item(pygame.sprite.Sprite):
         self.count = count
 
         self.tooltip_rect = pygame.Rect(
-            self.rect.x, self.rect.y, 100, 10 + 15 * len(self.tooltip))
+            self.rect.x,
+            self.rect.y,
+            100,
+            10 + 15 * len(self.tooltip)
+        )
+
         self.tooltip_text = []
 
         # reading tooltip
@@ -457,7 +466,7 @@ class PlayerHealthBar(Sprite):
 
         # text
         self.health_text = COMICORO[35].render(str(""), True, Color.CREAM)
-        
+
     def set_target(self, target: pygame.sprite.Sprite):
         self.target = target
 
@@ -468,8 +477,8 @@ class PlayerHealthBar(Sprite):
         )
 
         self.screen.blit(self.background_surface, self.rect.topleft)
-        
-        #self.health_text
+
+        # self.health_text
         pygame.draw.rect(
             self.screen,
             Color.RED,

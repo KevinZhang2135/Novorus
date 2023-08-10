@@ -15,7 +15,7 @@ class Player(Entity):
         self.actions = ['idle', 'run', 'attack', 'dash']
 
         # hitbox
-        self.set_hitbox(0.15, 0.4, offsety=0.05)
+        self.set_hitbox(0.15, 0.45, offsety=0.05)
 
         # movement and range
         self.max_velocity = 5
