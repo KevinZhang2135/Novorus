@@ -141,7 +141,7 @@ class Sunflower(RangerEntity):
         pass
 
     def create_projectile(self, target):
-        projectile_size = (self.hitbox.width * 2,) * 2
+        projectile_size = (self.hitbox.height * 2,) * 2
         projectile_pos = list(self.hitbox.midtop)
         projectile_pos[1] -= self.hitbox.height / 2
 
