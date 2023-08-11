@@ -1,8 +1,11 @@
+from entity import pygame
 from particles import *
 from entity import *
 
 import pygame
 import math
+
+from particles import pygame
 
 
 class Projectile(Entity):
@@ -45,13 +48,13 @@ class Projectile(Entity):
             elif self.velocity.y < 0:
                 self.angle = math.pi * 3 / 2
 
-        self.image = pygame.transform.rotate(
-            self.image, 
-            self.angle * (180 / math.pi)
-        )
+        if self.angle:
+            self.image = pygame.transform.rotate(
+                self.image,
+                self.angle * (180 / math.pi)
+            )
 
-        self.image = pygame.transform.flip(self.image, False, True)
-        self.image.set_alpha(self.alpha)
+            self.image = pygame.transform.flip(self.image, False, True)
 
     def set_target(self, coords: list, stats: Stats, group: pygame.sprite.Group):
         self.stats = stats
@@ -147,11 +150,54 @@ class Projectile(Entity):
     def animation(self):
         super().animation()
         self.rotate_image()
+        self.image.set_alpha(self.alpha)
 
     def update(self):
         self.movement()
         self.collision()
         self.hit_target()
+        self.expire()
+        self.animation()
+
+
+class SunCharge(Projectile):
+    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+        super().__init__(coords, size, game, groups)
+        self.fade_cooldown = 900
+        self.loop_frames = False
+
+        self.max_velocity = 0
+
+        # general animation
+        self.set_animation('projectiles/sun_charge', isFolder=True)
+
+        # animation cooldown
+        self.set_animation_cooldown(900)
+
+    def kill(self):
+        super().kill()
+
+        targets = self.target_group.sprites()
+        if targets:
+            target = sorted(
+                targets,
+                key=lambda sprite: math.dist(self.coords, sprite.hitbox.center)
+            )[0]
+
+            fireball = Fireball(
+                self.coords,
+                self.size,
+                self.game,
+                self.game.camera_group
+            )
+
+            fireball.set_target(
+                target.hitbox.center,
+                self.stats,
+                self.target_group
+            )
+
+    def update(self):
         self.expire()
         self.animation()
 

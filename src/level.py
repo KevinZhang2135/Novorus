@@ -274,7 +274,7 @@ class Level:
         )
 
     def add_chests(self, id: int, coords: list):
-        size = (TILE_SIZE * 0.8,) * 2
+        size = (TILE_SIZE * 0.9,) * 2
         chest = Chest(
             coords,
             size,

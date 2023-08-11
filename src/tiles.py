@@ -14,7 +14,7 @@ class Chest(Entity):
         self.actions = ['closed', 'opened']
 
         # hitbox
-        self.hitbox = self.rect.scale_by(0.55, 0.45)
+        self.set_hitbox(0.55, 0.25, offsety=0.1)
 
         # render
         self.sprite_layer = 3

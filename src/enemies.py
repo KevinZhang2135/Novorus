@@ -133,8 +133,8 @@ class Sunflower(RangerEntity):
         self.set_animation_cooldown(1600, 1200)
 
         # attack cooldown
-        self.attack_cooldown = 1500
-        self.impact_frame = 9
+        self.attack_cooldown = 5000
+        self.impact_frame = 0
 
     def face_enemy(self, target: Sprite):
         # does not turn towards target
@@ -142,10 +142,12 @@ class Sunflower(RangerEntity):
 
     def create_projectile(self, target):
         projectile_size = (self.hitbox.width * 2,) * 2
+        projectile_pos = list(self.hitbox.midtop)
+        projectile_pos[1] -= self.hitbox.height / 2
 
         # creates projectile
-        projectile = Fireball(
-            self.hitbox.midtop,
+        projectile = SunCharge(
+            projectile_pos,
             projectile_size,
             self.game,
             self.game.camera_group

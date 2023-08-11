@@ -403,11 +403,12 @@ class Item(pygame.sprite.Sprite):
 
     def show_tooltip(self):
         """Displays tooltip when hovered over"""
-        # hard coded fixed margin of 5
+        # hard coded fixed margins
         mouse_coords = list(pygame.mouse.get_pos())
-        mouse_coords[0] -= 5
-        mouse_coords[1] += self.game.player.inventory.inventory_rect.height - \
-            self.screen.get_height() + 5
+        mouse_coords[0] -= 35
+        mouse_coords[1] -= self.screen.get_height() \
+                        - self.game.player.inventory.inventory_rect.height \
+                        + 25
 
         # when mouse is hovered over item
         if self.rect.collidepoint(mouse_coords):
