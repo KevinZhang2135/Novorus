@@ -49,9 +49,10 @@ class Projectile(Entity):
                 self.angle = math.pi * 3 / 2
 
         if self.angle:
-            self.image = pygame.transform.rotate(
-                self.image,
-                self.angle * (180 / math.pi)
+            self.image, self.rect = rotate_center(
+                self.image, 
+                self.angle * (180 / math.pi), 
+                self.rect
             )
 
             self.image = pygame.transform.flip(self.image, False, True)
@@ -163,7 +164,7 @@ class Projectile(Entity):
 class SunCharge(Projectile):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
         super().__init__(coords, size, game, groups)
-        self.fade_cooldown = 900
+        self.fade_cooldown = 700
         self.loop_frames = False
 
         self.max_velocity = 0
@@ -173,6 +174,11 @@ class SunCharge(Projectile):
 
         # animation cooldown
         self.set_animation_cooldown(900)
+
+        # light
+        self.draw_light = True
+        self.light_color = Color.GOLD
+        self.light_radius = 20
 
     def kill(self):
         super().kill()
@@ -214,6 +220,11 @@ class Fireball(Projectile):
 
         # animation cooldown
         self.set_animation_cooldown(1250)
+
+        # light
+        self.draw_light = True
+        self.light_color = Color.GOLD
+        self.light_radius = 30
 
     def kill(self):
         # leaves explosion on death

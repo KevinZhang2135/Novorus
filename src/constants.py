@@ -11,7 +11,7 @@ pygame.display.set_mode()
 # tile pixel size
 TILE_SIZE = 100
 HALF_TILE_SIZE = TILE_SIZE / 2
-STARTING_FLOOR = 1
+STARTING_FLOOR =1
 
 # file paths
 LEVEL_PATH = '../levels'
@@ -81,3 +81,10 @@ def get_circle_surface(radius: float, color: list):
     )
 
     return circle_surface
+
+def rotate_center(image, angle, rect):
+    '''Rotates image about its center'''
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(center=rect.center)
+
+    return rotated_image, new_rect

@@ -136,8 +136,17 @@ class Explosion(Particle):
         super().__init__(coords, size, game, groups)
 
         # render
+        self.fade = False
+        self.fade_cooldown = 850
+        
         self.animation_cooldown = 100
         self.set_animation('particles/explosion', isFolder=True)
+        
+
+        # light
+        self.draw_light = True
+        self.light_color = Color.GOLD
+        self.light_radius = 30
 
 
 class SmallExplosion(Particle):
