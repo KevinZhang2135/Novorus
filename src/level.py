@@ -81,9 +81,12 @@ class Level:
                     self.rect = pygame.Rect(0, 0, *self.size)
 
                     # initializes layers
-                    self.grass_layer = pygame.Surface(self.size, pygame.SRCALPHA)
-                    self.terrain_layer = pygame.Surface(self.size, pygame.SRCALPHA)
-                    self.terrain_overlay_layer = pygame.Surface(self.size, pygame.SRCALPHA)
+                    self.grass_layer = pygame.Surface(
+                        self.size, pygame.SRCALPHA)
+                    self.terrain_layer = pygame.Surface(
+                        self.size, pygame.SRCALPHA)
+                    self.terrain_overlay_layer = pygame.Surface(
+                        self.size, pygame.SRCALPHA)
 
                 self.create_tile_group(csv_file, path)
 
@@ -141,7 +144,7 @@ class Level:
 
         # draws grass onto surface
         for i in range(int(num_grass)):
-            filename = f'grassy{random.randint(1, 7)}'
+            filename = f'grass{random.randint(1, 7)}'
             coords = (
                 random.randint(-HALF_TILE_SIZE, self.size.x + HALF_TILE_SIZE),
                 random.randint(-HALF_TILE_SIZE, self.size.y + HALF_TILE_SIZE)
@@ -189,17 +192,9 @@ class Level:
             self.game.camera_group
         )
 
-        terrain_tile.set_animation(f'instructions/{sprites[id]}')
+        terrain_tile.set_animation(sprites[id])
 
     def add_walls(self, id: int, coords: list):
-        sprites = (
-            'brick_top',
-            'brick_middle',
-            'brick_bottom',
-            'brick_pile',
-            'brick_side'
-        )
-
         size = (TILE_SIZE,) * 2
         wall = Sprite(
             coords,
@@ -211,20 +206,24 @@ class Level:
         wall.sprite_layer = 3
         wall.draw_shadow = True
 
-        wall.set_animation(f'walls/{sprites[id]}')
-
         match id:
             case 0:
+                wall.set_animation('brick_top')
                 wall.set_hitbox(1, 0.8, offsety=0.1)
 
+            case 1:
+                wall.set_animation('brick_middle')
+
+            case 2:
+                wall.set_animation('brick_bottom')
+
             case 3:
+                wall.set_animation('brick_pile')
                 wall.set_hitbox(0.7, 0.4, offsety=0.05)
 
             case 4:
+                wall.set_animation('brick_side')
                 wall.set_hitbox(1, 0.8, offsety=0.1)
-
-            case _:
-                pass
 
     def add_enemies(self, id: int, coords: list):
         match id:
@@ -283,7 +282,6 @@ class Level:
         )
 
     def add_static_decor(self, id: int, coords: list):
-        path = 'decor/static'
         match id:
             # flower1
             case 0:
@@ -303,7 +301,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/flower1')
+                decor.set_animation('flower1')
                 decor.set_hitbox(0.25, 0.3)
 
             # bush1
@@ -324,7 +322,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/bush1')
+                decor.set_animation('bush1')
                 decor.set_hitbox(0.6, 0.5)
 
             # bush2
@@ -345,7 +343,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/bush2')
+                decor.set_animation('bush2')
                 decor.set_hitbox(0.6, 0.3)
 
             # rock1
@@ -366,7 +364,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/rock1')
+                decor.set_animation('rock1')
                 decor.set_hitbox(0.4, 0.3, offsety=0.1)
 
             # rock2
@@ -387,7 +385,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/rock2')
+                decor.set_animation('rock2')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # rock3
@@ -408,7 +406,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/rock3')
+                decor.set_animation('rock3')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # rock4
@@ -429,7 +427,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/rock4')
+                decor.set_animation('rock4')
                 decor.set_hitbox(0.4, 0.4, offsety=0.1)
 
             # oak tree
@@ -450,7 +448,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/oak_tree')
+                decor.set_animation('oak_tree')
                 decor.set_hitbox(0.4, 0.6)
 
             # pine tree
@@ -471,7 +469,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/pine_tree')
+                decor.set_animation('pine_tree')
                 decor.set_hitbox(0.3, 0.6)
 
             # sakura tree
@@ -492,7 +490,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/sakura_tree')
+                decor.set_animation('sakura_tree')
                 decor.set_hitbox(0.3, 0.6)
 
             # dead tree
@@ -513,7 +511,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation(f'{path}/dead_tree')
+                decor.set_animation('dead_tree')
                 decor.set_hitbox(0.3, 0.65)
 
         # randomly flips vertically

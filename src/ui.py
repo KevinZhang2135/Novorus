@@ -376,9 +376,9 @@ class Item(pygame.sprite.Sprite):
         super().__init__()
         self.screen = pygame.display.get_surface()
         self.game = game
-        self.width, self.height = 60, 60
+        self.size = 60, 60
 
-        self.image = pygame.transform.scale(image, (self.width, self.height))
+        self.image = pygame.transform.scale(image, self.size)
         self.rect = self.image.get_rect()
 
         self.name = name
@@ -443,7 +443,7 @@ class PlayerHealthBar(Sprite):
         self.target = None
 
         # animation
-        self.set_animation('hud/health_bar')
+        self.set_animation('health_bar')
 
         # health rect
         self.bar_width = self.rect.width * 7 / 8
@@ -510,11 +510,8 @@ class Cursor(Sprite):
         # render
         self.sprite_layer = 4
 
-        # images and rects
-        self.image = IMAGES['cursor'].copy()
-        self.image = pygame.transform.scale(self.image, size)
-
-        self.rect = self.image.get_rect(center=(0, 0))
+        # animation
+        self.set_animation('cursor')
 
     def offset_mouse_pos(self):
         """Returns the mouse position in relation to the offset screen"""

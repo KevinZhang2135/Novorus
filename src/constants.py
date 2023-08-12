@@ -11,7 +11,7 @@ pygame.display.set_mode()
 # tile pixel size
 TILE_SIZE = 100
 HALF_TILE_SIZE = TILE_SIZE / 2
-STARTING_FLOOR =1
+STARTING_FLOOR = 3
 
 # file paths
 LEVEL_PATH = '../levels'

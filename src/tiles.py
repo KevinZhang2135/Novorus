@@ -46,6 +46,8 @@ class Chest(Entity):
                 random.randint(1, 3)
             )
 
+            self.game.player.stats.health += 10
+
     def update(self):
         self.check_state()
         self.animation()
@@ -243,7 +245,7 @@ class Totem1(Totem):
 
         # stats
         self.exp = 25
-        self.stats = Stats(300, 0, 0, 0, 0)
+        self.stats = Stats(200, 0, 0, 0, 0)
 
         # animation
         self.set_animation('enemies/totem1', isFolder=True)
@@ -263,7 +265,7 @@ class Totem2(Totem):
 
         # stats
         self.exp = 25
-        self.stats = Stats(250, 0, 0, 0, 0)
+        self.stats = Stats(150, 0, 0, 0, 0)
 
         # animation
         self.set_animation('enemies/totem2', isFolder=True)
