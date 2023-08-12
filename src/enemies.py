@@ -17,7 +17,7 @@ class Ghost(MeleeEntity):
 
         # stats
         self.exp = 25
-        self.stats = Stats(100, 10, 15, 0.05, 0.05)
+        self.stats = Stats(80, 10, 15, 0.05, 0.05)
 
         # movement and range
         self.detection_distance = 350
@@ -218,7 +218,7 @@ class Newtshroom(RangerEntity):
 
         # stats
         self.exp = 60
-        self.stats = Stats(120, 10, 10, 0, 0)
+        self.stats = Stats(100, 10, 10, 0, 0)
 
         # movement and range
         self.detection_distance = 550
