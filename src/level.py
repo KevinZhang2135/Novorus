@@ -274,12 +274,17 @@ class Level:
 
     def add_chests(self, id: int, coords: list):
         size = (TILE_SIZE * 0.9,) * 2
-        chest = Chest(
+        chest = WoodChest(
             coords,
             size,
             self.game,
             (self.game.camera_group, self.game.collision_group)
         )
+
+        chest.items = {
+            'baguette': random.randint(1, 3),
+            'oak_log': random.randint(2, 3)
+        }
 
     def add_static_decor(self, id: int, coords: list):
         match id:

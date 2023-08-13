@@ -178,6 +178,12 @@ class Inventory(pygame.sprite.Group):
         self.screen = pygame.display.get_surface()
         self.game = game
 
+        self.MARGIN = 30
+        self.HALF_MARGIN = self.MARGIN / 2
+
+        self.MAX_ROWS = 6
+        self.MAX_COLUMNS = 5
+
         # buttons
         inventory_button_size = (
             self.screen.get_width() - 90,
@@ -210,15 +216,14 @@ class Inventory(pygame.sprite.Group):
             self.inventory_rect.size
         )
 
-        margin = 30
         self.inventory_surface = []
         self.inventory_surface.append(pygame.Surface(
-            tuple(map(lambda x: x - margin * 2, self.inventory_rect.size)),
+            tuple(map(lambda x: x - self.MARGIN * 2, self.inventory_rect.size)),
             flags=pygame.SRCALPHA
         ))
 
         self.inventory_surface.append(tuple(map(
-            lambda x: x + margin,
+            lambda x: x + self.MARGIN,
             self.inventory_rect.topleft
         )))
 
@@ -267,12 +272,16 @@ class Inventory(pygame.sprite.Group):
         for item in self.sprites():
             if item != self.inventory_button:
                 # displays item box
+
+                item_pos = (
+                    column * (self.item_box.get_width() + self.HALF_MARGIN),
+                    row * (self.item_box.get_height() +
+                           self.HALF_MARGIN) - self.scroll
+                )
+
                 self.inventory_surface[0].blit(
                     self.item_box,
-                    (
-                        column * (self.item_box.get_width() + 15),
-                        row * (self.item_box.get_height() + 15) - self.scroll
-                    )
+                    item_pos
                 )
 
                 # displays item
@@ -306,7 +315,7 @@ class Inventory(pygame.sprite.Group):
                     self.inventory_surface[0].blit(text, text_rect)
 
                 column += 1
-                if not column % 5 and column != 0:
+                if not column % self.MAX_COLUMNS and column != 0:
                     column = 0
                     row += 1
 
@@ -346,7 +355,8 @@ class Inventory(pygame.sprite.Group):
                 self.scroll += self.scroll_velocity
 
                 # prevents scrolling beyond the inventory
-                max_scroll = (math.ceil((len(self.sprites()) - 1) / 5) - 6) \
+                num_items = len(self.sprites()) - 1
+                max_scroll = (math.ceil(num_items / self.MAX_COLUMNS) - self.MAX_ROWS) \
                     * (self.item_box.get_height() + 15)
 
                 if self.scroll < 0:
@@ -371,26 +381,23 @@ class Inventory(pygame.sprite.Group):
             sprite.update()
 
 
-class Item(pygame.sprite.Sprite):
+class Item(Sprite):
     def __init__(self, name: str, image: pygame.Surface, tooltip: str, count: int, game):
-        super().__init__()
+        super().__init__((30, 30), (60, 60), game, ())
         self.screen = pygame.display.get_surface()
-        self.game = game
-        self.size = 60, 60
-
-        self.image = pygame.transform.scale(image, self.size)
-        self.rect = self.image.get_rect()
 
         self.name = name
         self.tooltip = tooltip
         self.tooltip[0] = self.tooltip[0]
         self.count = count
 
+        self.image = pygame.transform.scale(image, self.size)
+
         self.tooltip_rect = pygame.Rect(
             self.rect.x,
             self.rect.y,
             100,
-            10 + 15 * len(self.tooltip)
+            5 + 15 * len(self.tooltip)
         )
 
         self.tooltip_text = []
@@ -407,8 +414,8 @@ class Item(pygame.sprite.Sprite):
         mouse_coords = list(pygame.mouse.get_pos())
         mouse_coords[0] -= 35
         mouse_coords[1] -= self.screen.get_height() \
-                        - self.game.player.inventory.inventory_rect.height \
-                        + 25
+            - self.game.player.inventory.inventory_rect.height \
+            + 25
 
         # when mouse is hovered over item
         if self.rect.collidepoint(mouse_coords):

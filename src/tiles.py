@@ -7,7 +7,7 @@ from entity import *
 import pygame
 
 
-class Chest(Entity):
+class WoodChest(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.action = 'closed'
@@ -31,22 +31,18 @@ class Chest(Entity):
         self.animation_cooldowns = {action: 0 for action in self.actions}
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
+        self.items = {}
+
     def check_state(self):
         # checks if the distance of the sprites are within collision distance
         if self.action == 'closed' and pygame.Rect.colliderect(self.rect, self.game.player.hitbox):
             self.action = 'opened'
 
-            self.game.player.inventory.add_item(
-                'baguette',
-                random.randint(1, 3)
-            )
-
-            self.game.player.inventory.add_item(
-                'oak_log',
-                random.randint(1, 3)
-            )
-
-            self.game.player.stats.health += 10
+            for name, count in self.items.items():
+                self.game.player.inventory.add_item(
+                    name,
+                    count
+                )
 
     def update(self):
         self.check_state()
