@@ -443,24 +443,22 @@ class Item(Sprite):
                 self.screen.blit(*line)
 
 
-class PlayerHealthBar(Sprite):
+class PlayerBar(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.screen = pygame.display.get_surface()
-        self.target = None
 
-        # animation
-        self.set_animation('health_bar')
-
-        # health rect
-        self.bar_width = self.rect.width * 7 / 8
-        self.health_rect = pygame.Rect(
+        # bar rect
+        self.bar_color = Color.BLACK
+        self.bar_width = self.rect.width
+        self.bar_rect = pygame.Rect(
             self.rect.left,
             self.rect.top,
             self.bar_width,
             self.rect.height
         )
 
+        # bar background
         self.background_surface = pygame.Surface((
             self.bar_width,
             self.rect.height
@@ -473,37 +471,93 @@ class PlayerHealthBar(Sprite):
         )
 
         # text
-        self.health_text = COMICORO[35].render(str(""), True, Color.CREAM)
-
-    def set_target(self, target: pygame.sprite.Sprite):
-        self.target = target
+        self.bar_text = COMICORO[35].render(str(""), True, Color.CREAM)
 
     def draw(self):
         text_pos = (
-            self.rect.x + self.bar_width / 2 - self.health_text.get_width() / 2,
-            self.rect.y + self.rect.height / 2 - self.health_text.get_height() / 2
+            self.rect.x + self.bar_width / 2 - self.bar_text.get_width() / 2,
+            self.rect.y + self.rect.height / 2 - self.bar_text.get_height() / 2
         )
 
         self.screen.blit(self.background_surface, self.rect.topleft)
 
-        # self.health_text
         pygame.draw.rect(
             self.screen,
-            Color.RED,
-            self.health_rect
+            self.bar_color,
+            self.bar_rect
         )
 
         self.screen.blit(self.image, self.rect.topleft)
-        self.screen.blit(self.health_text, text_pos)
+        self.screen.blit(self.bar_text, text_pos)
 
     def update(self):
-        ratio = self.target.stats.health / self.target.stats.base_health
+        pass
+
+class PlayerHealthBar(PlayerBar):
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
+
+        # animation
+        self.set_animation('hud/health_bar')
+
+        # bar background
+        self.bar_color = Color.RED
+        self.bar_width = self.rect.width * 7 / 8
+
+        self.background_surface = pygame.Surface((
+            self.bar_width,
+            self.rect.height
+        ))
+
+        self.background_surface = color_image(
+            self.background_surface,
+            Color.BLACK,
+            128
+        )
+
+    def update(self):
+        ratio = self.game.player.stats.health / self.game.player.stats.base_health
         if ratio > 1:
             ratio = 1
 
-        self.health_rect.width = self.bar_width * ratio
-        self.health_text = COMICORO[35].render(
-            str(self.target.stats.health),
+        self.bar_rect.width = self.bar_width * ratio
+        self.bar_text = COMICORO[35].render(
+            str(self.game.player.stats.health),
+            True,
+            Color.CREAM
+        )
+
+
+class PlayerWarmthBar(PlayerBar):
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
+
+        # animation
+        self.set_animation('hud/warmth_bar')
+
+        # bar background
+        self.bar_color = Color.SKY_BLUE1
+        self.bar_width = self.rect.width * 3 / 4
+
+        self.background_surface = pygame.Surface((
+            self.bar_width,
+            self.rect.height
+        ))
+
+        self.background_surface = color_image(
+            self.background_surface,
+            Color.BLACK,
+            128
+        )
+
+    def update(self):
+        ratio = self.game.player.stats.warmth / self.game.player.stats.base_warmth
+        if ratio > 1:
+            ratio = 1
+
+        self.bar_rect.width = self.bar_width * ratio
+        self.bar_text = COMICORO[35].render(
+            str(self.game.player.stats.warmth),
             True,
             Color.CREAM
         )

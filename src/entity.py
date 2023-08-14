@@ -23,6 +23,9 @@ class Stats:
         if self.dodge_chance > 0.33:
             self.dodge_chance = 0.33
 
+        self.warmth = 0
+        self.base_warmth = 100
+
 
 class Entity(Sprite):
     def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):

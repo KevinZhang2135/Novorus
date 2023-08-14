@@ -42,6 +42,14 @@ class App:
 
         self.cursor_group = pygame.sprite.GroupSingle()
 
+        # player
+        self.player = Player(
+            (0, 0),
+            (TILE_SIZE * 1.35,) * 2,
+            self,
+            (self.camera_group, self.player_group)
+        )
+
         # menu
         self.menu = Menu(self)
 
@@ -54,15 +62,12 @@ class App:
             ()
         )
 
-        # player
-        self.player = Player(
-            (0, 0),
-            (TILE_SIZE * 1.35,) * 2,
+        self.player_warmth_bar = PlayerWarmthBar(
+            (TILE_SIZE + 5, HALF_TILE_SIZE * 3 / 2 + 10),
+            (TILE_SIZE * 2, HALF_TILE_SIZE),
             self,
-            (self.camera_group, self.player_group)
+            ()
         )
-
-        self.player_health_bar.set_target(self.player)
 
         # levels and map
         self.level = Level(STARTING_FLOOR, self)
@@ -103,6 +108,7 @@ class App:
         self.level.draw()
 
         self.player_health_bar.draw()
+        self.player_warmth_bar.draw()
         self.player.inventory.draw()
 
         self.menu.draw()
@@ -116,6 +122,7 @@ class App:
         self.level.update()
 
         self.player_health_bar.update()
+        self.player_warmth_bar.update()
         self.player.inventory.update()
 
         self.menu.update()

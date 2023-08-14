@@ -26,6 +26,7 @@ class Player(Entity):
         # stats
         self.exp = 0
         self.stats = Stats(200, 50, 25, 0.05, 0.01)
+        self.stats.warmth = 100
 
         # general animation
         self.animation_frames = {
@@ -48,7 +49,7 @@ class Player(Entity):
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
         self.dash_cooldown = 1000
-        self.dash_duration = 750  # how long a dash lasts
+        self.dash_duration = 600 # how long a dash lasts
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
