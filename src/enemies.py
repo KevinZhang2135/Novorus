@@ -14,6 +14,7 @@ class Ghost(MeleeEntity):
 
         # hitbox
         self.set_hitbox(0.25, 0.25)
+        self.set_collision_box(0.25, 0.25)
 
         # stats
         self.exp = 25
@@ -86,7 +87,8 @@ class Mimic(MeleeEntity):
         self.show_stats = False
 
         # hitbox
-        self.hitbox = self.rect.scale_by(0.55, 0.45)
+        self.set_hitbox(0.55, 0.45)
+        self.set_collision_box(0.55, 0.45)
 
         # stats
         self.exp = 50
@@ -117,6 +119,7 @@ class Sunflower(RangerEntity):
 
         # hitbox
         self.set_hitbox(0.25, 0.3)
+        self.set_collision_box(0.25, 0.3)
 
         # stats
         self.exp = 15
@@ -168,6 +171,7 @@ class Acorn(RangerEntity):
 
         # hitbox
         self.set_hitbox(0.5, 0.5)
+        self.set_collision_box(0.5, 0.5)
 
         # stats
         self.exp = 35
@@ -215,6 +219,7 @@ class Newtshroom(RangerEntity):
 
         # hitbox
         self.set_hitbox(0.45, 0.425)
+        self.set_collision_box(0.45, 0.2, offsety=0.1)
 
         # stats
         self.exp = 60

@@ -209,7 +209,7 @@ class Level:
         match id:
             case 0:
                 wall.set_animation('brick_top')
-                wall.set_hitbox(1, 0.8, offsety=0.1)
+                wall.set_collision_box(1, 0.8, offsety=0.1)
 
             case 1:
                 wall.set_animation('brick_middle')
@@ -219,11 +219,11 @@ class Level:
 
             case 3:
                 wall.set_animation('brick_pile')
-                wall.set_hitbox(0.7, 0.4, offsety=0.05)
+                wall.set_collision_box(0.7, 0.4, offsety=0.05)
 
             case 4:
                 wall.set_animation('brick_side')
-                wall.set_hitbox(1, 0.8, offsety=0.1)
+                wall.set_collision_box(1, 0.8, offsety=0.1)
 
     def add_enemies(self, id: int, coords: list):
         match id:

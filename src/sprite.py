@@ -20,6 +20,9 @@ class Sprite(pygame.sprite.Sprite):
         self.hitbox = pygame.Rect(self.rect)
         self.hitbox_offset = pygame.math.Vector2()
 
+        self.collision_box = pygame.Rect(self.rect)
+        self.collision_box_offset = pygame.math.Vector2()
+
         # render
         self.facing = 'right'
         self.sprite_layer = 0
@@ -115,6 +118,7 @@ class Sprite(pygame.sprite.Sprite):
         self.coords.xy = x, y
         self.rect.center = self.coords
         self.hitbox.center = self.coords + self.hitbox_offset
+        self.collision_box.center = self.coords + self.collision_box_offset
 
     def set_hitbox(self, width: float, height: float, offsetx: float = 0, offsety: float = 0):
         self.hitbox = self.rect.scale_by(width, height)
@@ -123,6 +127,11 @@ class Sprite(pygame.sprite.Sprite):
 
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
         self.rect_mask.fill()
+
+    def set_collision_box(self, width: float, height: float, offsetx: float = 0, offsety: float = 0):
+        self.collision_box = self.rect.scale_by(width, height)
+        self.collision_box_offset.xy = offsetx * self.rect.width, offsety * self.rect.height
+        self.set_coords(*self.coords)
 
     def animation(self):
         '''Handles animation'''

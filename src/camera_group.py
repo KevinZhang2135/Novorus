@@ -74,7 +74,7 @@ class CameraGroup(pygame.sprite.Group):
 
         return False
 
-    def render(self, show_hitboxes: bool = False, show_rects: bool = False):
+    def render(self, show_hitboxes = False, show_collision_boxes = False, show_rects = False):
         '''Draws the screen according to player movement'''
         self.center_target(self.game.player)
         self.screen.blit(
@@ -95,7 +95,7 @@ class CameraGroup(pygame.sprite.Group):
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(
             self.sprites(),
-            key=lambda sprite: (sprite.sprite_layer, sprite.hitbox.bottom)
+            key=lambda sprite: (sprite.sprite_layer, sprite.collision_box.bottom)
         ):
 
             # optimizes sprite draws
@@ -113,6 +113,9 @@ class CameraGroup(pygame.sprite.Group):
 
                 # draws sprite hitboxes
                 show_hitboxes and self.draw_hitboxes(sprite)
+
+                # draws sprite collision boxes
+                show_collision_boxes and self.draw_collision_boxes(sprite)
 
                 # draws sprite rects
                 show_rects and self.draw_rects(sprite)
@@ -142,10 +145,26 @@ class CameraGroup(pygame.sprite.Group):
 
         pygame.draw.rect(
             self.screen,
-            (255, 0, 0),
+            Color.RED,
             hitbox,
             1
         )
+
+    def draw_collision_boxes(self, sprite):
+        collision_box = pygame.Rect(
+            sprite.collision_box.x - self.offset.x,
+            sprite.collision_box.y - self.offset.y,
+            sprite.collision_box.width,
+            sprite.collision_box.height
+        )
+
+        pygame.draw.rect(
+            self.screen,
+            Color.SKY_BLUE1,
+            collision_box,
+            1
+        )
+
 
     def draw_rects(self, sprite):
         rect = pygame.Rect(
@@ -157,7 +176,7 @@ class CameraGroup(pygame.sprite.Group):
 
         pygame.draw.rect(
             self.screen,
-            (255, 255, 255),
+            Color.WHITE,
             rect,
             1
         )

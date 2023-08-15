@@ -16,6 +16,7 @@ class Player(Entity):
 
         # hitbox
         self.set_hitbox(0.15, 0.45, offsety=0.05)
+        self.set_collision_box(0.15, 0.15, offsety=0.20)
 
         # movement and range
         self.max_velocity = 5

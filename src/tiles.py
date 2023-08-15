@@ -15,6 +15,7 @@ class WoodChest(Entity):
 
         # hitbox
         self.set_hitbox(0.55, 0.25, offsety=0.1)
+        self.set_collision_box(0.55, 0.25, offsety=0.1)
 
         # render
         self.sprite_layer = 3

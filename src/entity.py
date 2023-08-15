@@ -147,21 +147,21 @@ class Entity(Sprite):
             )
 
             sprites.sort(key=lambda sprite: math.dist(
-                self.hitbox.center,
-                sprite.hitbox.center
+                self.collision_box.center,
+                sprite.collision_box.center
             ))
 
             for sprite in sprites:
                 # minimum distance between two sprites which includes collision
                 collision_distance = pygame.math.Vector2(
-                    (self.hitbox.width + sprite.hitbox.width) / 2,
-                    (self.hitbox.height + sprite.hitbox.height) / 2
+                    (self.collision_box.width + sprite.collision_box.width) / 2,
+                    (self.collision_box.height + sprite.collision_box.height) / 2
                 )
 
                 # distance between the centers of two sprites
                 center_distance = pygame.math.Vector2(
-                    self.hitbox.centerx - sprite.hitbox.centerx,
-                    self.hitbox.centery - sprite.hitbox.centery
+                    self.collision_box.centerx - sprite.collision_box.centerx,
+                    self.collision_box.centery - sprite.collision_box.centery
                 )
 
                 # checks if the distance of the sprites are within collision distance
@@ -172,14 +172,16 @@ class Entity(Sprite):
                         # left collision
                         if center_distance.x > 0:
                             self.set_coords(
-                                sprite.hitbox.right + self.hitbox.width / 2 - self.hitbox_offset.x + 1,
+                                sprite.collision_box.right + self.collision_box.width /
+                                2 - self.collision_box_offset.x + 1,
                                 self.coords.y
                             )
 
                         # right collision
                         elif center_distance.x < 0:
                             self.set_coords(
-                                sprite.hitbox.left - self.hitbox.width / 2 - self.hitbox_offset.x - 1,
+                                sprite.collision_box.left - self.collision_box.width /
+                                2 - self.collision_box_offset.x - 1,
                                 self.coords.y
                             )
 
@@ -191,14 +193,16 @@ class Entity(Sprite):
                         if center_distance.y > 0:
                             self.set_coords(
                                 self.coords.x,
-                                sprite.hitbox.bottom + self.hitbox.height / 2 - self.hitbox_offset.y + 1
+                                sprite.collision_box.bottom + self.collision_box.height /
+                                2 - self.collision_box_offset.y + 1
                             )
 
                         # bottom collision
                         elif center_distance.y < 0:
                             self.set_coords(
                                 self.coords.x,
-                                sprite.hitbox.top - self.hitbox.height / 2 - self.hitbox_offset.y - 1
+                                sprite.collision_box.top - self.collision_box.height /
+                                2 - self.collision_box_offset.y - 1
                             )
 
                         self.velocity.y = 0
@@ -209,35 +213,35 @@ class Entity(Sprite):
             screen_bottom = self.game.level.rect.bottom - HALF_TILE_SIZE
 
             # left edge map
-            if self.hitbox.left < screen_left:
+            if self.collision_box.left < screen_left:
                 self.velocity.x = 0
                 self.set_coords(
-                    self.hitbox.width / 2 + screen_left - self.hitbox_offset.x + 1,
+                    self.collision_box.width / 2 + screen_left - self.collision_box_offset.x + 1,
                     self.coords.y
                 )
 
             # right edge map
-            elif self.hitbox.right > screen_right:
+            elif self.collision_box.right > screen_right:
                 self.velocity.x = 0
                 self.set_coords(
-                    screen_right - self.hitbox.width / 2 - self.hitbox_offset.x - 1,
+                    screen_right - self.collision_box.width / 2 - self.collision_box_offset.x - 1,
                     self.coords.y
                 )
 
             # top edge map
-            if self.hitbox.top < screen_top:
+            if self.collision_box.top < screen_top:
                 self.velocity.y = 0
                 self.set_coords(
                     self.coords.x,
-                    screen_top + self.hitbox.height / 2 - self.hitbox_offset.y + 1
+                    screen_top + self.collision_box.height / 2 - self.collision_box_offset.y + 1
                 )
 
             # bottom edge map
-            elif self.hitbox.bottom > screen_bottom:
+            elif self.collision_box.bottom > screen_bottom:
                 self.velocity.y = 0
                 self.set_coords(
                     self.coords.x,
-                    screen_bottom - self.hitbox.height / 2 - self.hitbox_offset.y - 1
+                    screen_bottom - self.collision_box.height / 2 - self.collision_box_offset.y - 1
                 )
 
     def face_enemy(self, target: Sprite):
@@ -436,7 +440,7 @@ class MeleeEntity(Entity):
         for sprite in colliding_sprites:
             self.in_combat = True
             self.face_enemy(sprite)
-            
+
             if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
                 # trigger attack animation
                 if not self.attacking:
@@ -519,7 +523,7 @@ class RangerEntity(Entity):
                 and self.line_of_sight(targets[0].hitbox.center)):
 
             self.in_combat = True
-            self.face_enemy(targets[0]) # closest enemy
+            self.face_enemy(targets[0])  # closest enemy
 
             # only attacks the last frame
             if (pygame.time.get_ticks() - self.attack_time > self.attack_cooldown):
@@ -533,12 +537,11 @@ class RangerEntity(Entity):
                 if self.frame == self.impact_frame and not self.has_fired_projectile:
                     self.create_projectile(targets[0])
                     self.has_fired_projectile = True
-                    
+
                 # stops attack animation
                 if self.frame == len(self.animation_frames[self.facing]['attack']) - 1:
                     self.attack_time = pygame.time.get_ticks()
                     self.attacking = False
-                    
 
         # cancels attack when target moves outside attack range
         else:
