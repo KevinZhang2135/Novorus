@@ -16,11 +16,11 @@ class Player(Entity):
 
         # hitbox
         self.set_hitbox(0.15, 0.45, offsety=0.05)
-        self.set_collision_box(0.15, 0.15, offsety=0.20)
+        self.set_collision_box(0.15, 0.15, offsety=0.2)
 
         # movement and range
         self.max_velocity = 5
-        self.dash_velocity = self.max_velocity * 5
+        self.dash_velocity = 25
 
         self.melee_range = max(self.hitbox.size) * 1.25
 

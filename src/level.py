@@ -219,6 +219,7 @@ class Level:
 
             case 3:
                 wall.set_animation('brick_pile')
+                wall.set_hitbox(0.7, 0.4, offsety=0.05)
                 wall.set_collision_box(0.7, 0.4, offsety=0.05)
 
             case 4:

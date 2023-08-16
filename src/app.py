@@ -16,11 +16,11 @@ class App:
 
         # sets the size of the screen; defaults to full screen
         displayInfo = pygame.display.Info()
-        self.resolution = displayInfo.current_w, displayInfo.current_h
+        self.resolution = 800, 600#displayInfo.current_w, displayInfo.current_h
 
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF | pygame.FULLSCREEN
+            pygame.DOUBLEBUF,# | pygame.FULLSCREEN
         )
 
         # ticks and state
@@ -101,8 +101,8 @@ class App:
         self.screen.fill(Color.GRASS_GREEN)
 
         self.camera_group.render(
-            show_hitboxes=False,
-            show_collision_boxes=False,
+            show_hitboxes=True,
+            show_collision_boxes=True,
             show_rects=False
         )
 
