@@ -115,10 +115,9 @@ class Explosion1(Particle):
         # render
         self.fade = False
         self.fade_cooldown = 850
-        
+
         self.animation_cooldown = 100
         self.set_animation('particles/explosion1_', isFolder=True)
-        
 
         # light
         self.draw_light = True
@@ -137,6 +136,7 @@ class Explosion2(Particle):
 
         self.set_animation('particles/explosion2_', isFolder=True)
 
+
 class Explosion3(Particle):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
@@ -147,6 +147,18 @@ class Explosion3(Particle):
         self.fade_cooldown = 600
 
         self.set_animation('particles/explosion3_', isFolder=True)
+
+class Explosion5(Particle):
+    def __init__(self, coords: list, size: list, game, groups):
+        super().__init__(coords, size, game, groups)
+        # circular, grey explosion
+
+        # render
+        self.animation_cooldown = 100
+        self.fade_cooldown = 600
+
+        self.set_animation('particles/explosion5_', isFolder=True)
+
 
 
 class SwordSlash(Particle):

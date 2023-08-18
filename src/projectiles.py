@@ -50,8 +50,8 @@ class Projectile(Entity):
 
         if self.angle:
             self.image, self.rect = rotate_center(
-                self.image, 
-                self.angle * (180 / math.pi), 
+                self.image,
+                self.angle * (180 / math.pi),
                 self.rect
             )
 
