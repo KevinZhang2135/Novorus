@@ -1,5 +1,4 @@
 from constants import *
-from color import Color
 from particles import *
 from sprite import Sprite
 from entity import *
@@ -111,7 +110,7 @@ class Torch(Sprite):
 
 
 class Totem(Entity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
     def hurt(self, stats):
@@ -144,7 +143,6 @@ class Totem(Entity):
             )
 
             text.set_text(str(damage), 35, Color.BLOOD_RED)
-            text.velocity.y = -5
 
         # non-crit damage
         else:
@@ -155,7 +153,8 @@ class Totem(Entity):
             )
 
             text.set_text(str(damage), 25, Color.RED)
-            text.velocity.y = -5
+
+        text.velocity.y = -5
 
         # takes damage
         self.stats.health -= damage
@@ -170,8 +169,8 @@ class Totem(Entity):
             )
 
             # sparks render
-            sparks.animation_cooldown = 25
-            sparks.fade_cooldown = 150
+            sparks.animation_cooldown = 50
+            sparks.fade_cooldown = randomize(150, 0.5)
             sparks.color = random.choice((
                 Color.SKY_BLUE1,
                 Color.SKY_BLUE2,
@@ -182,7 +181,7 @@ class Totem(Entity):
 
             # sparks movement
             sparks.velocity.x = random.uniform(-2, 2)
-            sparks.velocity.y = -2.5
+            sparks.velocity.y = -randomize(2.5, 0.5)
             sparks.acceleration.y = 0.25
 
     def check_death(self):
@@ -205,7 +204,7 @@ class Totem(Entity):
 
             dust_width = randomize(min(*self.hitbox.size), 0.05) * 3
 
-            DustExplosion(
+            Explosion3(
                 (x, y),
                 (dust_width,) * 2,
                 self.game,
@@ -233,7 +232,7 @@ class Totem(Entity):
 
 
 class Totem1(Totem):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Mysterious Totem'
 
@@ -253,7 +252,7 @@ class Totem1(Totem):
 
 
 class Totem2(Totem):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Mysterious Totem'
 

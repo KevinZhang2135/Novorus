@@ -5,11 +5,11 @@ from entity import *
 import pygame
 import math
 
-from particles import pygame
+import pygame
 
 
 class Projectile(Entity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.facing = 'right'
         self.target_group = None
@@ -57,7 +57,7 @@ class Projectile(Entity):
 
             self.image = pygame.transform.flip(self.image, False, True)
 
-    def set_target(self, coords: list, stats: Stats, group: pygame.sprite.Group):
+    def set_target(self, coords: list, stats: Stats, group):
         self.stats = stats
         self.target_group = group
 
@@ -162,7 +162,7 @@ class Projectile(Entity):
 
 
 class SunCharge(Projectile):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.fade_cooldown = 700
         self.loop_frames = False
@@ -209,7 +209,7 @@ class SunCharge(Projectile):
 
 
 class Fireball(Projectile):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.fade = False
         self.max_velocity = 3
@@ -229,7 +229,7 @@ class Fireball(Projectile):
     def kill(self):
         # leaves explosion on death
         super().kill()
-        Explosion(
+        Explosion1(
             self.rect.center,
             self.rect.size,
             self.game,
@@ -238,7 +238,7 @@ class Fireball(Projectile):
 
 
 class AcornThorn(Projectile):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.max_velocity = 5
         self.fade_cooldown = 2000
@@ -248,7 +248,7 @@ class AcornThorn(Projectile):
 
 
 class Spore(Projectile):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.max_velocity = 4
         self.fade_cooldown = 2000

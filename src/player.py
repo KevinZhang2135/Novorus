@@ -1,4 +1,4 @@
-from color import Color
+from constants import *
 from ui import *
 from particles import *
 from projectiles import *
@@ -7,7 +7,7 @@ import pygame
 
 
 class Player(Entity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
         self.name = 'Player'
@@ -87,7 +87,7 @@ class Player(Entity):
         # movement decay when the speed is low
         super().movement()
 
-    def attack_enemy(self, target_group: pygame.sprite.Group):
+    def attack_enemy(self, target_group):
         self.in_combat = False
 
         # attacks in a circular swing on left click
@@ -108,7 +108,7 @@ class Player(Entity):
         if not self.in_combat:
             self.attacking = False
 
-    def swing(self, target_group: pygame.sprite.Group):
+    def swing(self, target_group):
         # prevents player from moving
         self.in_combat = True
 
@@ -241,7 +241,7 @@ class Player(Entity):
                         )
 
                     # creates small explosion particle
-                    SmallExplosion(
+                    Explosion2(
                         offset_pos,
                         (self.hitbox.width * 3,) * 2,
                         self.game,

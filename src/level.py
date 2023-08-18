@@ -1,5 +1,4 @@
 from constants import *
-from color import Color
 from tiles import *
 
 from enemies import *

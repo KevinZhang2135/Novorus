@@ -1,5 +1,4 @@
 from constants import *
-from color import Color
 from particles import *
 from sprite import Sprite
 
@@ -28,7 +27,7 @@ class Stats:
 
 
 class Entity(Sprite):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
 
         self.name = ''
@@ -259,7 +258,7 @@ class Entity(Sprite):
         else:
             self.facing = 'left'
 
-    def attack_enemy(self, target_group: pygame.sprite.Group):
+    def attack_enemy(self, target_group):
         pass
 
     def check_state(self):
@@ -357,7 +356,7 @@ class Entity(Sprite):
 
             dust_width = randomize(min(*self.hitbox.size), 0.05) * 3
 
-            DeathExplosion(
+            Explosion3(
                 (x, y),
                 (dust_width,) * 2,
                 self.game,
@@ -399,7 +398,7 @@ class Entity(Sprite):
 
 
 class MeleeEntity(Entity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         # movement and range
         self.detection_distance = 0
@@ -437,7 +436,7 @@ class MeleeEntity(Entity):
         # movement decay when the speed is low
         super().movement()
 
-    def attack_enemy(self, target_group: pygame.sprite.Group):
+    def attack_enemy(self, target_group):
         # checks if target is within melee range
         self.in_combat = False
         colliding_sprites = [
@@ -472,7 +471,7 @@ class MeleeEntity(Entity):
 
 
 class RangerEntity(Entity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.has_fired_projectile = False
 
@@ -515,7 +514,7 @@ class RangerEntity(Entity):
         # movement decay when the speed is low
         super().movement()
 
-    def attack_enemy(self, target_group: pygame.sprite.Group):
+    def attack_enemy(self, target_group):
         # Attacks closest target with a projectile
 
         # checks if the target rect is within attack range

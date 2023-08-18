@@ -1,5 +1,4 @@
 from constants import *
-from color import Color
 from sprite import Sprite
 
 import pygame
@@ -109,7 +108,7 @@ class Menu(pygame.sprite.Group):
 
 
 class Button(Sprite):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group, optional_key=False, work_paused=False):
+    def __init__(self, coords: list, size: list, game, groups, optional_key=False, work_paused=False):
         super().__init__(coords, size, game, groups)
         self.set_coords(
             self.coords.x - self.rect.width / 2,
@@ -564,7 +563,7 @@ class PlayerWarmthBar(PlayerBar):
 
 
 class Cursor(Sprite):
-    def __init__(self, size: list, game, groups: pygame.sprite.Group,):
+    def __init__(self, size: list, game, groups,):
         super().__init__(pygame.mouse.get_pos(), size, game, groups)
         self.game = game
 

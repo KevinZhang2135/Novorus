@@ -7,7 +7,7 @@ import pygame
 
 
 class Ghost(MeleeEntity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Ghost'
         self.actions = ['idle', 'run', 'attack']
@@ -164,7 +164,7 @@ class Sunflower(RangerEntity):
 
 
 class Acorn(RangerEntity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Angry Acorn'
         self.actions = ['idle', 'run', 'attack']
@@ -212,7 +212,7 @@ class Acorn(RangerEntity):
 
 
 class Newtshroom(RangerEntity):
-    def __init__(self, coords: list, size: list, game, groups: pygame.sprite.Group):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Newtshroom'
         self.actions = ['idle', 'run', 'attack']
