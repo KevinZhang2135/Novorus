@@ -151,14 +151,13 @@ class Explosion3(Particle):
 class Explosion5(Particle):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        # circular, grey explosion
+        # brown, dusty explosion
 
         # render
         self.animation_cooldown = 100
         self.fade_cooldown = 600
 
         self.set_animation('particles/explosion5_', isFolder=True)
-
 
 
 class SwordSlash(Particle):
@@ -175,9 +174,8 @@ class SwordSlash(Particle):
 
 class TextPopUp(Particle):
     def __init__(self, coords: list, game, group):
-        super().__init__(coords, [0, 0], game, group)
+        super().__init__(coords, (0, 0), game, group)
 
     def set_text(self, text, font_size, color):
         self.image = COMICORO[font_size].render(text, True, color)
         self.rect = self.image.get_rect(center=self.coords)
-        self.hitbox = pygame.Rect(self.rect)

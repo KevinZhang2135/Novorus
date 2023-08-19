@@ -74,28 +74,31 @@ class CameraGroup(pygame.sprite.Group):
 
         return False
 
-    def render(self, show_hitboxes = False, show_collision_boxes = False, show_rects = False):
+    def render(self, show_hitboxes=False, show_collision_boxes=False, show_rects=False):
         '''Draws the screen according to player movement'''
         self.center_target(self.game.player)
         self.screen.blit(
-            self.game.level.grass_layer, 
+            self.game.level.grass_layer,
             (-HALF_TILE_SIZE,) * 2 - self.offset.xy
         )
 
         self.screen.blit(
-            self.game.level.terrain_layer, 
+            self.game.level.terrain_layer,
             (-HALF_TILE_SIZE,) * 2 - self.offset.xy
         )
 
         self.screen.blit(
-            self.game.level.terrain_overlay_layer, 
+            self.game.level.terrain_overlay_layer,
             (-HALF_TILE_SIZE,) * 2 - self.offset.xy
         )
 
         # sorts sprites by sprite layer as primary and rectangle bottom as secondary
         for sprite in sorted(
             self.sprites(),
-            key=lambda sprite: (sprite.sprite_layer, sprite.collision_box.bottom)
+            key=lambda sprite: (
+                sprite.sprite_layer,
+                sprite.collision_box.bottom
+            )
         ):
 
             # optimizes sprite draws
@@ -160,11 +163,10 @@ class CameraGroup(pygame.sprite.Group):
 
         pygame.draw.rect(
             self.screen,
-            Color.SKY_BLUE1,
+            Color.ASH,
             collision_box,
             1
         )
-
 
     def draw_rects(self, sprite):
         rect = pygame.Rect(

@@ -32,6 +32,7 @@ class WoodChest(Entity):
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
         self.items = {}
+        self.spell = None
 
     def check_state(self):
         # checks if the distance of the sprites are within collision distance
@@ -42,6 +43,11 @@ class WoodChest(Entity):
                 self.game.player.inventory.add_item(
                     name,
                     count
+                )
+
+            if self.spell:
+                self.game.player.spells.add(
+                    self.spell
                 )
 
     def update(self):

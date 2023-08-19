@@ -18,9 +18,14 @@ class Menu(pygame.sprite.Group):
         )
 
         # buttons
+        pause_button_coords = (
+            self.screen.get_width() - HALF_TILE_SIZE,
+            self.screen.get_height() - HALF_TILE_SIZE
+        )
+
         self.pause_button = Button(
-            self.screen.get_size(),
-            (120, 120),
+            pause_button_coords,
+            (TILE_SIZE * 1.2,) * 2,
             self.game,
             self,
             optional_key=pygame.K_ESCAPE,
@@ -95,9 +100,9 @@ class Menu(pygame.sprite.Group):
         else:
             self.game.state['unpaused'] = True
 
-    def draw(self):
+    def render(self):
         for sprite in self.sprites():
-            self.screen.blit(sprite.image, sprite.rect.topleft)
+            sprite.draw(self.screen)
 
         self.menu_popup()
 
@@ -110,10 +115,6 @@ class Menu(pygame.sprite.Group):
 class Button(Sprite):
     def __init__(self, coords: list, size: list, game, groups, optional_key=False, work_paused=False):
         super().__init__(coords, size, game, groups)
-        self.set_coords(
-            self.coords.x - self.rect.width / 2,
-            self.coords.y - self.rect.height / 2
-        )
 
         self.inactive_sprite = self.active_sprite = self.image
 
@@ -166,284 +167,83 @@ class Button(Sprite):
         else:
             self.image = self.inactive_sprite
 
+    def draw(self, surface):
+        surface.blit(self.image, self.rect.topleft)
+
     def update(self):
         '''Handles events'''
         self.press_button()
 
 
-class Inventory(pygame.sprite.Group):
-    def __init__(self, items: dict, game):
-        super().__init__()
-        self.screen = pygame.display.get_surface()
+class Cursor(Sprite):
+    def __init__(self, size: list, game, groups,):
+        super().__init__(pygame.mouse.get_pos(), size, game, groups)
         self.game = game
 
-        self.MARGIN = 30
-        self.HALF_MARGIN = self.MARGIN / 2
+        # render
+        self.sprite_layer = 4
 
-        self.MAX_ROWS = 6
-        self.MAX_COLUMNS = 5
+        # animation
+        self.set_animation('cursor')
 
-        # buttons
-        inventory_button_size = (
-            self.screen.get_width() - 90,
-            self.screen.get_height()
-        )
+    def offset_mouse_pos(self):
+        """Returns the mouse position in relation to the offset screen"""
+        mouse_pos = list(pygame.mouse.get_pos())
+        mouse_pos[0] += self.game.camera_group.offset.x
+        mouse_pos[1] += self.game.camera_group.offset.y
 
-        self.inventory_button = Button(
-            inventory_button_size,
-            (120, 120),
-            self.game,
-            self,
-            optional_key=pygame.K_q
-        )
-
-        self.inventory_button.set_images(
-            IMAGES['backpack_closed'],
-            IMAGES['backpack_opened']
-        )
-
-        # inventory rect and surface
-        self.inventory_rect = pygame.Rect(
-            5,
-            (self.screen.get_height() - TILE_SIZE * 4) - 5,
-            TILE_SIZE * 4,
-            TILE_SIZE * 4
-        )
-
-        self.inventory_rect_background = pygame.transform.scale(
-            IMAGES['inventory_box'],
-            self.inventory_rect.size
-        )
-
-        self.inventory_surface = []
-        self.inventory_surface.append(pygame.Surface(
-            tuple(map(lambda x: x - self.MARGIN * 2, self.inventory_rect.size)),
-            flags=pygame.SRCALPHA
-        ))
-
-        self.inventory_surface.append(tuple(map(
-            lambda x: x + self.MARGIN,
-            self.inventory_rect.topleft
-        )))
-
-        # inventory items
-        self.items = {}
-        for name, tooltip in items.items():
-            self.items[name] = Item(name, IMAGES[name], tooltip, 0, self.game)
-
-        self.item_box = IMAGES['item_box']
-        self.item_box = pygame.transform.scale(self.item_box, (60, 60))
-
-        # scroll
-        self.scroll = 0
-        self.scroll_acceleration = 0
-        self.scroll_velocity = 0
-        self.scroll_max_velocity = 3
-
-    def add_item(self, name: str, count: int):
-        """Adds items to the inventory, stacking if it is already present"""
-        inventory = [
-            item for item in self.sprites()
-            if item != self.inventory_button and item.name == name
-        ]
-
-        # if the item already exists in inventory
-        if inventory:
-            self.items[name].count += count
-
-        # adds a new item into the inventory
-        else:
-            self.items[name].count = count
-            self.add(self.items[name])
-
-    def show_inventory(self):
-        """Displays inventory"""
-        self.screen.blit(
-            self.inventory_rect_background,
-            self.inventory_rect.topleft
-        )
-
-        self.screen.blit(*self.inventory_surface)
-        self.inventory_surface[0].fill((0, 0, 0, 0))
-
-        # displays inventory items
-        row, column = 0, 0
-        for item in self.sprites():
-            if item != self.inventory_button:
-                # displays item box
-
-                item_pos = (
-                    column * (self.item_box.get_width() + self.HALF_MARGIN),
-                    row * (self.item_box.get_height() +
-                           self.HALF_MARGIN) - self.scroll
-                )
-
-                self.inventory_surface[0].blit(
-                    self.item_box,
-                    item_pos
-                )
-
-                # displays item
-                item.rect.x = column * \
-                    (self.item_box.get_width() + 15)
-
-                item.rect.y = row * (self.item_box.get_height() + 15) \
-                    - self.scroll
-
-                self.inventory_surface[0].blit(
-                    item.image,
-                    item.rect.topleft
-                )
-
-                # show tooltip on hover
-                item.show_tooltip()
-
-                # displays item count when the player has multiple copies
-                if item.count > 1:
-                    text = COMICORO[25].render(
-                        str(item.count),
-                        True,
-                        Color.BLACK
-                    )
-
-                    text_rect = text.get_rect(bottomright=(
-                        item.rect.right - 10,
-                        item.rect.bottom - 7
-                    ))
-
-                    self.inventory_surface[0].blit(text, text_rect)
-
-                column += 1
-                if not column % self.MAX_COLUMNS and column != 0:
-                    column = 0
-                    row += 1
-
-    def scroll_inventory(self):
-        """Scrolls the inventory with the mouse wheel"""
-        events = [
-            event for event in self.game.events
-            if event.type == pygame.MOUSEWHEEL
-        ]
-
-        # scrolls when mouse is colliding with the inventory
-        if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
-            if len(self.sprites()) > 30:
-                if events:
-                    mousewheel_event = events[0]  # gets mouse wheel event
-
-                    self.scroll_acceleration = self.scroll_max_velocity \
-                        * -mousewheel_event.y \
-                        / abs(mousewheel_event.y)
-
-                    self.scroll_velocity += self.scroll_acceleration
-                    self.scroll_velocity *= 0.5
-
-                else:
-                    # movement decay when input is not received
-                    self.scroll_velocity *= 0.9
-                    self.scroll_acceleration = 0
-
-                # movement decay when the speed is low
-                if abs(self.scroll_velocity) < 0.1:
-                    self.scroll_velocity = 0
-
-                if abs(self.scroll_velocity) < 0.1:
-                    self.scroll_velocity = 0
-
-                # scrolls
-                self.scroll += self.scroll_velocity
-
-                # prevents scrolling beyond the inventory
-                num_items = len(self.sprites()) - 1
-                max_scroll = (math.ceil(num_items / self.MAX_COLUMNS) - self.MAX_ROWS) \
-                    * (self.item_box.get_height() + 15)
-
-                if self.scroll < 0:
-                    self.scroll = 0
-
-                elif self.scroll > max_scroll:
-                    self.scroll = max_scroll
-
-    def draw(self):
-        if self.inventory_button.active:
-            self.show_inventory()
-            self.scroll_inventory()
-
-        self.screen.blit(
-            self.inventory_button.image,
-            self.inventory_button.rect.topleft
-        )
+        return mouse_pos
 
     def update(self):
-        """Handles events"""
-        for sprite in self.sprites():
-            sprite.update()
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = list(mouse_pos)
+
+        self.rect.center = mouse_pos
 
 
-class Item(Sprite):
-    def __init__(self, name: str, image: pygame.Surface, tooltip: str, count: int, game):
-        super().__init__((30, 30), (60, 60), game, ())
-        self.screen = pygame.display.get_surface()
-
-        self.name = name
-        self.tooltip = tooltip
-        self.tooltip[0] = self.tooltip[0]
-        self.count = count
-
-        self.image = pygame.transform.scale(image, self.size)
-
-        self.tooltip_rect = pygame.Rect(
-            self.rect.x,
-            self.rect.y,
-            100,
-            5 + 15 * len(self.tooltip)
+class Text(Sprite):
+    def __init__(self, coords: list, game, group=()):
+        super().__init__(coords, (0, 0), game, group)
+        self.draw_background = False
+        self.background_surface = pygame.Surface(self.size)
+        self.background_surface = color_image(
+            self.background_surface,
+            Color.BLACK,
+            128
         )
 
-        self.tooltip_text = []
+    def set_text(self, text, font_size, color):
+        self.image = COMICORO[font_size].render(text, True, color)
+        self.rect = self.image.get_rect(center=self.coords)
 
-        # reading tooltip
-        for line in tooltip:
-            text = COMICORO[20].render(line, True, Color.WHITE)
-            text_rect = text.get_rect(center=self.rect.center)
-            self.tooltip_text.append([text, text_rect])
+        background_size = self.rect.width + 15, self.rect.height + 10
+        self.background_surface = pygame.Surface(background_size)
+        self.background_surface = color_image(
+            self.background_surface,
+            Color.BLACK,
+            128
+        )
 
-    def show_tooltip(self):
-        """Displays tooltip when hovered over"""
-        # hard coded fixed margins
-        mouse_coords = list(pygame.mouse.get_pos())
-        mouse_coords[0] -= 35
-        mouse_coords[1] -= self.screen.get_height() \
-            - self.game.player.inventory.inventory_rect.height \
-            + 25
+    def draw(self, screen):
+        if self.draw_background:
+            background_coords = tuple(map(
+                lambda x: x[0] - x[1] / 2,
+                zip(self.rect.center, self.background_surface.get_size())
+            ))
 
-        # when mouse is hovered over item
-        if self.rect.collidepoint(mouse_coords):
-            self.tooltip_rect.topleft = [
-                i + 10 for i in pygame.mouse.get_pos()
-            ]
-
-            pygame.draw.rect(
-                self.screen,
-                Color.DARK_BROWN,
-                self.tooltip_rect
+            screen.blit(
+                self.background_surface,
+                background_coords
             )
 
-            pygame.draw.rect(
-                self.screen,
-                Color.DARK_BROWN,
-                self.tooltip_rect,
-                5
-            )
-
-            # formatting space between tooltips
-            for index, line in enumerate(self.tooltip_text):
-                line[1][0] = self.tooltip_rect.topleft[0] + 10
-                line[1][1] = self.tooltip_rect.topleft[1] + 15 * index
-                self.screen.blit(*line)
+        screen.blit(
+            self.image,
+            self.rect.topleft
+        )
 
 
 class PlayerBar(Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups=()):
         super().__init__(coords, size, game, groups)
         self.screen = pygame.display.get_surface()
 
@@ -472,7 +272,7 @@ class PlayerBar(Sprite):
         # text
         self.bar_text = COMICORO[35].render(str(""), True, Color.CREAM)
 
-    def draw(self):
+    def render(self):
         text_pos = (
             self.rect.x + self.bar_width / 2 - self.bar_text.get_width() / 2,
             self.rect.y + self.rect.height / 2 - self.bar_text.get_height() / 2
@@ -492,8 +292,9 @@ class PlayerBar(Sprite):
     def update(self):
         pass
 
+
 class PlayerHealthBar(PlayerBar):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups=()):
         super().__init__(coords, size, game, groups)
 
         # animation
@@ -528,7 +329,7 @@ class PlayerHealthBar(PlayerBar):
 
 
 class PlayerWarmthBar(PlayerBar):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups=()):
         super().__init__(coords, size, game, groups)
 
         # animation
@@ -560,29 +361,3 @@ class PlayerWarmthBar(PlayerBar):
             True,
             Color.CREAM
         )
-
-
-class Cursor(Sprite):
-    def __init__(self, size: list, game, groups,):
-        super().__init__(pygame.mouse.get_pos(), size, game, groups)
-        self.game = game
-
-        # render
-        self.sprite_layer = 4
-
-        # animation
-        self.set_animation('cursor')
-
-    def offset_mouse_pos(self):
-        """Returns the mouse position in relation to the offset screen"""
-        mouse_pos = list(pygame.mouse.get_pos())
-        mouse_pos[0] += self.game.camera_group.offset.x
-        mouse_pos[1] += self.game.camera_group.offset.y
-
-        return mouse_pos
-
-    def update(self):
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_pos = list(mouse_pos)
-
-        self.rect.center = mouse_pos

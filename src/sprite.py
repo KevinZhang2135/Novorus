@@ -7,7 +7,7 @@ from copy import deepcopy
 
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, game, groups):
+    def __init__(self, coords: list, size: list, game, groups=()):
         super().__init__(groups)
         self.game = game
 
@@ -121,7 +121,7 @@ class Sprite(pygame.sprite.Sprite):
         self.hitbox.center = self.coords + self.hitbox_offset
         self.collision_box.center = self.coords + self.collision_box_offset
 
-    def set_hitbox(self, width: float, height: float, offsetx: float = 0, offsety: float = 0):
+    def set_hitbox(self, width: float, height: float, offsetx= 0.0, offsety=0.0):
         self.hitbox = self.rect.scale_by(width, height)
         self.hitbox_offset.xy = offsetx * self.rect.width, offsety * self.rect.height
         self.set_coords(*self.coords)
@@ -129,7 +129,7 @@ class Sprite(pygame.sprite.Sprite):
         self.rect_mask = pygame.mask.Mask(self.hitbox.size)
         self.rect_mask.fill()
 
-    def set_collision_box(self, width: float, height: float, offsetx: float = 0, offsety: float = 0):
+    def set_collision_box(self, width: float, height: float, offsetx= 0.0, offsety=0.0):
         self.collision_box = self.rect.scale_by(width, height)
         self.collision_box_offset.xy = offsetx * self.rect.width, offsety * self.rect.height
         self.set_coords(*self.coords)
@@ -153,6 +153,9 @@ class Sprite(pygame.sprite.Sprite):
 
                 self.animation_time = pygame.time.get_ticks()
                 self.frame += 1
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect.topleft)
 
     def update(self):
         self.animation()

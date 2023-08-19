@@ -4,6 +4,7 @@ from tiles import *
 from enemies import *
 from entity import *
 from sprite import Sprite
+from spells import *
 
 import pygame
 import csv
@@ -93,10 +94,8 @@ class Level:
         self.add_grass()
 
     def clear_level(self):
-        for sprite in self.game.camera_group.sprites():
-            if sprite not in self.game.player_group:
-                sprite.kill()
-                del sprite
+        self.game.camera_group.empty()
+        self.game.camera_group.add(self.game.player)
 
     def create_tile_group(self, csv_file, path: str):
         create_tile = {
@@ -212,9 +211,11 @@ class Level:
 
             case 1:
                 wall.set_animation('brick_middle')
+                wall.set_collision_box(1, 1.2, offsety=-0.1)
 
             case 2:
                 wall.set_animation('brick_bottom')
+                wall.set_collision_box(1, 1.2, offsety=-0.1)
 
             case 3:
                 wall.set_animation('brick_pile')
@@ -285,6 +286,15 @@ class Level:
             'baguette': random.randint(1, 3),
             'oak_log': random.randint(2, 3)
         }
+
+        if not random.randint(0, 3):
+            chest.spell = EarthShaker(
+                (0, 0),
+                (TILE_SIZE * 1.2,) * 2,
+                self.game
+            )
+
+        print(chest.spell)
 
     def add_static_decor(self, id: int, coords: list):
         match id:
@@ -556,7 +566,7 @@ class Level:
                      self.game.enemy_group, self.game.totem_group)
                 )
 
-    def draw(self):
+    def render(self):
         if self.transitioning:
             pygame.draw.rect(
                 self.screen,

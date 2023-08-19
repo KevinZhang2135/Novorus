@@ -1,7 +1,11 @@
 from constants import *
 from ui import *
+from inventory import Inventory
+from spells import *
 from particles import *
 from projectiles import *
+
+
 
 import pygame
 
@@ -54,6 +58,9 @@ class Player(Entity):
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
+
+        # spells
+        self.spells = SpellGroup(self.game)
 
     def movement(self):
         '''Handles movement'''

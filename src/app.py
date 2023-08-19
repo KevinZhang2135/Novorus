@@ -58,15 +58,13 @@ class App:
         self.player_health_bar = PlayerHealthBar(
             (TILE_SIZE * 2 + 5, HALF_TILE_SIZE / 2 + 5),
             (TILE_SIZE * 4, HALF_TILE_SIZE),
-            self,
-            ()
+            self
         )
 
         self.player_warmth_bar = PlayerWarmthBar(
-            (TILE_SIZE + 5, HALF_TILE_SIZE * 3 / 2 + 10),
+            (TILE_SIZE + 5, HALF_TILE_SIZE * 1.5 + 10),
             (TILE_SIZE * 2, HALF_TILE_SIZE),
-            self,
-            ()
+            self
         )
 
         # levels and map
@@ -106,13 +104,14 @@ class App:
             show_rects=False
         )
 
-        self.level.draw()
+        self.level.render()
 
-        self.player_health_bar.draw()
-        self.player_warmth_bar.draw()
-        self.player.inventory.draw()
+        self.player_health_bar.render()
+        self.player_warmth_bar.render()
+        self.player.inventory.render()
+        self.player.spells.render()
 
-        self.menu.draw()
+        self.menu.render()
         self.cursor_group.draw(self.screen)
 
     def update(self):
@@ -125,6 +124,7 @@ class App:
         self.player_health_bar.update()
         self.player_warmth_bar.update()
         self.player.inventory.update()
+        self.player.spells.update()
 
         self.menu.update()
         self.cursor_group.update()

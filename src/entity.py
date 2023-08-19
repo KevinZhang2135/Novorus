@@ -153,8 +153,8 @@ class Entity(Sprite):
             for sprite in sprites:
                 # minimum distance between two sprites which includes collision
                 collision_distance = pygame.math.Vector2(
-                    (self.collision_box.width + sprite.collision_box.width) / 2 + 1,
-                    (self.collision_box.height + sprite.collision_box.height) / 2 + 1
+                    (self.collision_box.width + sprite.collision_box.width) / 2,
+                    (self.collision_box.height + sprite.collision_box.height) / 2
                 )
 
                 # distance between the centers of two sprites
@@ -165,7 +165,7 @@ class Entity(Sprite):
 
                 # when velocity is too high
                 # track from previous position before displacement
-                if self.velocity.magnitude() > 10:
+                if self.velocity.magnitude() > self.max_velocity:
                     collision_distance -= self.velocity
                     center_distance -= self.velocity
 
@@ -194,7 +194,7 @@ class Entity(Sprite):
                         self.velocity.x = 0
 
                     # vertical collision
-                    elif abs(center_distance.x) < abs(center_distance.y):
+                    if abs(center_distance.x) < abs(center_distance.y):
                         # top collision
                         if center_distance.y > 0:
                             self.set_coords(
