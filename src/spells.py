@@ -17,15 +17,15 @@ class SpellGroup(pygame.sprite.GroupSingle):
             (0, 0),
             (TILE_SIZE * 1.2,) * 2,
             self.game,
-            self
+            ()
         )
 
-        self.empty_spell.set_animation('spells/empty')
+        self.add(self.empty_spell)
 
     def add(self, *sprites):
         for sprite in sprites:
             super().add(sprite)
-            sprite.set_set_coords(
+            sprite.set_coords(
                 self.screen.get_width() - HALF_TILE_SIZE * 5,
                 self.screen.get_height() - HALF_TILE_SIZE
             )
@@ -40,9 +40,10 @@ class SpellGroup(pygame.sprite.GroupSingle):
 
 
 class Spell(Sprite):
-    def __init__(self, coords: list, size: list, game, groups=()):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Empty'
+        self.set_animation('spells/empty')
 
         self.cast_duration = 1000
         self.cost = 0
@@ -50,7 +51,7 @@ class Spell(Sprite):
         self.show_tooltip = False
 
         # tooltip hover
-        self.tooltip_text = Text(self.rect.center, self.game)
+        self.tooltip_text = Text(self.rect.center, self.game, ())
         self.tooltip_text.set_text(self.name, 20, Color.WHITE)
         self.tooltip_text.draw_background = True
 
@@ -75,14 +76,16 @@ class Spell(Sprite):
 
 
 class EarthShaker(Spell):
-    def __init__(self, coords: list, size: list, game, groups=()):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Earth Shaker'
+        self.set_animation('spells/earth_shaker')
 
         self.cast_duration = 1000
         self.cost = 50
 
-        self.tooltip_text = Text(self.rect.center, self.game)
+        # tooltip hover
+        self.tooltip_text = Text(self.rect.center, self.game, ())
         self.tooltip_text.set_text(self.name, 20, Color.WHITE)
         self.tooltip_text.draw_background = True
 

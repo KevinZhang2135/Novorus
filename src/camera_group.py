@@ -97,7 +97,7 @@ class CameraGroup(pygame.sprite.Group):
             self.sprites(),
             key=lambda sprite: (
                 sprite.sprite_layer,
-                sprite.collision_box.bottom
+                sprite.hitbox.bottom
             )
         ):
 

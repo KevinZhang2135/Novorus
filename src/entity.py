@@ -166,7 +166,9 @@ class Entity(Sprite):
                 # when velocity is too high
                 # track from previous position before displacement
                 if self.velocity.magnitude() > self.max_velocity:
-                    collision_distance -= self.velocity
+                    collision_distance.x += abs(self.velocity.x)
+                    collision_distance.y += abs(self.velocity.y)
+
                     center_distance -= self.velocity
 
                 # checks if the distance of the sprites are within collision distance

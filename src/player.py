@@ -6,7 +6,6 @@ from particles import *
 from projectiles import *
 
 
-
 import pygame
 
 
@@ -24,7 +23,7 @@ class Player(Entity):
 
         # movement and range
         self.max_velocity = 5
-        self.dash_velocity = 25
+        self.dash_velocity = self.max_velocity * 5
 
         self.melee_range = max(self.hitbox.size) * 1.25
 
@@ -43,7 +42,7 @@ class Player(Entity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1000, 800, 800, 600)
+        self.set_animation_cooldown(1000, 800, 750, 600)
 
         # attack cooldown
         self.targets_hit = []
@@ -54,7 +53,7 @@ class Player(Entity):
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
         self.dash_cooldown = 1000
-        self.dash_duration = 600 # how long a dash lasts
+        self.dash_duration = 600  # how long a dash lasts
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
@@ -64,7 +63,6 @@ class Player(Entity):
 
     def movement(self):
         '''Handles movement'''
-        self.acceleration = pygame.math.Vector2()
         if not self.in_combat:
             keys = pygame.key.get_pressed()
             left = keys[pygame.K_LEFT] or keys[pygame.K_a]
@@ -75,7 +73,8 @@ class Player(Entity):
             # creates movement using falsy and truthy values that evaluate to 0 and 1
             self.acceleration.xy = right - left, down - up
 
-        if self.acceleration.length() > 0 and not self.in_combat:  # checks if the player is moving
+        # checks if the player is moving
+        if self.acceleration.length() > 0 and not self.in_combat:
             # converts the coordinates to a vector according to the radius
             self.acceleration.scale_to_length(self.max_velocity)
             self.velocity += self.acceleration
@@ -89,43 +88,47 @@ class Player(Entity):
             else:
                 self.velocity *= 0.85
 
-            self.acceleration.xy = 0, 0
-
         # movement decay when the speed is low
         super().movement()
 
     def attack_enemy(self, target_group):
-        self.in_combat = False
-
         # attacks in a circular swing on left click
-        if not self.dashing and pygame.mouse.get_pressed()[0]:
-            self.swing(target_group)
+        if (
+            not self.attacking
+            and not self.dashing
+            and pygame.mouse.get_pressed()[0]
+        ):
+            self.swing()
 
         # attacks in a powerful thrust on right click
-        elif (not self.attacking
-              and not self.dashing
-              and pygame.mouse.get_pressed()[2]):
-
+        elif (
+            not self.attacking
+            and not self.dashing
+            and pygame.mouse.get_pressed()[2]
+        ):
             self.dash()
+
+        if self.attacking:
+            self.slash(target_group)
 
         if self.dashing:
             self.ram_enemies(target_group)
 
-        # clear attack animation if not in combat
-        if not self.in_combat:
-            self.attacking = False
-
-    def swing(self, target_group):
+    def swing(self):
+        '''Triggers slash attack'''
         # prevents player from moving
         self.in_combat = True
 
         if pygame.time.get_ticks() - self.attack_time > self.attack_cooldown:
             # trigger attack animation
-            if not self.attacking:
-                self.frame = 0
-                self.attacking = True
+            self.frame = 0
+            self.attacking = True
 
-            # checks if target is within melee range
+    def slash(self, target_group):
+        '''Deals damage to all targets within attack range'''
+        # checks if target is within melee range
+
+        if self.frame == self.impact_frame:
             colliding_sprites = [
                 sprite for sprite in target_group.sprites()
                 if math.dist(self.hitbox.center, sprite.hitbox.center) <= self.melee_range
@@ -133,8 +136,7 @@ class Player(Entity):
 
             for sprite in colliding_sprites:
                 # only attacks during the impact frame
-                if (self.frame == self.impact_frame
-                        and sprite not in self.targets_hit):
+                if sprite not in self.targets_hit:
 
                     # deals damage
                     sprite.hurt(self.stats)
@@ -160,10 +162,12 @@ class Player(Entity):
                         self.game.camera_group
                     )
 
-            # reset attack time if targets hit
-            if self.targets_hit:
-                self.attack_time = pygame.time.get_ticks()
-                self.targets_hit.clear()
+        if self.frame == len(self.animation_frames[self.facing]['attack']):
+            self.attack_time = pygame.time.get_ticks()
+            self.targets_hit.clear()
+
+            self.in_combat = False
+            self.attacking = False
 
     def dash(self):
         '''Dashes a long distance'''
@@ -204,7 +208,6 @@ class Player(Entity):
 
     def ram_enemies(self, target_group):
         '''Deals damage to any enemies in collision'''
-        self.in_combat = True
 
         # checks if the player rect overlaps an enemy rect
         colliding_sprites = pygame.sprite.spritecollide(
@@ -258,9 +261,10 @@ class Player(Entity):
         # stop dash after duration
         if pygame.time.get_ticks() - self.dash_time > self.dash_duration:
             self.dash_time = pygame.time.get_ticks()
-            self.dashing = False
-
             self.targets_hit.clear()
+
+            self.in_combat = False
+            self.dashing = False
 
     def check_state(self):
         '''Determines what action the player is doing'''
@@ -313,7 +317,7 @@ class Player(Entity):
                 )
 
                 text.set_text(str(damage), 25, Color.ORANGE)
-                
+
                 text.velocity.y = -5
 
             # non-crit damage

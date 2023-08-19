@@ -94,8 +94,9 @@ class Level:
         self.add_grass()
 
     def clear_level(self):
-        self.game.camera_group.empty()
-        self.game.camera_group.add(self.game.player)
+        for sprite in self.game.camera_group.sprites():
+            if sprite != self.game.player:
+                sprite.kill()
 
     def create_tile_group(self, csv_file, path: str):
         create_tile = {
@@ -287,14 +288,13 @@ class Level:
             'oak_log': random.randint(2, 3)
         }
 
-        if not random.randint(0, 3):
-            chest.spell = EarthShaker(
-                (0, 0),
-                (TILE_SIZE * 1.2,) * 2,
-                self.game
-            )
-
-        print(chest.spell)
+        # if not random.randint(0, 1):
+        chest.spell = EarthShaker(
+            (0, 0),
+            (TILE_SIZE * 1.2,) * 2,
+            self.game,
+            ()
+        )
 
     def add_static_decor(self, id: int, coords: list):
         match id:

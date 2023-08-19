@@ -202,7 +202,7 @@ class Cursor(Sprite):
 
 
 class Text(Sprite):
-    def __init__(self, coords: list, game, group=()):
+    def __init__(self, coords: list, game, group):
         super().__init__(coords, (0, 0), game, group)
         self.draw_background = False
         self.background_surface = pygame.Surface(self.size)
@@ -243,8 +243,8 @@ class Text(Sprite):
 
 
 class PlayerBar(Sprite):
-    def __init__(self, coords: list, size: list, game, groups=()):
-        super().__init__(coords, size, game, groups)
+    def __init__(self, coords: list, size: list, game):
+        super().__init__(coords, size, game, ())
         self.screen = pygame.display.get_surface()
 
         # bar rect
@@ -294,8 +294,8 @@ class PlayerBar(Sprite):
 
 
 class PlayerHealthBar(PlayerBar):
-    def __init__(self, coords: list, size: list, game, groups=()):
-        super().__init__(coords, size, game, groups)
+    def __init__(self, coords: list, size: list, game):
+        super().__init__(coords, size, game)
 
         # animation
         self.set_animation('hud/health_bar')
@@ -329,8 +329,8 @@ class PlayerHealthBar(PlayerBar):
 
 
 class PlayerWarmthBar(PlayerBar):
-    def __init__(self, coords: list, size: list, game, groups=()):
-        super().__init__(coords, size, game, groups)
+    def __init__(self, coords: list, size: list, game):
+        super().__init__(coords, size, game)
 
         # animation
         self.set_animation('hud/warmth_bar')

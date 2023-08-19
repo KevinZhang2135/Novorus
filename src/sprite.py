@@ -7,7 +7,7 @@ from copy import deepcopy
 
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, coords: list, size: list, game, groups=()):
+    def __init__(self, coords: list, size: list, game, groups):
         super().__init__(groups)
         self.game = game
 
