@@ -97,6 +97,7 @@ class Level:
         for sprite in self.game.camera_group.sprites():
             if sprite != self.game.player:
                 sprite.kill()
+                del sprite
 
     def create_tile_group(self, csv_file, path: str):
         create_tile = {
@@ -380,7 +381,7 @@ class Level:
                 decor.draw_shadow = True
 
                 decor.set_animation('rock1')
-                decor.set_hitbox(0.4, 0.3, offsety=0.1)
+                decor.set_hitbox(0.4, 0.2)
 
             # rock2
             case 4:
@@ -401,7 +402,7 @@ class Level:
                 decor.draw_shadow = True
 
                 decor.set_animation('rock2')
-                decor.set_hitbox(0.4, 0.4, offsety=0.1)
+                decor.set_hitbox(0.325, 0.3)
 
             # rock3
             case 5:
@@ -422,7 +423,7 @@ class Level:
                 decor.draw_shadow = True
 
                 decor.set_animation('rock3')
-                decor.set_hitbox(0.4, 0.4, offsety=0.1)
+                decor.set_hitbox(0.3, 0.2)
 
             # rock4
             case 6:
@@ -443,7 +444,7 @@ class Level:
                 decor.draw_shadow = True
 
                 decor.set_animation('rock4')
-                decor.set_hitbox(0.4, 0.4, offsety=0.1)
+                decor.set_hitbox(0.3, 0.3)
 
             # oak tree
             case 7:

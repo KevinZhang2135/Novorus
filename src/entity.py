@@ -165,7 +165,7 @@ class Entity(Sprite):
 
                 # when velocity is too high
                 # track from previous position before displacement
-                if self.velocity.magnitude() > self.max_velocity:
+                if self.velocity.magnitude() > 10:
                     collision_distance.x += abs(self.velocity.x)
                     collision_distance.y += abs(self.velocity.y)
 
@@ -193,7 +193,7 @@ class Entity(Sprite):
                                 self.coords.y
                             )
 
-                        self.velocity.x = 0
+                        #self.velocity.x = 0
 
                     # vertical collision
                     if abs(center_distance.x) < abs(center_distance.y):
@@ -213,7 +213,7 @@ class Entity(Sprite):
                                 2 - self.collision_box_offset.y - 1
                             )
 
-                        self.velocity.y = 0
+                        #self.velocity.y = 0
 
             # map border collision
             screen_left = -HALF_TILE_SIZE
