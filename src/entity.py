@@ -174,15 +174,9 @@ class Entity(Sprite):
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
                         and abs(center_distance.y) < collision_distance.y):
-                    
-                    # ratio of center distance to collision distance
-                    dist_ratio = pygame.math.Vector2(
-                        center_distance.x - collision_distance.x,
-                        center_distance.y - collision_distance.y,
-                    )
 
                     # vertical collision
-                    if abs(dist_ratio.x) < abs(dist_ratio.y):
+                    if abs(center_distance.x) < abs(center_distance.y):
                         # top collision
                         if center_distance.y > 0:
                             self.set_coords(
@@ -202,7 +196,7 @@ class Entity(Sprite):
                         self.velocity.y = 0
 
                     # horizontal collision
-                    elif abs(dist_ratio.x) > abs(dist_ratio.y):
+                    elif abs(center_distance.x) > abs(center_distance.y):
                         # left collision
                         if center_distance.x > 0:
                             self.set_coords(
