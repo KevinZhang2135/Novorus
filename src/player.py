@@ -42,7 +42,7 @@ class Player(Entity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1000, 800, 750, 600)
+        self.set_animation_cooldown(1000, 800, 700, 600)
 
         # attack cooldown
         self.targets_hit = []
