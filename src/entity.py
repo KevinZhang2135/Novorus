@@ -174,29 +174,15 @@ class Entity(Sprite):
                 # checks if the distance of the sprites are within collision distance
                 if (abs(center_distance.x) < collision_distance.x
                         and abs(center_distance.y) < collision_distance.y):
-
-                    # horizontal collision
-                    if abs(center_distance.x) > abs(center_distance.y):
-                        # left collision
-                        if center_distance.x > 0:
-                            self.set_coords(
-                                sprite.collision_box.right + self.collision_box.width /
-                                2 - self.collision_box_offset.x + 1,
-                                self.coords.y
-                            )
-
-                        # right collision
-                        elif center_distance.x < 0:
-                            self.set_coords(
-                                sprite.collision_box.left - self.collision_box.width /
-                                2 - self.collision_box_offset.x - 1,
-                                self.coords.y
-                            )
-
-                        #self.velocity.x = 0
+                    
+                    # ratio of center distance to collision distance
+                    dist_ratio = pygame.math.Vector2(
+                        center_distance.x - collision_distance.x,
+                        center_distance.y - collision_distance.y,
+                    )
 
                     # vertical collision
-                    if abs(center_distance.x) < abs(center_distance.y):
+                    if abs(dist_ratio.x) < abs(dist_ratio.y):
                         # top collision
                         if center_distance.y > 0:
                             self.set_coords(
@@ -213,7 +199,27 @@ class Entity(Sprite):
                                 2 - self.collision_box_offset.y - 1
                             )
 
-                        #self.velocity.y = 0
+                        self.velocity.y = 0
+
+                    # horizontal collision
+                    elif abs(dist_ratio.x) > abs(dist_ratio.y):
+                        # left collision
+                        if center_distance.x > 0:
+                            self.set_coords(
+                                sprite.collision_box.right + self.collision_box.width /
+                                2 - self.collision_box_offset.x + 1,
+                                self.coords.y
+                            )
+
+                        # right collision
+                        elif center_distance.x < 0:
+                            self.set_coords(
+                                sprite.collision_box.left - self.collision_box.width /
+                                2 - self.collision_box_offset.x - 1,
+                                self.coords.y
+                            )
+
+                        self.velocity.x = 0
 
             # map border collision
             screen_left = -HALF_TILE_SIZE
