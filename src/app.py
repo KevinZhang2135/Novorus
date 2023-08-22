@@ -100,7 +100,7 @@ class App:
 
         self.camera_group.render(
             show_hitboxes=False,
-            show_collision_boxes=False,
+            show_collision_boxes=True,
             show_rects=False
         )
 
