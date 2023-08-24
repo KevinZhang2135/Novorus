@@ -42,14 +42,14 @@ class Player(Entity):
 
         # animation cooldown
         self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1000, 800, 700, 600)
+        self.set_animation_cooldown(1000, 800, 600, 600)
 
         # attack cooldown
         self.targets_hit = []
         self.attack_cooldown = self.animation_cooldowns['attack']
         self.impact_frame = 5
 
-        # dash
+        # dash``
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
         self.dash_cooldown = 1000
