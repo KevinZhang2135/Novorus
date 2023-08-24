@@ -226,7 +226,7 @@ class Entity(Sprite):
 
         # when velocity is too high
         # track from previous position before displacement
-        if self.velocity.magnitude() > 10:
+        if self.velocity.magnitude() > 6:
             collision_dist.x += abs(self.velocity.x)
             collision_dist.y += abs(self.velocity.y)
 
