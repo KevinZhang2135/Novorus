@@ -20,7 +20,7 @@ class Player(Entity):
         self.set_collision_box(0.15, 0.15, offsety=0.2)
 
         # movement and range
-        self.max_velocity = 15
+        self.max_velocity = 5
         self.dash_velocity = self.max_velocity * 5
 
         self.melee_range = max(self.hitbox.size) * 1.25
