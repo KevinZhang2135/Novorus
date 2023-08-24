@@ -10,7 +10,6 @@ class WoodChest(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.action = 'closed'
-        self.actions = ['closed', 'opened']
 
         # hitbox
         self.set_hitbox(0.55, 0.25, offsety=0.1)
@@ -20,6 +19,11 @@ class WoodChest(Entity):
         self.sprite_layer = 3
 
         # animation
+        self.animation_cooldowns = {
+            'closed': 0,
+            'opened': 0
+        }
+
         self.animation_frames = {
             'left': {},
             'right': {}
@@ -27,10 +31,7 @@ class WoodChest(Entity):
 
         self.set_animation('chest', isFolder=True)
 
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.animation_cooldown = self.animation_cooldowns[self.action]
-
+        # chest contents
         self.items = {}
         self.spell = None
 
@@ -66,10 +67,8 @@ class Torch(Sprite):
         self.sprite_layer = 4
 
         # animation
+        self.animation_cooldowns = {'idle': 130}
         self.set_animation('decor/animated/torch', isFolder=True)
-
-        # animation cooldown
-        self.animation_cooldown = 800 / len(self.animation_frames[self.facing])
 
         # smoke
         self.smoke_time = pygame.time.get_ticks()
@@ -250,11 +249,9 @@ class Totem1(Totem):
         self.stats = Stats(200, 0, 0, 0, 0)
 
         # animation
+        self.animation_cooldowns = {'idle': 0}
         self.set_animation('enemies/totem1', isFolder=True)
-
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.animation_cooldown = self.animation_cooldowns[self.action]
+        
 
 
 class Totem2(Totem):
@@ -270,11 +267,8 @@ class Totem2(Totem):
         self.stats = Stats(150, 0, 0, 0, 0)
 
         # animation
+        self.animation_cooldowns = {'idle': 100}
         self.set_animation('enemies/totem2', isFolder=True)
-
-        # animation cooldown
-        self.animation_cooldowns = {action: 100 for action in self.actions}
-        self.animation_cooldown = self.animation_cooldowns[self.action]
 
 
 class LevelExit(Sprite):

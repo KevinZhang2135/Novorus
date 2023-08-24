@@ -12,37 +12,41 @@ import pygame
 class Player(Entity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-
         self.name = 'Player'
         self.facing = 'right'
-        self.actions = ['idle', 'run', 'attack', 'dash']
 
         # hitbox
         self.set_hitbox(0.15, 0.45, offsety=0.05)
         self.set_collision_box(0.15, 0.15, offsety=0.2)
 
         # movement and range
-        self.max_velocity = 5
+        self.max_velocity = 15
         self.dash_velocity = self.max_velocity * 5
 
         self.melee_range = max(self.hitbox.size) * 1.25
 
         # stats
         self.exp = 0
-        self.stats = Stats(200, 50, 25, 0.05, 0.01)
+        self.stats = Stats(200, 50, 2005, 0.05, 0.01)
         self.stats.warmth = 100
 
         # general animation
+        self.animation_cooldowns = {
+            'idle': 100,
+            'run': 100,
+            'attack': 75,
+            'dash': 75,
+            'cast_action': 100,
+            'cast_anticip': 100,
+            'cast_recover': 100
+        }
+
         self.animation_frames = {
             'left': {},
             'right': {}
         }
 
         self.set_animation('player', isFolder=True)
-
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1000, 800, 600, 600)
 
         # attack cooldown
         self.targets_hit = []
@@ -111,8 +115,11 @@ class Player(Entity):
         if self.attacking:
             self.slash(target_group)
 
-        if self.dashing:
+        elif self.dashing:
             self.ram_enemies(target_group)
+
+        else:
+            self.in_combat = False
 
     def swing(self):
         '''Triggers slash attack'''

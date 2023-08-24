@@ -10,7 +10,6 @@ class Ghost(MeleeEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Ghost'
-        self.actions = ['idle', 'run', 'attack']
 
         # hitbox
         self.set_hitbox(0.25, 0.25)
@@ -27,11 +26,13 @@ class Ghost(MeleeEntity):
         self.melee_range = max(self.hitbox.size) * 2.25
 
         # general animation
-        self.set_animation('enemies/ghost', isFolder=True)
+        self.animation_cooldowns = {
+            'idle': 200,
+            'run': 200,
+            'attack': 200
+        }
 
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1200, 1200, 1400)
+        self.set_animation('enemies/ghost', isFolder=True)
 
         # attack cooldown
         self.attack_cooldown = self.animation_cooldowns['attack']
@@ -83,8 +84,6 @@ class Mimic(MeleeEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Mimic'
-        self.actions = ['idle', 'attack']
-        self.show_stats = False
 
         # hitbox
         self.set_hitbox(0.55, 0.45)
@@ -98,11 +97,12 @@ class Mimic(MeleeEntity):
         self.melee_range = max(self.hitbox.size) * 5
 
         # animation
-        self.set_animation('enemies/mimic', isFolder=True)
+        self.animation_cooldowns = {
+            'idle': 0,
+            'attack': 1200
+        }
 
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1600, 1200)
+        self.set_animation('enemies/mimic', isFolder=True)
 
         # attack cooldown
         self.attack_cooldown = 200
@@ -114,8 +114,6 @@ class Sunflower(RangerEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Sunflower'
-        self.actions = ['idle', 'attack']
-        self.show_stats = False
 
         # hitbox
         self.set_hitbox(0.25, 0.3)
@@ -129,11 +127,12 @@ class Sunflower(RangerEntity):
         self.attack_range = 250
 
         # general animation
-        self.set_animation('enemies/sunflower', isFolder=True)
+        self.animation_cooldowns = {
+            'idle': 0,
+            'attack': 0
+        }
 
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(1600, 1200)
+        self.set_animation('enemies/sunflower', isFolder=True)
 
         # attack cooldown
         self.attack_cooldown = 5000
@@ -167,7 +166,6 @@ class Acorn(RangerEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Angry Acorn'
-        self.actions = ['idle', 'run', 'attack']
 
         # hitbox
         self.set_hitbox(0.5, 0.5)
@@ -183,11 +181,13 @@ class Acorn(RangerEntity):
         self.attack_range = 250
 
         # general animation
-        self.set_animation('enemies/acorn', isFolder=True)
+        self.animation_cooldowns = {
+            'idle': 100,
+            'run': 100,
+            'attack': 100
+        }
 
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(300, 300, 1200)
+        self.set_animation('enemies/acorn', isFolder=True)
 
         # attack cooldown
         self.attack_cooldown = 1500
@@ -215,7 +215,6 @@ class Newtshroom(RangerEntity):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Newtshroom'
-        self.actions = ['idle', 'run', 'attack']
 
         # hitbox
         self.set_hitbox(0.45, 0.425)
@@ -231,11 +230,13 @@ class Newtshroom(RangerEntity):
         self.attack_range = 375
 
         # general animation
-        self.set_animation('enemies/newtshroom', isFolder=True)
+        self.animation_cooldowns = {
+            'idle': 200,
+            'run': 100,
+            'attack': 120
+        }
 
-        # animation cooldown
-        self.animation_cooldowns = {action: 0 for action in self.actions}
-        self.set_animation_cooldown(800, 600, 1200)
+        self.set_animation('enemies/newtshroom', isFolder=True)
 
         # attack cooldown
         self.attack_cooldown = 1200

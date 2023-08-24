@@ -33,7 +33,6 @@ class Entity(Sprite):
         self.name = ''
         self.facing = 'right'
         self.action = 'idle'
-        self.actions = ['idle']
 
         self.in_combat = False
         self.show_stats = True
@@ -57,7 +56,7 @@ class Entity(Sprite):
 
         # animation cooldowns
         self.animation_time = pygame.time.get_ticks()
-        self.animation_cooldowns = {action: 0 for action in self.actions}
+        self.animation_cooldowns = {'idle': 0}
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
         # attack times
@@ -73,7 +72,7 @@ class Entity(Sprite):
     def set_animation(self, filepath: str, isFolder=False):
         '''Sets the animation and corresponding shadows'''
         for facing in self.animation_frames:
-            for action in self.actions:
+            for action in self.animation_cooldowns:
                 path = f'{SPRITE_PATH}/{filepath}/{action}'
 
                 if os.path.exists(path):
@@ -93,15 +92,6 @@ class Entity(Sprite):
         if self.draw_shadow:
             self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
 
-    def set_animation_cooldown(self, *cooldowns):
-        '''Sets the animation cooldown by the ticks for one cycle of animation per action'''
-
-        # maps cooldowns
-        for i, action in enumerate(self.actions):
-            self.animation_cooldowns[action] = cooldowns[i] / \
-                len(self.animation_frames['right'][action])
-
-        # sets animation cooldown
         self.animation_cooldown = self.animation_cooldowns[self.action]
 
     def line_of_sight(self, point):

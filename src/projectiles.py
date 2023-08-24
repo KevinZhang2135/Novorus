@@ -170,10 +170,8 @@ class SunCharge(Projectile):
         self.max_velocity = 0
 
         # general animation
+        self.animation_cooldowns = {'idle': 130}
         self.set_animation('projectiles/sun_charge', isFolder=True)
-
-        # animation cooldown
-        self.set_animation_cooldown(900)
 
         # light
         self.draw_light = True
@@ -216,10 +214,8 @@ class Fireball(Projectile):
         self.fade_cooldown = 2500
 
         # general animation
+        self.animation_cooldowns = {'idle': 200}
         self.set_animation('projectiles/fireball', isFolder=True)
-
-        # animation cooldown
-        self.set_animation_cooldown(1250)
 
         # light
         self.draw_light = True
@@ -254,7 +250,5 @@ class Spore(Projectile):
         self.fade_cooldown = 2000
 
         # general animation
+        self.animation_cooldowns = {'idle': 250}
         self.set_animation('projectiles/spore', isFolder=True)
-
-        # animation cooldown
-        self.set_animation_cooldown(500)
