@@ -57,16 +57,17 @@ class Projectile(Entity):
 
             self.image = pygame.transform.flip(self.image, False, True)
 
-    def set_target(self, coords: list, stats: Stats, group):
+    def set_target(self, coords: list, stats: Stats, target_group):
         self.stats = stats
-        self.target_group = group
+        self.target_group = target_group
+        
+        if self.max_velocity:
+            self.velocity = pygame.math.Vector2(
+                coords[0] - self.rect.centerx,
+                coords[1] - self.rect.centery
+            )
 
-        self.velocity = pygame.math.Vector2(
-            coords[0] - self.rect.centerx,
-            coords[1] - self.rect.centery
-        )
-
-        self.velocity.scale_to_length(self.max_velocity)
+            self.velocity.scale_to_length(self.max_velocity)
 
     def collision(self):
         if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
@@ -164,10 +165,8 @@ class Projectile(Entity):
 class SunCharge(Projectile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.fade_cooldown = 700
         self.loop_frames = False
-
-        self.max_velocity = 0
+        self.fade_cooldown = 700
 
         # general animation
         self.animation_cooldowns = {'idle': 130}
@@ -209,9 +208,11 @@ class SunCharge(Projectile):
 class Fireball(Projectile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
+        self.loop_frames = False
         self.fade = False
-        self.max_velocity = 3
+    
         self.fade_cooldown = 2500
+        self.max_velocity = 3
 
         # general animation
         self.animation_cooldowns = {'idle': 200}
@@ -236,9 +237,9 @@ class Fireball(Projectile):
 class AcornThorn(Projectile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.max_velocity = 5
         self.fade_cooldown = 2000
-
+        self.max_velocity = 5
+        
         # general animation
         self.set_animation('projectiles/thorn', isFolder=True)
 
@@ -246,9 +247,27 @@ class AcornThorn(Projectile):
 class Spore(Projectile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.max_velocity = 4
         self.fade_cooldown = 2000
+        self.max_velocity = 4
 
         # general animation
         self.animation_cooldowns = {'idle': 250}
         self.set_animation('projectiles/spore', isFolder=True)
+
+
+class EarthExplosion(Projectile):
+    def __init__(self, coords: list, size: list, game, group):
+        super().__init__(coords, size, game, group)
+        self.loop_frames = False
+        self.fade = True
+        self.fade_cooldown = 3000
+
+        # general animation
+        self.animation_cooldowns = {'idle': 100}
+        self.set_animation('projectiles/earthshaker', isFolder=True)
+
+    def update(self):
+        self.hit_target()
+        self.expire()
+        self.animation()
+        

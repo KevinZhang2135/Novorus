@@ -148,17 +148,6 @@ class Explosion3(Particle):
 
         self.set_animation('particles/explosion3_', isFolder=True)
 
-class Explosion5(Particle):
-    def __init__(self, coords: list, size: list, game, groups):
-        super().__init__(coords, size, game, groups)
-        # brown, dusty explosion
-
-        # render
-        self.animation_cooldown = 100
-        self.fade_cooldown = 600
-
-        self.set_animation('particles/explosion5_', isFolder=True)
-
 
 class SwordSlash(Particle):
     def __init__(self, coords: list, size: list, game, groups):

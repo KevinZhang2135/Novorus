@@ -67,7 +67,7 @@ class Torch(Sprite):
         self.sprite_layer = 4
 
         # animation
-        self.animation_cooldowns = {'idle': 130}
+        self.animation_cooldown = 125
         self.set_animation('decor/animated/torch', isFolder=True)
 
         # smoke

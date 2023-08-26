@@ -55,7 +55,7 @@ class Spell(Sprite):
         self.tooltip_text.set_text(self.name, 20, Color.WHITE)
         self.tooltip_text.draw_background = True
 
-    def cast(self, coords: list, stats: Stats):
+    def cast(self, coords: list, stats: Stats, target_group):
         '''Creates a projectile at coords'''
         pass
 
@@ -81,7 +81,7 @@ class EarthShaker(Spell):
         self.name = 'Earth Shaker'
         self.set_animation('spells/earth_shaker')
 
-        self.cast_duration = 1000
+        self.cast_duration = 100
         self.cost = 50
 
         # tooltip hover
@@ -89,7 +89,8 @@ class EarthShaker(Spell):
         self.tooltip_text.set_text(self.name, 20, Color.WHITE)
         self.tooltip_text.draw_background = True
 
-    def cast(self, coords: list, stats: Stats, group):
+    def cast(self, coords: list, stats: Stats, target_group):
         '''Creates a projectile at coords'''
-        #Projectile()
-        pass
+        size = (TILE_SIZE * 2,) * 2
+        explosion = EarthExplosion(coords, size, self.game, self.game.camera_group)
+        explosion.set_target(coords, stats, target_group)

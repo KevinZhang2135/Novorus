@@ -25,6 +25,8 @@ class App:
 
         # ticks and state
         self.events = []
+        self.keys_pressed = pygame.key.get_pressed()
+
         self.clock = pygame.time.Clock()
         self.state = {
             'unpaused': True,
@@ -76,6 +78,7 @@ class App:
         while self.state['runtime']:
             # event handling
             self.events = pygame.event.get()
+            self.keys_pressed = pygame.key.get_pressed()
 
             # checks for quit event
             if pygame.QUIT in self.events:
@@ -87,6 +90,7 @@ class App:
             # updates screen
             pygame.display.update()
             self.clock.tick(60)
+            
 
         # closes pygame application
         pygame.font.quit()

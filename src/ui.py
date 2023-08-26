@@ -150,7 +150,7 @@ class Button(Sprite):
 
         key_press = False
         if self.optional_key:
-            key_press = pygame.key.get_pressed()[self.optional_key]
+            key_press = self.game.keys_pressed[self.optional_key]
 
         # checks for left click or optional key to popup menu
         if (left_click or key_press) and not self.pressed and not button_disabled:

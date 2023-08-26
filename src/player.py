@@ -53,11 +53,17 @@ class Player(Entity):
         self.attack_cooldown = self.animation_cooldowns['attack']
         self.impact_frame = 5
 
-        # dash``
+        # dash
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
         self.dash_cooldown = 1000
-        self.dash_duration = 600 # how long a dash lasts
+        self.dash_duration = 600  # how long a dash lasts
+
+        # cast
+        self.casting = True
+        self.casting_phase = -1
+        self.casting_phases = ('cast_anticip', 'cast_action', 'cast_recover')
+        self.cast_time = pygame.time.get_ticks()
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
@@ -68,7 +74,7 @@ class Player(Entity):
     def movement(self):
         '''Handles movement'''
         if not self.in_combat:
-            keys = pygame.key.get_pressed()
+            keys = self.game.keys_pressed
             left = keys[pygame.K_LEFT] or keys[pygame.K_a]
             right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
             down = keys[pygame.K_DOWN] or keys[pygame.K_s]
@@ -96,32 +102,26 @@ class Player(Entity):
         super().movement()
 
     def attack_enemy(self, target_group):
-        # attacks in a circular swing on left click
-        if (
-            not self.attacking
-            and not self.dashing
-            and pygame.mouse.get_pressed()[0]
-        ):
-            self.swing()
+        if not self.attacking and not self.dashing:
+            # attacks in a circular swing on left click
+            if pygame.mouse.get_pressed()[0]:
+                self.slash()
 
-        # attacks in a powerful thrust on right click
-        elif (
-            not self.attacking
-            and not self.dashing
-            and pygame.mouse.get_pressed()[2]
-        ):
-            self.dash()
+            # attacks in a powerful thrust on right click
+            elif pygame.mouse.get_pressed()[2]:
+                self.dash()
 
-        if self.attacking:
-            self.slash(target_group)
+            # casts a devastating spell on space key
+            if self.game.keys_pressed[pygame.K_SPACE]:
+                self.cast(target_group)
 
-        elif self.dashing:
-            self.ram_enemies(target_group)
+            else:
+                self.casting = False
+                self.casting_phase = -1
 
-        else:
-            self.in_combat = False
-
-    def swing(self):
+        self.damage_enemies(target_group)
+    
+    def slash(self):
         '''Triggers slash attack'''
         # prevents player from moving
         self.in_combat = True
@@ -131,7 +131,87 @@ class Player(Entity):
             self.frame = 0
             self.attacking = True
 
-    def slash(self, target_group):
+    def dash(self):
+        '''Dashes a long distance'''
+        # prevents player from moving
+        self.in_combat = True
+        if pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
+            # trigger dash animation
+            self.frame = 0
+            self.dashing = True
+
+            # dashes where the cursor is pointed
+            cursor_pos = self.game.cursor.offset_mouse_pos()
+            self.acceleration = pygame.math.Vector2(
+                cursor_pos[0] - self.hitbox.center[0],
+                cursor_pos[1] - self.hitbox.center[1]
+            )
+
+            # dash movement
+            if self.acceleration.length() > 0:
+                self.acceleration.scale_to_length(self.dash_velocity)
+                self.velocity = self.acceleration
+
+                # resets dash time for dash duration
+                self.dash_time = pygame.time.get_ticks()
+
+                # creates dust trail
+                dust_pos = self.hitbox.midbottom
+                dust_trail = DustTrail(
+                    dust_pos,
+                    (self.hitbox.width * 5,) * 2,
+                    self.game,
+                    self.game.camera_group
+                )
+
+                dust_trail.facing = 'left' if self.velocity.x < 0 else 'right'
+
+    def cast(self, target_group):
+        self.in_combat = True
+        spell = self.spells.sprites()[0]
+
+        if spell != self.spells.empty_spell:
+            self.casting = True
+            
+            match (self.casting_phase):
+                case -1:
+                    self.frame = 0
+                    self.casting_phase += 1
+
+                case 0 | 2:
+                    if self.frame == len(self.animation_frames[self.facing][self.casting_phases[self.casting_phase]]):
+                        self.frame = 0
+                        self.casting_phase += 1
+                        self.cast_time = pygame.time.get_ticks()
+
+                        if self.casting_phase >= len(self.casting_phases):
+                            self.casting_phase = 0
+
+                case 1:
+                    if pygame.time.get_ticks() - self.cast_time > spell.cast_duration:
+                        self.frame = 0
+                        self.casting_phase += 1
+
+                        cursor_pos = self.game.cursor.offset_mouse_pos()
+                        #spell.cast(cursor_pos, self.stats, target_group)
+
+
+    def damage_enemies(self, target_group):
+        """Deals damage to targets"""
+        # deals damage to all targets within attack range
+        if self.attacking:
+            self.deal_melee_damage(target_group)
+
+        elif self.dashing:
+            self.deal_dash_damage(target_group)
+
+        elif self.casting:
+            pass
+
+        else:
+            self.in_combat = False
+
+    def deal_melee_damage(self, target_group):
         '''Deals damage to all targets within attack range'''
         # checks if target is within melee range
 
@@ -176,44 +256,7 @@ class Player(Entity):
             self.in_combat = False
             self.attacking = False
 
-    def dash(self):
-        '''Dashes a long distance'''
-
-        # prevents player from moving
-        self.in_combat = True
-
-        if pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
-            # trigger dash animation
-            self.frame = 0
-            self.dashing = True
-
-            # dashes where the cursor is pointed
-            cursor_pos = self.game.cursor.offset_mouse_pos()
-            self.acceleration = pygame.math.Vector2(
-                cursor_pos[0] - self.hitbox.center[0],
-                cursor_pos[1] - self.hitbox.center[1]
-            )
-
-            # dash movement
-            if self.acceleration.length() > 0:
-                self.acceleration.scale_to_length(self.dash_velocity)
-                self.velocity = self.acceleration
-
-                # resets dash time for dash duration
-                self.dash_time = pygame.time.get_ticks()
-
-                # creates dust trail
-                dust_pos = self.hitbox.midbottom
-                dust_trail = DustTrail(
-                    dust_pos,
-                    (self.hitbox.width * 5,) * 2,
-                    self.game,
-                    self.game.camera_group
-                )
-
-                dust_trail.facing = 'left' if self.velocity.x < 0 else 'right'
-
-    def ram_enemies(self, target_group):
+    def deal_dash_damage(self, target_group):
         '''Deals damage to any enemies in collision'''
 
         # checks if the player rect overlaps an enemy rect
@@ -295,8 +338,13 @@ class Player(Entity):
             elif self.dashing:
                 self.action = 'dash'
 
+            elif self.casting:
+                self.action = self.casting_phases[self.casting_phase]
+
             else:
                 self.action = 'idle'
+
+        #print(self.frame, self.action)
 
     def hurt(self, stats):
         text_coords = (
