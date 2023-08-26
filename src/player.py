@@ -193,8 +193,14 @@ class Player(Entity):
                         self.casting_phase += 1
 
                         cursor_pos = self.game.cursor.offset_mouse_pos()
-                        #spell.cast(cursor_pos, self.stats, target_group)
+                        spell.cast(cursor_pos, self.stats, target_group)
+                        self.stats.warmth -= spell.cost
+                        spell.uses -= 1
 
+                        # after max uses, destroy weapon
+                        if spell.uses <= 0:
+                            self.spells.add(self.spells.empty_spell)
+                            del spell
 
     def damage_enemies(self, target_group):
         """Deals damage to targets"""

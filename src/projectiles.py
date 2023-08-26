@@ -102,6 +102,7 @@ class Projectile(Entity):
 
                     self.velocity.xy = 0, 0
                     self.fade_cooldown = 0
+                    break
 
     def hit_target(self):
         # checks if the rect overlaps an enemy rect
@@ -117,7 +118,8 @@ class Projectile(Entity):
 
         for sprite in closest_targets:
             # target can only be damaged once by a projectile
-            if (sprite not in self.damaged_targets and self.pierce < self.max_pierce):
+            if (sprite not in self.damaged_targets 
+                    and (self.pierce < self.max_pierce or self.max_pierce == -1)):
                 # checks if mask overlaps an enemy hitbox
                 mask = pygame.mask.from_surface(self.image)
                 offset = (
@@ -135,7 +137,8 @@ class Projectile(Entity):
                     self.damaged_targets.append(sprite)
 
                     # fades faster when pierce count is reached
-                    if self.pierce >= self.max_pierce:
+                    # infinite pierce when max_pierce is -1
+                    if self.pierce >= self.max_pierce and self.max_pierce != -1:
                         self.fade_cooldown = 50
                         self.velocity.xy = 0, 0
                         break
@@ -150,8 +153,27 @@ class Projectile(Entity):
                 del self
 
     def animation(self):
-        super().animation()
-        self.rotate_image()
+        self.animation_cooldown = self.animation_cooldowns[self.action]
+
+        # loops frames
+        if self.loop_frames and self.frame >= len(self.animation_frames[self.facing][self.action]):
+            self.frame = 0
+
+        # set image
+        if self.frame < len(self.animation_frames[self.facing][self.action]):
+            self.image = self.animation_frames[self.facing][self.action][self.frame]
+            self.rotate_image()
+
+            if self.draw_shadow:
+                self.shadow = self.shadow_frames[self.facing][self.action][self.frame]
+
+            # determines whether the animation cooldown is over
+            if (self.animation_cooldown
+                    and pygame.time.get_ticks() - self.animation_time > self.animation_cooldown):
+
+                self.animation_time = pygame.time.get_ticks()
+                self.frame += 1
+        
         self.image.set_alpha(self.alpha)
 
     def update(self):
@@ -208,7 +230,6 @@ class SunCharge(Projectile):
 class Fireball(Projectile):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-        self.loop_frames = False
         self.fade = False
     
         self.fade_cooldown = 2500
@@ -259,8 +280,8 @@ class EarthExplosion(Projectile):
     def __init__(self, coords: list, size: list, game, group):
         super().__init__(coords, size, game, group)
         self.loop_frames = False
-        self.fade = True
-        self.fade_cooldown = 3000
+        self.fade_cooldown = 700
+        self.max_pierce = -1
 
         # general animation
         self.animation_cooldowns = {'idle': 100}

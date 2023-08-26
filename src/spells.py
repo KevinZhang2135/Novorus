@@ -47,6 +47,7 @@ class Spell(Sprite):
 
         self.cast_duration = 1000
         self.cost = 0
+        self.uses = 1
 
         self.show_tooltip = False
 
@@ -83,6 +84,7 @@ class EarthShaker(Spell):
 
         self.cast_duration = 100
         self.cost = 50
+        self.uses = 2
 
         # tooltip hover
         self.tooltip_text = Text(self.rect.center, self.game, ())
@@ -92,5 +94,7 @@ class EarthShaker(Spell):
     def cast(self, coords: list, stats: Stats, target_group):
         '''Creates a projectile at coords'''
         size = (TILE_SIZE * 2,) * 2
+        stats = Stats(0, 0, stats.attack * 5, stats.crit_chance, 0)
+
         explosion = EarthExplosion(coords, size, self.game, self.game.camera_group)
         explosion.set_target(coords, stats, target_group)
