@@ -104,7 +104,6 @@ class Level:
             'player': self.set_player_coords,
             'terrain': self.add_terrain,
             'terrain_overlay': self.add_terrain_overlay,
-            'instructions': self.add_instructions,
             'walls': self.add_walls,
             'enemies': self.add_enemies,
             'chests': self.add_chests,
@@ -180,19 +179,6 @@ class Level:
         )
 
         self.terrain_overlay_layer.blit(overlay, coords)
-
-    def add_instructions(self, id: int, coords: list):
-        sprites = ('dash_path', 'inventory_path', 'move_path', 'slash_path')
-
-        size = (TILE_SIZE,) * 2
-        terrain_tile = Sprite(
-            coords,
-            size,
-            self.game,
-            self.game.camera_group
-        )
-
-        terrain_tile.set_animation(sprites[id])
 
     def add_walls(self, id: int, coords: list):
         size = (TILE_SIZE,) * 2
@@ -289,7 +275,7 @@ class Level:
             'oak_log': random.randint(2, 3)
         }
 
-        # if not random.randint(0, 1):
+        #if not random.randint(0, 9):
         chest.spell = EarthShaker(
             (0, 0),
             (TILE_SIZE * 1.2,) * 2,

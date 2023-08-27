@@ -17,7 +17,7 @@ class SpellGroup(pygame.sprite.GroupSingle):
             (0, 0),
             (TILE_SIZE * 1.2,) * 2,
             self.game,
-            ()
+            self
         )
 
         self.add(self.empty_spell)
@@ -93,8 +93,12 @@ class EarthShaker(Spell):
 
     def cast(self, coords: list, stats: Stats, target_group):
         '''Creates a projectile at coords'''
+        self.uses -= 1
+
         size = (TILE_SIZE * 2,) * 2
         stats = Stats(0, 0, stats.attack * 5, stats.crit_chance, 0)
 
         explosion = EarthExplosion(coords, size, self.game, self.game.camera_group)
         explosion.set_target(coords, stats, target_group)
+
+        

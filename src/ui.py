@@ -328,12 +328,12 @@ class PlayerHealthBar(PlayerBar):
         )
 
 
-class PlayerWarmthBar(PlayerBar):
+class PlayerManaBar(PlayerBar):
     def __init__(self, coords: list, size: list, game):
         super().__init__(coords, size, game)
 
         # animation
-        self.set_animation('hud/warmth_bar')
+        self.set_animation('hud/mana_bar')
 
         # bar background
         self.bar_color = Color.SKY_BLUE1
@@ -351,13 +351,13 @@ class PlayerWarmthBar(PlayerBar):
         )
 
     def update(self):
-        ratio = self.game.player.stats.warmth / self.game.player.stats.base_warmth
+        ratio = self.game.player.stats.mana / self.game.player.stats.base_mana
         if ratio > 1:
             ratio = 1
 
         self.bar_rect.width = self.bar_width * ratio
         self.bar_text = COMICORO[35].render(
-            str(self.game.player.stats.warmth),
+            str(self.game.player.stats.mana),
             True,
             Color.CREAM
         )

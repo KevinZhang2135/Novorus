@@ -16,7 +16,6 @@ class Ghost(MeleeEntity):
         self.set_collision_box(0.25, 0.25)
 
         # stats
-        self.exp = 25
         self.stats = Stats(80, 10, 15, 0.05, 0.05)
 
         # movement and range
@@ -90,7 +89,6 @@ class Mimic(MeleeEntity):
         self.set_collision_box(0.55, 0.45)
 
         # stats
-        self.exp = 50
         self.stats = Stats(350, 0, 25, 0.25, 0)
 
         # movement and range
@@ -120,7 +118,6 @@ class Sunflower(RangerEntity):
         self.set_collision_box(0.25, 0.3)
 
         # stats
-        self.exp = 15
         self.stats = Stats(20, 0, 30, 0, 0)
 
         # range
@@ -172,7 +169,6 @@ class Acorn(RangerEntity):
         self.set_collision_box(0.5, 0.5)
 
         # stats
-        self.exp = 35
         self.stats = Stats(30, 15, 15, 0.1, 0.05)
 
         # movement and range
@@ -221,7 +217,6 @@ class Newtshroom(RangerEntity):
         self.set_collision_box(0.45, 0.2, offsety=0.1)
 
         # stats
-        self.exp = 60
         self.stats = Stats(100, 10, 10, 0, 0)
 
         # movement and range

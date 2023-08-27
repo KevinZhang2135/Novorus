@@ -7,7 +7,7 @@ from copy import deepcopy
 
 
 class Stats:
-    def __init__(self, health: int, speed: int, attack: int, crit_chance: float, dodge_chance: float):
+    def __init__(self, health: int, speed: int, attack: int, crit_chance: float, dodge_chance: float, mana=0):
         self.health = self.base_health = health
         self.speed = self.base_speed = speed
         self.attack = self.base_attack = attack
@@ -22,8 +22,8 @@ class Stats:
         if self.dodge_chance > 0.33:
             self.dodge_chance = 0.33
 
-        self.warmth = 0
-        self.base_warmth = 100
+        self.mana = mana
+        self.base_mana = 100
 
 
 class Entity(Sprite):

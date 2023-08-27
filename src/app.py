@@ -63,7 +63,7 @@ class App:
             self
         )
 
-        self.player_warmth_bar = PlayerWarmthBar(
+        self.player_mana_bar = PlayerManaBar(
             (TILE_SIZE + 5, HALF_TILE_SIZE * 1.5 + 10),
             (TILE_SIZE * 2, HALF_TILE_SIZE),
             self
@@ -111,7 +111,7 @@ class App:
         self.level.render()
 
         self.player_health_bar.render()
-        self.player_warmth_bar.render()
+        self.player_mana_bar.render()
         self.player.inventory.render()
         self.player.spells.render()
 
@@ -126,7 +126,7 @@ class App:
         self.level.update()
 
         self.player_health_bar.update()
-        self.player_warmth_bar.update()
+        self.player_mana_bar.update()
         self.player.inventory.update()
         self.player.spells.update()
 

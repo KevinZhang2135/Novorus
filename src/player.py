@@ -26,9 +26,8 @@ class Player(Entity):
         self.melee_range = max(self.hitbox.size) * 1.25
 
         # stats
-        self.exp = 0
         self.stats = Stats(200, 50, 25, 0.05, 0.01)
-        self.stats.warmth = 100
+        self.stats.mana = 100
 
         # general animation
         self.animation_cooldowns = {
@@ -111,16 +110,17 @@ class Player(Entity):
             elif pygame.mouse.get_pressed()[2]:
                 self.dash()
 
-            # casts a devastating spell on space key
-            if self.game.keys_pressed[pygame.K_SPACE]:
-                self.cast(target_group)
-
             else:
-                self.casting = False
-                self.casting_phase = -1
+                # casts a devastating spell on space key
+                if self.game.keys_pressed[pygame.K_SPACE]:
+                    self.cast(target_group)
+
+                else:
+                    self.casting = False
+                    self.casting_phase = 0
 
         self.damage_enemies(target_group)
-    
+
     def slash(self):
         '''Triggers slash attack'''
         # prevents player from moving
@@ -167,19 +167,17 @@ class Player(Entity):
                 dust_trail.facing = 'left' if self.velocity.x < 0 else 'right'
 
     def cast(self, target_group):
-        self.in_combat = True
         spell = self.spells.sprites()[0]
+        casting_phase = self.casting_phases[self.casting_phase]
 
+        self.in_combat = True
         if spell != self.spells.empty_spell:
             self.casting = True
-            
-            match (self.casting_phase):
-                case -1:
-                    self.frame = 0
-                    self.casting_phase += 1
 
+            match (self.casting_phase):
                 case 0 | 2:
-                    if self.frame == len(self.animation_frames[self.facing][self.casting_phases[self.casting_phase]]):
+                    # triggers next casting phase
+                    if self.frame == len(self.animation_frames[self.facing][casting_phase]):
                         self.frame = 0
                         self.casting_phase += 1
                         self.cast_time = pygame.time.get_ticks()
@@ -194,13 +192,32 @@ class Player(Entity):
 
                         cursor_pos = self.game.cursor.offset_mouse_pos()
                         spell.cast(cursor_pos, self.stats, target_group)
-                        self.stats.warmth -= spell.cost
-                        spell.uses -= 1
+
+                        # uses mana
+                        self.stats.mana -= spell.cost
+                        if self.stats.mana < 0:
+                            # exceeding limit spends life
+                            mana_ratio = self.stats.mana / self.stats.base_mana
+                            damage = round(self.stats.base_health * mana_ratio)
+
+                            self.stats.health += damage
+                            self.stats.mana = 0
 
                         # after max uses, destroy weapon
                         if spell.uses <= 0:
                             self.spells.add(self.spells.empty_spell)
                             del spell
+
+        else:
+            # ends 
+            if (self.casting_phase == 2 
+                and self.frame == len(self.animation_frames[self.facing][casting_phase])):
+                    self.frame = 0
+                    
+                    self.cast_time = pygame.time.get_ticks()
+                    self.casting = False
+                    self.casting_phase = 0
+                        
 
     def damage_enemies(self, target_group):
         """Deals damage to targets"""
@@ -211,10 +228,7 @@ class Player(Entity):
         elif self.dashing:
             self.deal_dash_damage(target_group)
 
-        elif self.casting:
-            pass
-
-        else:
+        elif not self.casting:
             self.in_combat = False
 
     def deal_melee_damage(self, target_group):
@@ -349,8 +363,6 @@ class Player(Entity):
 
             else:
                 self.action = 'idle'
-
-        #print(self.frame, self.action)
 
     def hurt(self, stats):
         text_coords = (
