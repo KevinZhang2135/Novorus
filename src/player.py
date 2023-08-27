@@ -117,7 +117,7 @@ class Player(Entity):
 
                 else:
                     self.casting = False
-                    self.casting_phase = 0
+                    self.casting_phase = -1
 
         self.damage_enemies(target_group)
 
@@ -175,6 +175,10 @@ class Player(Entity):
             self.casting = True
 
             match (self.casting_phase):
+                case -1:
+                    self.frame = 0
+                    self.casting_phase += 1
+
                 case 0 | 2:
                     # triggers next casting phase
                     if self.frame == len(self.animation_frames[self.facing][casting_phase]):
@@ -209,15 +213,13 @@ class Player(Entity):
                             del spell
 
         else:
-            # ends 
-            if (self.casting_phase == 2 
-                and self.frame == len(self.animation_frames[self.facing][casting_phase])):
-                    self.frame = 0
-                    
-                    self.cast_time = pygame.time.get_ticks()
-                    self.casting = False
-                    self.casting_phase = 0
-                        
+            # ends
+            if (self.casting_phase == 2
+                    and self.frame == len(self.animation_frames[self.facing][casting_phase])):
+                self.frame = 0
+
+                self.casting = False
+                self.casting_phase = -1
 
     def damage_enemies(self, target_group):
         """Deals damage to targets"""

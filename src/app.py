@@ -108,8 +108,6 @@ class App:
             show_rects=False
         )
 
-        self.level.render()
-
         self.player_health_bar.render()
         self.player_mana_bar.render()
         self.player.inventory.render()
@@ -117,13 +115,12 @@ class App:
 
         self.menu.render()
         self.cursor_group.draw(self.screen)
+        self.level.render()
 
     def update(self):
         '''Updates all sprites and ui'''
         if self.state['unpaused'] and not self.level.transitioning:
             self.camera_group.update()
-
-        self.level.update()
 
         self.player_health_bar.update()
         self.player_mana_bar.update()
@@ -132,6 +129,7 @@ class App:
 
         self.menu.update()
         self.cursor_group.update()
+        self.level.update()
 
 
 if __name__ == "__main__":
