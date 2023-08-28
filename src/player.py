@@ -123,6 +123,7 @@ class Player(Entity):
 
     def slash(self):
         '''Triggers slash attack'''
+
         # prevents player from moving
         self.in_combat = True
 
@@ -133,6 +134,7 @@ class Player(Entity):
 
     def dash(self):
         '''Dashes a long distance'''
+
         # prevents player from moving
         self.in_combat = True
         if pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
@@ -167,13 +169,16 @@ class Player(Entity):
                 dust_trail.facing = 'left' if self.velocity.x < 0 else 'right'
 
     def cast(self, target_group):
+        '''Casts a devastating spell to obliterate enemies'''
         spell = self.spells.sprites()[0]
         casting_phase = self.casting_phases[self.casting_phase]
 
+        # prevents player from moving
         self.in_combat = True
         if spell != self.spells.empty_spell:
+            # triggers cast animation
             self.casting = True
-
+            
             match (self.casting_phase):
                 case -1:
                     self.frame = 0
@@ -181,6 +186,8 @@ class Player(Entity):
 
                 case 0 | 2:
                     # triggers next casting phase
+
+                    # casting phases 0 and 2 are dependent on frames
                     if self.frame == len(self.animation_frames[self.facing][casting_phase]):
                         self.frame = 0
                         self.casting_phase += 1
@@ -190,6 +197,7 @@ class Player(Entity):
                             self.casting_phase = 0
 
                 case 1:
+                    # casting phase 1 continuously loops until duration is met
                     if pygame.time.get_ticks() - self.cast_time > spell.cast_duration:
                         self.frame = 0
                         self.casting_phase += 1
@@ -209,11 +217,10 @@ class Player(Entity):
 
                         # after max uses, destroy weapon
                         if spell.uses <= 0:
-                            self.spells.add(self.spells.empty_spell)
-                            del spell
+                            spell.kill()
 
         else:
-            # ends
+            # ends casting animation after weapon is destroyed
             if (self.casting_phase == 2
                     and self.frame == len(self.animation_frames[self.facing][casting_phase])):
                 self.frame = 0
@@ -223,28 +230,31 @@ class Player(Entity):
 
     def damage_enemies(self, target_group):
         """Deals damage to targets"""
+
         # deals damage to all targets within attack range
         if self.attacking:
             self.deal_melee_damage(target_group)
 
+        # deals damage to all targets within dash
         elif self.dashing:
             self.deal_dash_damage(target_group)
 
+        # unlocks player movement if not attacking
         elif not self.casting:
             self.in_combat = False
 
     def deal_melee_damage(self, target_group):
         '''Deals damage to all targets within attack range'''
-        # checks if target is within melee range
 
+        # only attacks during the impact frame
         if self.frame == self.impact_frame:
+            # checks if target is within melee range
             colliding_sprites = [
                 sprite for sprite in target_group.sprites()
                 if math.dist(self.hitbox.center, sprite.hitbox.center) <= self.melee_range
             ]
 
             for sprite in colliding_sprites:
-                # only attacks during the impact frame
                 if sprite not in self.targets_hit:
 
                     # deals damage
@@ -270,7 +280,8 @@ class Player(Entity):
                         self.game,
                         self.game.camera_group
                     )
-
+        
+        # clears pierce and cooldown after animation ends
         if self.frame == len(self.animation_frames[self.facing]['attack']):
             self.attack_time = pygame.time.get_ticks()
             self.targets_hit.clear()
@@ -361,16 +372,20 @@ class Player(Entity):
                 self.action = 'dash'
 
             elif self.casting:
+                # maps casting action to phase
                 self.action = self.casting_phases[self.casting_phase]
 
             else:
                 self.action = 'idle'
 
     def hurt(self, stats):
+        '''Deals damage to player according to stats'''
+
+        # randomizes particle position
         text_coords = (
             random.randint(
-                round((self.hitbox.left + self.hitbox.centerx) / 2),
-                round((self.hitbox.right + self.hitbox.centerx) / 2)
+                (self.hitbox.left + self.hitbox.centerx) // 2,
+                (self.hitbox.right + self.hitbox.centerx) // 2
             ),
             self.hitbox.top
         )

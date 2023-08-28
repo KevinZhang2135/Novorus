@@ -56,6 +56,16 @@ class Spell(Sprite):
         self.tooltip_text.set_text(self.name, 20, Color.WHITE)
         self.tooltip_text.draw_background = True
 
+    def kill(self):
+        if self.groups():
+            spell_group = self.groups()[0]
+            spell_group.add(spell_group.empty_spell)
+
+            self.kill()
+            del self
+
+            
+
     def cast(self, coords: list, stats: Stats, target_group):
         '''Creates a projectile at coords'''
         pass

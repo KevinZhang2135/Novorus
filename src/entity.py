@@ -29,7 +29,6 @@ class Stats:
 class Entity(Sprite):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
-
         self.name = ''
         self.facing = 'right'
         self.action = 'idle'
@@ -145,6 +144,7 @@ class Entity(Sprite):
             for sprite in sprites:
                 if side := self.detect_collision(sprite):
                     match side:
+                        # left collision
                         case 'left':
                             self.set_coords(
                                 sprite.collision_box.right + self.collision_box.width /
@@ -152,6 +152,7 @@ class Entity(Sprite):
                                 self.coords.y
                             )
 
+                        # right collision
                         case 'right':
                             self.set_coords(
                                 sprite.collision_box.left - self.collision_box.width /
@@ -159,6 +160,7 @@ class Entity(Sprite):
                                 self.coords.y
                             )
 
+                        # top collision
                         case 'top':
                             self.set_coords(
                                 self.coords.x,
@@ -166,12 +168,14 @@ class Entity(Sprite):
                                 2 - self.collision_box_offset.y
                             )
 
+                        # bottom collision
                         case 'bottom':
                             self.set_coords(
                                 self.coords.x,
                                 sprite.collision_box.top - self.collision_box.height /
                                 2 - self.collision_box_offset.y
                             )
+
     def map_collision(self):
         '''Handles map border collision'''
         screen_left = -HALF_TILE_SIZE
@@ -289,20 +293,16 @@ class Entity(Sprite):
             self.action = 'idle'
 
     def hurt(self, stats):
-        # deals damage to sprite
+        '''Deals damage to sprite according to stats'''
 
         # randomizes particle position
-        offset = tuple(map(
-            lambda x: x // 4,
-            self.hitbox.size
-        ))
-
-        offset_pos = list(self.hitbox.center)
-        for i in range(len(offset_pos)):
-            offset_pos[i] += random.randint(
-                -offset[i],
-                offset[i]
-            )
+        text_coords = (
+            random.randint(
+                (self.hitbox.left + self.hitbox.centerx) // 2,
+                (self.hitbox.right + self.hitbox.centerx) // 2
+            ),
+            self.hitbox.top
+        )
 
         dodge = self.stats.dodge_chance > random.randint(0, 100) / 100
         if not dodge:
@@ -315,7 +315,7 @@ class Entity(Sprite):
                 damage *= 2
 
                 text = TextPopUp(
-                    offset_pos,
+                    text_coords,
                     self.game,
                     self.game.camera_group
                 )
@@ -326,7 +326,7 @@ class Entity(Sprite):
             # non-crit damage
             else:
                 text = TextPopUp(
-                    offset_pos,
+                    text_coords,
                     self.game,
                     self.game.camera_group
                 )
@@ -339,7 +339,7 @@ class Entity(Sprite):
 
         # damage is dodged
         else:
-            text = TextPopUp(offset_pos, self.game, self.game.camera_group)
+            text = TextPopUp(text_coords, self.game, self.game.camera_group)
             text.set_text('Dodged', 20, Color.GOLD)
             text.velocity.y = -5
 
@@ -488,6 +488,7 @@ class RangerEntity(Entity):
         self.attack_range = 0
 
     def movement(self):
+        '''Handles movement'''
         self.acceleration = pygame.math.Vector2(
             self.game.player.rect.centerx - self.rect.centerx,
             self.game.player.rect.centery - self.rect.centery

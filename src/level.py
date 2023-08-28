@@ -12,16 +12,16 @@ import csv
 
 class Level:
     def __init__(self, floor_level: int, game):
+        self.screen = pygame.display.get_surface()
         self.game = game
 
         self.size = pygame.math.Vector2(0, 0)
         self.rect = pygame.Rect(0, 0, 0, 0)
 
         self.floor_level = floor_level
-        self.screen = pygame.display.get_surface()
-
         self.level_updated = False
         self.transitioning = False
+
         self.level_transition_rect = pygame.Rect(
             -self.screen.get_width(),
             0,
@@ -37,7 +37,7 @@ class Level:
         self.read_csv_level()
 
     def transition_level(self):
-        # draws rectangle to cover screen as level transitions
+        '''Draws rectangle to cover screen as level transitions'''
         if self.transitioning:
             self.level_transition_rect.x += 75
             if (self.level_transition_rect.x > 0
@@ -82,11 +82,19 @@ class Level:
 
                     # initializes layers
                     self.grass_layer = pygame.Surface(
-                        self.size, pygame.SRCALPHA)
+                        self.size, 
+                        pygame.SRCALPHA
+                    )
+                    
                     self.terrain_layer = pygame.Surface(
-                        self.size, pygame.SRCALPHA)
+                        self.size, 
+                        pygame.SRCALPHA
+                    )
+
                     self.terrain_overlay_layer = pygame.Surface(
-                        self.size, pygame.SRCALPHA)
+                        self.size, 
+                        pygame.SRCALPHA
+                    )
 
                 self.create_tile_group(csv_file, path)
 
@@ -94,12 +102,14 @@ class Level:
         self.add_grass()
 
     def clear_level(self):
+        '''Deletes all sprites except for the player'''
         for sprite in self.game.camera_group.sprites():
             if sprite != self.game.player:
                 sprite.kill()
                 del sprite
 
     def create_tile_group(self, csv_file, path: str):
+        '''Creates tiles from csv data'''
         create_tile = {
             'player': self.set_player_coords,
             'terrain': self.add_terrain,
@@ -285,7 +295,6 @@ class Level:
 
     def add_static_decor(self, id: int, coords: list):
         match id:
-            # flower1
             case 0:
                 size = (round(randomize(TILE_SIZE * 0.9, 0.1)), ) * 2
 
@@ -306,7 +315,6 @@ class Level:
                 decor.set_animation('flower1')
                 decor.set_hitbox(0.25, 0.3)
 
-            # bush1
             case 1:
                 size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
@@ -327,7 +335,6 @@ class Level:
                 decor.set_animation('bush1')
                 decor.set_hitbox(0.6, 0.5)
 
-            # bush2
             case 2:
                 size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
@@ -348,7 +355,6 @@ class Level:
                 decor.set_animation('bush2')
                 decor.set_hitbox(0.6, 0.3)
 
-            # rock1
             case 3:
                 size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
@@ -369,7 +375,6 @@ class Level:
                 decor.set_animation('rock1')
                 decor.set_hitbox(0.4, 0.2)
 
-            # rock2
             case 4:
                 size = (round(randomize(TILE_SIZE * 0.7, 0.1)), ) * 2
 
@@ -390,7 +395,6 @@ class Level:
                 decor.set_animation('rock2')
                 decor.set_hitbox(0.325, 0.3)
 
-            # rock3
             case 5:
                 size = (round(randomize(TILE_SIZE * 0.6, 0.1)), ) * 2
 
@@ -411,7 +415,6 @@ class Level:
                 decor.set_animation('rock3')
                 decor.set_hitbox(0.3, 0.2)
 
-            # rock4
             case 6:
                 size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
 
@@ -432,7 +435,6 @@ class Level:
                 decor.set_animation('rock4')
                 decor.set_hitbox(0.3, 0.3)
 
-            # oak tree
             case 7:
                 size = (round(randomize(TILE_SIZE * 2, 0.1)), ) * 2
 
@@ -453,7 +455,6 @@ class Level:
                 decor.set_animation('oak_tree')
                 decor.set_hitbox(0.4, 0.6)
 
-            # pine tree
             case 8:
                 size = (round(randomize(TILE_SIZE * 2, 0.1)), ) * 2
 
@@ -474,7 +475,6 @@ class Level:
                 decor.set_animation('pine_tree')
                 decor.set_hitbox(0.3, 0.6)
 
-            # sakura tree
             case 9:
                 size = (round(randomize(TILE_SIZE * 2, 0.1)), ) * 2
 
@@ -495,7 +495,6 @@ class Level:
                 decor.set_animation('sakura_tree')
                 decor.set_hitbox(0.3, 0.6)
 
-            # dead tree
             case 10:
                 size = (round(randomize(TILE_SIZE * 1.8, 0.1)), ) * 2
 
@@ -516,14 +515,12 @@ class Level:
                 decor.set_animation('dead_tree')
                 decor.set_hitbox(0.3, 0.65)
 
-        # randomly flips vertically
+        # randomly flips sprite vertically
         if random.randint(0, 1):
             decor.facing = 'left'
-            decor.animation()
 
     def add_animated_decor(self, id: int, coords: list):
         match id:
-            # torch
             case 0:
                 size = (round(randomize(TILE_SIZE, 0.1)), ) * 2
                 decor = Torch(

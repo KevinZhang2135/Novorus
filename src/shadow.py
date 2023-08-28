@@ -5,6 +5,7 @@ import pygame
 
 class Shadow:
     def __init__(self, color, image):
+        # creates shadow from image polygon outline
         points = []
         mask_outline = pygame.mask.from_surface(image).outline(every=1)
 

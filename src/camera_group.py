@@ -21,11 +21,9 @@ class CameraGroup(pygame.sprite.Group):
         self.light_sizes = [i for i in range(0, 200, 10)]
         self.lights = {}
 
-        self.screen_shake_offset = 0
-
         for light_color in self.light_colors:
             self.lights[light_color] = {}
-
+            
             for light_radius in self.light_sizes:
                 image = IMAGES['soft_light'].copy()
                 image = color_image(image, light_color, transparency=64)
@@ -35,6 +33,9 @@ class CameraGroup(pygame.sprite.Group):
                 )
 
                 self.lights[light_color][light_radius] = image
+
+        # screen shake
+        self.screen_shake_offset = 0
 
     def center_target(self, target):
         self.offset.xy = -HALF_TILE_SIZE, -HALF_TILE_SIZE
@@ -190,7 +191,9 @@ class CameraGroup(pygame.sprite.Group):
     def dampen_screen_shake(self):
         if self.screen_shake_offset:
             self.screen_shake_offset *= -0.9
-            if abs(self.screen_shake_offset) < 1:
+
+            # sets minute screen shake to 0
+            if abs(self.screen_shake_offset) < 0.5:
                 self.screen_shake_offset = 0
 
     def update(self):

@@ -5,8 +5,6 @@ from entity import *
 import pygame
 import math
 
-import pygame
-
 
 class Projectile(Entity):
     def __init__(self, coords: list, size: list, game, groups):
