@@ -61,7 +61,7 @@ class Spell(Sprite):
             spell_group = self.groups()[0]
             spell_group.add(spell_group.empty_spell)
 
-            self.kill()
+            super().kill()
             del self
 
             
