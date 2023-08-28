@@ -286,7 +286,7 @@ class Level:
         }
 
         #if not random.randint(0, 9):
-        chest.spell = EarthShaker(
+        chest.spell = EarthquakeSpell(
             (0, 0),
             (TILE_SIZE * 1.2,) * 2,
             self.game,

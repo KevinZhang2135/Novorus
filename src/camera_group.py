@@ -23,7 +23,7 @@ class CameraGroup(pygame.sprite.Group):
 
         for light_color in self.light_colors:
             self.lights[light_color] = {}
-            
+
             for light_radius in self.light_sizes:
                 image = IMAGES['soft_light'].copy()
                 image = color_image(image, light_color, transparency=64)

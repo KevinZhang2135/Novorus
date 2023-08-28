@@ -83,13 +83,13 @@ class Spell(Sprite):
         self.show_tooltip = self.rect.collidepoint(mouse_coords)
 
 
-class EarthShaker(Spell):
+class EarthquakeSpell(Spell):
     def __init__(self, coords: list, size: list, game, groups):
         super().__init__(coords, size, game, groups)
         self.name = 'Earth Shaker'
         self.set_animation('spells/earth_shaker')
 
-        self.cast_duration = 100
+        self.cast_duration = 750
         self.cost = 50
         self.uses = 2
 
@@ -110,8 +110,8 @@ class EarthShaker(Spell):
         explosion.set_target(coords, stats, target_group)
 
         # shakes screen
-        self.game.camera_group.screen_shake_offset = -10
+        self.game.camera_group.screen_shake_offset = -15
 
+class LightningSpell(Spell):
+    pass
 
-
-        
