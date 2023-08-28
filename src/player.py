@@ -218,6 +218,7 @@ class Player(Entity):
                         # after max uses, destroy weapon
                         if spell.uses <= 0:
                             spell.kill()
+                            del spell
 
         else:
             # ends casting animation after weapon is destroyed

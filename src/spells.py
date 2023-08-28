@@ -62,9 +62,6 @@ class Spell(Sprite):
             spell_group.add(spell_group.empty_spell)
 
             super().kill()
-            del self
-
-            
 
     def cast(self, coords: list, stats: Stats, target_group):
         '''Creates a projectile at coords'''
