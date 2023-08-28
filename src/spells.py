@@ -95,10 +95,16 @@ class EarthShaker(Spell):
         '''Creates a projectile at coords'''
         self.uses -= 1
 
+        # creates projectile
         size = (TILE_SIZE * 2,) * 2
         stats = Stats(0, 0, stats.attack * 5, stats.crit_chance, 0)
 
         explosion = EarthExplosion(coords, size, self.game, self.game.camera_group)
         explosion.set_target(coords, stats, target_group)
+
+        # shakes screen
+        self.game.camera_group.screen_shake_offset = -10
+
+
 
         

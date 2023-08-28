@@ -21,6 +21,8 @@ class CameraGroup(pygame.sprite.Group):
         self.light_sizes = [i for i in range(0, 200, 10)]
         self.lights = {}
 
+        self.screen_shake_offset = 0
+
         for light_color in self.light_colors:
             self.lights[light_color] = {}
 
@@ -58,6 +60,8 @@ class CameraGroup(pygame.sprite.Group):
         # starts scrolling screen when the player is in the middle of the screen
         elif (target.coords.y > self.half_height - HALF_TILE_SIZE):
             self.offset.y = target.coords.y - self.half_height
+
+        self.offset.y += self.screen_shake_offset
 
     def check_bounds(self, sprite: pygame.sprite.Sprite) -> bool:
         # Returns True if sprite is within bounding coords to optimize updates and draws
@@ -183,8 +187,16 @@ class CameraGroup(pygame.sprite.Group):
             1
         )
 
+    def dampen_screen_shake(self):
+        if self.screen_shake_offset:
+            self.screen_shake_offset *= -0.9
+            if abs(self.screen_shake_offset) < 1:
+                self.screen_shake_offset = 0
+
     def update(self):
-        "Updates all sprites"
+        self.dampen_screen_shake()
+
+        # updates all sprites
         for sprite in self.sprites():
             # optimizes sprite updates
             if self.check_bounds(sprite):
