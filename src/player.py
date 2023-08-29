@@ -359,7 +359,7 @@ class Player(Entity):
             self.facing = 'right'
 
         if not self.in_combat:
-            if self.velocity.x and self.velocity.y:
+            if self.velocity.x or self.velocity.y:
                 self.action = 'run'
 
             else:
