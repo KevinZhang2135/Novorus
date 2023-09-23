@@ -376,7 +376,7 @@ class Level:
                 decor.set_hitbox(0.4, 0.2)
 
             case 4:
-                size = (round(randomize(TILE_SIZE * 0.7, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.5, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -396,7 +396,7 @@ class Level:
                 decor.set_hitbox(0.325, 0.3)
 
             case 5:
-                size = (round(randomize(TILE_SIZE * 0.6, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.5, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
@@ -416,7 +416,7 @@ class Level:
                 decor.set_hitbox(0.3, 0.2)
 
             case 6:
-                size = (round(randomize(TILE_SIZE * 0.8, 0.1)), ) * 2
+                size = (round(randomize(TILE_SIZE * 0.5, 0.1)), ) * 2
 
                 # randomly offsets
                 coords[0] += random.randint(-25, 25)
