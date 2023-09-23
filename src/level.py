@@ -452,7 +452,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation('oak_tree')
+                decor.set_animation('oak_tree1')
                 decor.set_hitbox(0.4, 0.6)
 
             case 8:
