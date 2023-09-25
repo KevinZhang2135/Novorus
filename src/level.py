@@ -472,7 +472,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation('pine_tree')
+                decor.set_animation('pine_tree1')
                 decor.set_hitbox(0.3, 0.6)
 
             case 9:
@@ -512,7 +512,7 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation('dead_tree')
+                decor.set_animation('dead_tree1')
                 decor.set_hitbox(0.3, 0.65)
 
         # randomly flips sprite vertically
