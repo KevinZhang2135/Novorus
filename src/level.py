@@ -492,8 +492,8 @@ class Level:
                 decor.sprite_layer = 3
                 decor.draw_shadow = True
 
-                decor.set_animation('sakura_tree')
-                decor.set_hitbox(0.3, 0.6)
+                decor.set_animation('sakura_tree1')
+                decor.set_hitbox(0.3, 0.5, offsety=0.08)
 
             case 10:
                 size = (round(randomize(TILE_SIZE * 1.8, 0.1)), ) * 2
