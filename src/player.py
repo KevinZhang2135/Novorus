@@ -4,7 +4,7 @@ from inventory import Inventory
 from spells import *
 from particles import *
 from projectiles import *
-
+from inventory import Item
 
 import pygame
 
@@ -66,6 +66,10 @@ class Player(Entity):
 
         # inventory
         self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
+        for i in range(35):
+            name = f'Item{i}'
+            self.inventory.items[name] = Item(name, IMAGES['baguette'], 'tooltip', 0, self.game)
+            self.inventory.add(self.inventory.items[name])
 
         # spells
         self.spells = SpellGroup(self.game)
