@@ -22,8 +22,6 @@ class Inventory(pygame.sprite.Group):
         self.MAX_COLUMNS = 5
         self.ROW_MARGIN = (self.INVENTORY_SURFACE_WIDTH - self.MAX_ROWS * self.ITEM_WIDTH) \
             / (self.MAX_ROWS - 1)
-        
-        print(self.INVENTORY_SURFACE_WIDTH, 5 * self.ITEM_WIDTH, 4 * self.ROW_MARGIN)
 
         # buttons
         inventory_button_coords = (
@@ -84,7 +82,7 @@ class Inventory(pygame.sprite.Group):
         self.scroll = 0
         self.scroll_acceleration = 0
         self.scroll_velocity = 0
-        self.scroll_max_velocity = 3
+        self.scroll_max_velocity = 8
 
     def add_item(self, name: str, count: int):
         """Adds items to the inventory, stacking if it is already present"""
@@ -116,18 +114,16 @@ class Inventory(pygame.sprite.Group):
         row, column = 0, 0
         for item in self.sprites():
             if item != self.inventory_button:
-                # displays item box
+                # determines position by column as x and row as y
                 item_pos = [
-                    column * (self.item_box.get_width() - self.HALF_MARGIN),
-                    row * (self.item_box.get_height() -
-                           self.HALF_MARGIN) - self.scroll
+                    column * self.item_box.get_width(),
+                    row * self.item_box.get_height()
+                    - self.scroll
                 ]
 
-                if column:
-                    item_pos[0] += (column - 1) * (self.ROW_MARGIN)
-
-                if row:
-                    item_pos[1] += (row - 1) * (self.ROW_MARGIN)
+                # inserts margins
+                item_pos[0] += (column) * (self.ROW_MARGIN)
+                item_pos[1] += (row) * (self.ROW_MARGIN)
 
                 self.inventory_surface[0].blit(
                     self.item_box,
@@ -173,7 +169,10 @@ class Inventory(pygame.sprite.Group):
 
         # scrolls when mouse is colliding with the inventory
         if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
-            if len(self.sprites()) > 25:
+            item_threshold = self.MAX_ROWS * self.MAX_COLUMNS
+            
+            # enables scroll when items exceeds maximum amount dsiplayed
+            if len(self.sprites()) > item_threshold:
                 if events:
                     mousewheel_event = events[0]  # gets mouse wheel event
 
@@ -186,14 +185,14 @@ class Inventory(pygame.sprite.Group):
 
                 else:
                     # movement decay when input is not received
-                    self.scroll_velocity *= 0.9
+                    self.scroll_velocity *= 0.95
                     self.scroll_acceleration = 0
 
                 # movement decay when the speed is low
-                if abs(self.scroll_velocity) < 0.1:
+                if abs(self.scroll_velocity) < 0.05:
                     self.scroll_velocity = 0
 
-                if abs(self.scroll_velocity) < 0.1:
+                if abs(self.scroll_velocity) < 0.05:
                     self.scroll_velocity = 0
 
                 # scrolls
@@ -225,7 +224,7 @@ class Inventory(pygame.sprite.Group):
 
 class Item(Sprite):
     def __init__(self, name: str, image: pygame.Surface, tooltip: list, count: int, game):
-        super().__init__((0, 0), (60, 60), game, ()) 
+        super().__init__((0, 0), (60, 60), game, ())
         # defaults width and height to 60
 
         self.screen = pygame.display.get_surface()
