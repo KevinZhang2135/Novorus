@@ -175,10 +175,9 @@ class Inventory(pygame.sprite.Group):
             if len(self.sprites()) > item_threshold:
                 if events:
                     mousewheel_event = events[0]  # gets mouse wheel event
-
-                    self.scroll_acceleration = self.scroll_max_velocity \
-                        * -mousewheel_event.y \
-                        / abs(mousewheel_event.y)
+                    self.scroll_acceleration = -self.scroll_max_velocity
+                    if mousewheel_event.y < 0:
+                        self.scroll_acceleration *= -1
 
                     self.scroll_velocity += self.scroll_acceleration
                     self.scroll_velocity *= 0.5
