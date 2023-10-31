@@ -45,38 +45,41 @@ class Ghost(MeleeEntity):
     def animation(self):
         super().animation()
 
+        # does not draw smoke unless time elapsed exceeds cooldown
+        if not pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
+            return
+    
         # draws smoke trail
-        if pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
-            self.smoke_time = pygame.time.get_ticks()
-            smoke_pos = list(self.hitbox.midbottom)
-            smoke_pos[0] += random.randint(
-                -self.hitbox.width // 4,
-                self.hitbox.width // 4
-            )
+        self.smoke_time = pygame.time.get_ticks()
+        smoke_pos = list(self.hitbox.midbottom)
+        smoke_pos[0] += random.randint(
+            -self.hitbox.width // 4,
+            self.hitbox.width // 4
+        )
 
-            if self.velocity.x:
-                smoke_pos[0] += self.hitbox.width // 2 \
-                    * -self.velocity.x / abs(self.velocity.x)
+        if self.velocity.x:
+            smoke_pos[0] += self.hitbox.width // 2 \
+                * -self.velocity.x / abs(self.velocity.x)
 
-                smoke_pos[1] -= self.hitbox.height // 4
+            smoke_pos[1] -= self.hitbox.height // 4
 
-            # creates circle particle for smoke
-            smoke = CircleParticle(
-                smoke_pos,
-                (randomize(self.hitbox.width * 0.7, 0.1),) * 2,
-                self.game,
-                self.game.camera_group
-            )
+        # creates circle particle for smoke
+        smoke = CircleParticle(
+            smoke_pos,
+            (randomize(self.hitbox.width * 0.7, 0.1),) * 2,
+            self.game,
+            self.game.camera_group
+        )
 
-            # smoke render
-            smoke.animation_cooldown = 500
-            smoke.fade_cooldown = 50
-            smoke.color = random.choice((Color.ASH, Color.BLACK))
+        # smoke render
+        smoke.animation_cooldown = 500
+        smoke.fade_cooldown = 50
+        smoke.color = random.choice((Color.ASH, Color.BLACK))
 
-            smoke.set_circles()
+        smoke.set_circles()
 
-            # smoke movement
-            smoke.velocity.y = 0.2
+        # smoke movement
+        smoke.velocity.y = 0.2
 
 
 class Mimic(MeleeEntity):

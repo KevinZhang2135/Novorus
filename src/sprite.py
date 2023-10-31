@@ -82,6 +82,7 @@ class Sprite(pygame.sprite.Sprite):
                     shadows.append(Shadow((0, 0, 0, 50), image))
 
         else:
+            # filepath is a single image instead of a sprite folder
             filename = filepath.split('/')[-1]
             image = IMAGES[filename].copy()
             image = pygame.transform.scale(image, self.size)

@@ -128,53 +128,56 @@ class Entity(Sprite):
         '''Handles collision'''
         self.map_collision()
 
-        if self.velocity.magnitude():
-            # sorts sprites by distance
-            sprites = pygame.sprite.spritecollide(
-                self,
-                self.game.collision_group,
-                False
-            )
+        # does not check collision when speed is 0
+        if not self.velocity.magnitude():
+            return
 
-            sprites.sort(key=lambda sprite: math.dist(
-                self.collision_box.center,
-                sprite.collision_box.center
-            ))
+        # sorts sprites by distance
+        sprites = pygame.sprite.spritecollide(
+            self,
+            self.game.collision_group,
+            False
+        )
 
-            for sprite in sprites:
-                if side := self.detect_collision(sprite):
-                    match side:
-                        # left collision
-                        case 'left':
-                            self.set_coords(
-                                sprite.collision_box.right + self.collision_box.width /
-                                2 - self.collision_box_offset.x,
-                                self.coords.y
-                            )
+        sprites.sort(key=lambda sprite: math.dist(
+            self.collision_box.center,
+            sprite.collision_box.center
+        ))
 
-                        # right collision
-                        case 'right':
-                            self.set_coords(
-                                sprite.collision_box.left - self.collision_box.width /
-                                2 - self.collision_box_offset.x,
-                                self.coords.y
-                            )
+        for sprite in sprites:
+            if side := self.detect_collision(sprite):
+                match side:
+                    # left collision
+                    case 'left':
+                        self.set_coords(
+                            sprite.collision_box.right + self.collision_box.width /
+                            2 - self.collision_box_offset.x,
+                            self.coords.y
+                        )
 
-                        # top collision
-                        case 'top':
-                            self.set_coords(
-                                self.coords.x,
-                                sprite.collision_box.bottom + self.collision_box.height /
-                                2 - self.collision_box_offset.y
-                            )
+                    # right collision
+                    case 'right':
+                        self.set_coords(
+                            sprite.collision_box.left - self.collision_box.width /
+                            2 - self.collision_box_offset.x,
+                            self.coords.y
+                        )
 
-                        # bottom collision
-                        case 'bottom':
-                            self.set_coords(
-                                self.coords.x,
-                                sprite.collision_box.top - self.collision_box.height /
-                                2 - self.collision_box_offset.y
-                            )
+                    # top collision
+                    case 'top':
+                        self.set_coords(
+                            self.coords.x,
+                            sprite.collision_box.bottom + self.collision_box.height /
+                            2 - self.collision_box_offset.y
+                        )
+
+                    # bottom collision
+                    case 'bottom':
+                        self.set_coords(
+                            self.coords.x,
+                            sprite.collision_box.top - self.collision_box.height /
+                            2 - self.collision_box_offset.y
+                        )
 
     def map_collision(self):
         '''Handles map border collision'''
@@ -260,7 +263,6 @@ class Entity(Sprite):
                 elif center_dist.y < 0:
                     return 'bottom'
 
-        return None
 
     def face_enemy(self, target: Sprite):
         if self.hitbox.centerx < target.hitbox.centerx:

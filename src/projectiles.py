@@ -68,39 +68,42 @@ class Projectile(Entity):
             self.velocity.scale_to_length(self.max_velocity)
 
     def collision(self):
-        if abs(self.velocity.x) > 0 or abs(self.velocity.y) > 0:
-            # sorts sprites by distance
-            sprites = pygame.sprite.spritecollide(
-                self,
-                self.game.collision_group,
-                False
+        # does not check collision when speed is 0
+        if not self.velocity.magnitude():
+            return
+        
+        # sorts sprites by distance
+        sprites = pygame.sprite.spritecollide(
+            self,
+            self.game.collision_group,
+            False
+        )
+
+        sprites.sort(key=lambda sprite: math.dist(
+            self.hitbox.center,
+            sprite.hitbox.center
+        ))
+
+        for sprite in sprites:
+            # minimum distance between two sprites which includes collision
+            collision_distance = pygame.math.Vector2(
+                (self.hitbox.width + sprite.hitbox.width) / 2,
+                (self.hitbox.height + sprite.hitbox.height) / 2
             )
 
-            sprites.sort(key=lambda sprite: math.dist(
-                self.hitbox.center,
-                sprite.hitbox.center
-            ))
+            # distance between the centers of two sprites
+            center_distance = pygame.math.Vector2(
+                self.hitbox.centerx - sprite.hitbox.centerx,
+                self.hitbox.centery - sprite.hitbox.centery
+            )
 
-            for sprite in sprites:
-                # minimum distance between two sprites which includes collision
-                collision_distance = pygame.math.Vector2(
-                    (self.hitbox.width + sprite.hitbox.width) / 2,
-                    (self.hitbox.height + sprite.hitbox.height) / 2
-                )
+            # checks if the distance of the sprites are within collision distance
+            if (abs(center_distance.x) < collision_distance.x
+                    and abs(center_distance.y) < collision_distance.y):
 
-                # distance between the centers of two sprites
-                center_distance = pygame.math.Vector2(
-                    self.hitbox.centerx - sprite.hitbox.centerx,
-                    self.hitbox.centery - sprite.hitbox.centery
-                )
-
-                # checks if the distance of the sprites are within collision distance
-                if (abs(center_distance.x) < collision_distance.x
-                        and abs(center_distance.y) < collision_distance.y):
-
-                    self.velocity.xy = 0, 0
-                    self.fade_cooldown = 0
-                    break
+                self.velocity.xy = 0, 0
+                self.fade_cooldown = 0
+                break
 
     def hit_target(self):
         # checks if the rect overlaps an enemy rect

@@ -285,7 +285,6 @@ class Level:
             'oak_log': random.randint(2, 3)
         }
 
-        #if not random.randint(0, 9):
         chest.spell = EarthquakeSpell(
             (0, 0),
             (TILE_SIZE * 1.2,) * 2,

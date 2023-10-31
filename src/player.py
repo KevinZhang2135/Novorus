@@ -138,39 +138,42 @@ class Player(Entity):
 
     def dash(self):
         '''Dashes a long distance'''
-
         # prevents player from moving
         self.in_combat = True
-        if pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
-            # trigger dash animation
-            self.frame = 0
-            self.dashing = True
 
-            # dashes where the cursor is pointed
-            cursor_pos = self.game.cursor.offset_mouse_pos()
-            self.acceleration = pygame.math.Vector2(
-                cursor_pos[0] - self.hitbox.center[0],
-                cursor_pos[1] - self.hitbox.center[1]
+        # does not dash unless time elapsed exceeds cooldown
+        if not pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
+            return
+        
+        # trigger dash animation
+        self.frame = 0
+        self.dashing = True
+
+        # dashes where the cursor is pointed
+        cursor_pos = self.game.cursor.offset_mouse_pos()
+        self.acceleration = pygame.math.Vector2(
+            cursor_pos[0] - self.hitbox.center[0],
+            cursor_pos[1] - self.hitbox.center[1]
+        )
+
+        # dash movement
+        if self.acceleration.length() > 0:
+            self.acceleration.scale_to_length(self.dash_velocity)
+            self.velocity = self.acceleration
+
+            # resets dash time for dash duration
+            self.dash_time = pygame.time.get_ticks()
+
+            # creates dust trail
+            dust_pos = self.hitbox.midbottom
+            dust_trail = DustTrail(
+                dust_pos,
+                (self.hitbox.width * 5,) * 2,
+                self.game,
+                self.game.camera_group
             )
 
-            # dash movement
-            if self.acceleration.length() > 0:
-                self.acceleration.scale_to_length(self.dash_velocity)
-                self.velocity = self.acceleration
-
-                # resets dash time for dash duration
-                self.dash_time = pygame.time.get_ticks()
-
-                # creates dust trail
-                dust_pos = self.hitbox.midbottom
-                dust_trail = DustTrail(
-                    dust_pos,
-                    (self.hitbox.width * 5,) * 2,
-                    self.game,
-                    self.game.camera_group
-                )
-
-                dust_trail.facing = 'left' if self.velocity.x < 0 else 'right'
+            dust_trail.facing = 'left' if self.velocity.x < 0 else 'right'
 
     def cast(self, target_group):
         '''Casts a devastating spell to obliterate enemies'''

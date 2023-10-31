@@ -167,46 +167,51 @@ class Inventory(pygame.sprite.Group):
             if event.type == pygame.MOUSEWHEEL
         ]
 
+        # does not check scroll if mouse is not hovering above inventory
+        if not self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
+            return
+
+        # does not check scroll if items does not exceed threshold
+        item_threshold = self.MAX_ROWS * self.MAX_COLUMNS
+        if not len(self.sprites()) > item_threshold:
+            return
+        
         # scrolls when mouse is colliding with the inventory
-        if self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
-            item_threshold = self.MAX_ROWS * self.MAX_COLUMNS
-            
-            # enables scroll when items exceeds maximum amount dsiplayed
-            if len(self.sprites()) > item_threshold:
-                if events:
-                    mousewheel_event = events[0]  # gets mouse wheel event
-                    self.scroll_acceleration = -self.scroll_max_velocity
-                    if mousewheel_event.y < 0:
-                        self.scroll_acceleration *= -1
+        # enables scroll when items exceeds maximum amount dsiplayed
+        if events:
+            mousewheel_event = events[0]  # gets mouse wheel event
+            self.scroll_acceleration = -self.scroll_max_velocity
+            if mousewheel_event.y < 0:
+                self.scroll_acceleration *= -1
 
-                    self.scroll_velocity += self.scroll_acceleration
-                    self.scroll_velocity *= 0.5
+            self.scroll_velocity += self.scroll_acceleration
+            self.scroll_velocity *= 0.5
 
-                else:
-                    # movement decay when input is not received
-                    self.scroll_velocity *= 0.95
-                    self.scroll_acceleration = 0
+        else:
+            # movement decay when input is not received
+            self.scroll_velocity *= 0.95
+            self.scroll_acceleration = 0
 
-                # movement decay when the speed is low
-                if abs(self.scroll_velocity) < 0.05:
-                    self.scroll_velocity = 0
+        # movement decay when the speed is low
+        if abs(self.scroll_velocity) < 0.05:
+            self.scroll_velocity = 0
 
-                if abs(self.scroll_velocity) < 0.05:
-                    self.scroll_velocity = 0
+        if abs(self.scroll_velocity) < 0.05:
+            self.scroll_velocity = 0
 
-                # scrolls
-                self.scroll += self.scroll_velocity
+        # scrolls
+        self.scroll += self.scroll_velocity
 
-                # prevents scrolling beyond the inventory
-                num_items = len(self.sprites()) - 1
-                max_scroll = (math.ceil(num_items / self.MAX_COLUMNS)) \
-                    * (self.item_box.get_height() + 15)
+        # prevents scrolling beyond the inventory
+        num_items = len(self.sprites()) - 1
+        max_scroll = (math.ceil(num_items / self.MAX_COLUMNS)) \
+            * (self.item_box.get_height() + 15)
 
-                if self.scroll < 0:
-                    self.scroll = 0
+        if self.scroll < 0:
+            self.scroll = 0
 
-                elif self.scroll > max_scroll:
-                    self.scroll = max_scroll
+        elif self.scroll > max_scroll:
+            self.scroll = max_scroll
 
     def render(self):
         if self.inventory_button.active:
