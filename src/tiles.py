@@ -193,34 +193,37 @@ class Totem(Entity):
             sparks.acceleration.y = 0.25
 
     def check_death(self):
-        if self.stats.health <= 0:
-            # sprite dies
-            self.stats.health = 0
+        # does not kill sprite unless health is below 0
+        if not self.stats.health <= 0:
+            return
+        
+        # sprite dies
+        self.stats.health = 0
 
-            # creates dust cloud on death
-            x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
-            x = random.randint(
-                self.hitbox.centerx - x_offset,
-                self.hitbox.centerx + x_offset
-            )
+        # creates dust cloud on death
+        x_offset = round((self.hitbox.right - self.hitbox.left) / 4)
+        x = random.randint(
+            self.hitbox.centerx - x_offset,
+            self.hitbox.centerx + x_offset
+        )
 
-            y_offset = round((self.hitbox.bottom - self.hitbox.top) / 4)
-            y = random.randint(
-                self.hitbox.centery - y_offset,
-                self.hitbox.centery + y_offset
-            )
+        y_offset = round((self.hitbox.bottom - self.hitbox.top) / 4)
+        y = random.randint(
+            self.hitbox.centery - y_offset,
+            self.hitbox.centery + y_offset
+        )
 
-            dust_width = randomize(min(*self.hitbox.size), 0.05) * 3
+        dust_width = randomize(min(*self.hitbox.size), 0.05) * 3
 
-            Explosion3(
-                (x, y),
-                (dust_width,) * 2,
-                self.game,
-                self.game.camera_group
-            )
+        Explosion3(
+            (x, y),
+            (dust_width,) * 2,
+            self.game,
+            self.game.camera_group
+        )
 
-            self.kill()
-            del self
+        self.kill()
+        del self
 
     def make_exit(self):
         '''Creates portal when all totems are destroyed'''

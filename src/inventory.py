@@ -167,11 +167,11 @@ class Inventory(pygame.sprite.Group):
             if event.type == pygame.MOUSEWHEEL
         ]
 
-        # does not check scroll if mouse is not hovering above inventory
+        # does not check scroll unless mouse is hovering above inventory
         if not self.inventory_rect.collidepoint(pygame.mouse.get_pos()):
             return
 
-        # does not check scroll if items does not exceed threshold
+        # does not check scroll unless item count exceeds threshold
         item_threshold = self.MAX_ROWS * self.MAX_COLUMNS
         if not len(self.sprites()) > item_threshold:
             return

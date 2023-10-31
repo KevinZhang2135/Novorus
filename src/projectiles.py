@@ -68,7 +68,7 @@ class Projectile(Entity):
             self.velocity.scale_to_length(self.max_velocity)
 
     def collision(self):
-        # does not check collision when speed is 0
+        # does not check collision unless speed is greater than 0
         if not self.velocity.magnitude():
             return
         

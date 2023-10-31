@@ -90,7 +90,7 @@ class EarthquakeSpell(Spell):
         self.set_animation('spells/earth_shaker')
 
         self.cast_duration = 750
-        self.cost = 50
+        self.cost = 40
         self.uses = 2
 
         # tooltip hover
