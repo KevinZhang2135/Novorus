@@ -263,7 +263,6 @@ class Entity(Sprite):
                 elif center_dist.y < 0:
                     return 'bottom'
 
-
     def face_enemy(self, target: Sprite):
         if self.hitbox.centerx < target.hitbox.centerx:
             self.facing = 'right'
@@ -349,7 +348,7 @@ class Entity(Sprite):
         # does not kill sprite unless health is below 0
         if not self.stats.health <= 0:
             return
-        
+
         # sprite dies
         self.stats.health = 0
 
