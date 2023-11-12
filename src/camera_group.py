@@ -13,8 +13,8 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
         # dimensions
-        self.half_width = round(self.screen.get_width() / 2)
-        self.half_height = round(self.screen.get_height() / 2)
+        self.half_width = round(self.game.width / 2)
+        self.half_height = round(self.game.height / 2)
 
         # lighting
         self.light_colors = (Color.GOLD, Color.SKY_BLUE1, Color.BLACK)
@@ -43,7 +43,7 @@ class CameraGroup(pygame.sprite.Group):
         # stops scrolling screen when the player is past right edge of the screen
         if (target.coords.x >= self.game.level.size.x - self.half_width):
             self.offset.x = self.game.level.size.x \
-                - self.screen.get_width() \
+                - self.game.width \
                 - HALF_TILE_SIZE
 
         # starts scrolling screen when the player is in the middle of the screen
@@ -55,7 +55,7 @@ class CameraGroup(pygame.sprite.Group):
         # stops scrolling screen when the player is past bottom edge of the screen
         if (target.coords.y >= self.game.level.size.y - self.half_height - HALF_TILE_SIZE):
             self.offset.y = self.game.level.size.y \
-                - self.screen.get_height() \
+                - self.game.height \
                 - HALF_TILE_SIZE
 
         # starts scrolling screen when the player is in the middle of the screen
@@ -67,7 +67,7 @@ class CameraGroup(pygame.sprite.Group):
     def check_bounds(self, sprite: pygame.sprite.Sprite) -> bool:
         # Returns True if sprite is within bounding coords to optimize updates and draws
         topleft_bound = self.offset
-        bottomright_bound = self.offset + self.screen.get_size()
+        bottomright_bound = self.offset + self.game.resolution
 
         if (sprite.rect.right > topleft_bound.x
                 and sprite.rect.left < bottomright_bound.x):

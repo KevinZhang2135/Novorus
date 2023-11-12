@@ -19,8 +19,8 @@ class Menu(pygame.sprite.Group):
 
         # buttons
         pause_button_coords = (
-            self.screen.get_width() - HALF_TILE_SIZE,
-            self.screen.get_height() - HALF_TILE_SIZE
+            self.game.width - HALF_TILE_SIZE,
+            self.game.height - HALF_TILE_SIZE
         )
 
         self.pause_button = Button(
@@ -39,8 +39,8 @@ class Menu(pygame.sprite.Group):
 
         # menu rect and surface
         self.menu_rect = pygame.Rect(
-            (self.screen.get_width() - TILE_SIZE * 4) / 2,
-            (self.screen.get_height() - TILE_SIZE * 4) / 2,
+            (self.game.width - TILE_SIZE * 4) / 2,
+            (self.game.height - TILE_SIZE * 4) / 2,
             TILE_SIZE * 4,
             TILE_SIZE * 4
         )
@@ -53,8 +53,8 @@ class Menu(pygame.sprite.Group):
         # menu text
         text = COMICORO[50].render('Menu', True, Color.CREAM)
         text_rect = text.get_rect(center=(
-            self.screen.get_width() / 2,
-            self.screen.get_height() / 2 - 120
+            self.game.width / 2,
+            self.game.height / 2 - 120
         ))
 
         self.menu_text = text, text_rect
@@ -62,8 +62,8 @@ class Menu(pygame.sprite.Group):
         # exit text
         text = COMICORO[50].render('Exit', True, Color.CREAM)
         text_rect = text.get_rect(center=(
-            self.screen.get_width() / 2,
-            self.screen.get_height() / 2 + 120
+            self.game.width / 2,
+            self.game.height / 2 + 120
         ))
 
         # turns yellow upon hover

@@ -16,11 +16,12 @@ class App:
 
         # sets the size of the screen; defaults to full screen
         displayInfo = pygame.display.Info()
-        self.resolution = displayInfo.current_w, displayInfo.current_h
+        self.width, self.height = 800, 600#displayInfo.current_w, displayInfo.current_h
+        self.resolution = self.width, self.height
 
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF | pygame.FULLSCREEN
+            pygame.DOUBLEBUF,# | pygame.FULLSCREEN
         )
 
         # ticks and state
@@ -81,8 +82,9 @@ class App:
             self.keys_pressed = pygame.key.get_pressed()
 
             # checks for quit event
-            if pygame.QUIT in self.events:
-                self.state['runtime'] = False
+            for event in self.events:
+                if event.type == pygame.QUIT:
+                    self.state['runtime'] = False
 
             self.draw()
             self.update()
@@ -94,6 +96,7 @@ class App:
 
         # closes pygame application
         pygame.font.quit()
+        pygame.display.quit()
         pygame.quit()
 
     def draw(self):

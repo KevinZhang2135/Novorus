@@ -65,10 +65,22 @@ class Player(Entity):
         self.cast_time = pygame.time.get_ticks()
 
         # inventory
-        self.inventory = Inventory(ITEM_TOOLTIPS, self.game)
+        inventory_rect_width = TILE_SIZE * 4
+        inventory_coords = (
+            5, 
+            (self.game.height - inventory_rect_width) - 5
+        )
+
+        self.inventory = Inventory(
+            inventory_coords,
+            ITEM_TOOLTIPS,
+            self.game
+        )
+
         for i in range(35):
             name = f'Item{i}'
-            self.inventory.items[name] = Item(name, IMAGES['baguette'], 'tooltip', 0, self.game)
+            self.inventory.items[name] = Item(
+                name, IMAGES['baguette'], (f'tooltip{i}',), 0, self.game)
             self.inventory.add(self.inventory.items[name])
 
         # spells
@@ -144,7 +156,7 @@ class Player(Entity):
         # does not dash unless time elapsed exceeds cooldown
         if not pygame.time.get_ticks() - self.dash_time > self.dash_cooldown:
             return
-        
+
         # trigger dash animation
         self.frame = 0
         self.dashing = True
@@ -185,7 +197,7 @@ class Player(Entity):
         if spell != self.spells.empty_spell:
             # triggers cast animation
             self.casting = True
-            
+
             match (self.casting_phase):
                 case -1:
                     self.frame = 0
@@ -288,7 +300,7 @@ class Player(Entity):
                         self.game,
                         self.game.camera_group
                     )
-        
+
         # clears pierce and cooldown after animation ends
         if self.frame == len(self.animation_frames[self.facing]['attack']):
             self.attack_time = pygame.time.get_ticks()

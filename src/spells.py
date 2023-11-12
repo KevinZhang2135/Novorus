@@ -26,8 +26,8 @@ class SpellGroup(pygame.sprite.GroupSingle):
         for sprite in sprites:
             super().add(sprite)
             sprite.set_coords(
-                self.screen.get_width() - HALF_TILE_SIZE * 5,
-                self.screen.get_height() - HALF_TILE_SIZE
+                self.game.width - HALF_TILE_SIZE * 5,
+                self.game.height - HALF_TILE_SIZE
             )
 
     def render(self):

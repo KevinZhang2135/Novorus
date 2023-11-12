@@ -6,7 +6,7 @@ import pygame
 
 
 class Inventory(pygame.sprite.Group):
-    def __init__(self, items: dict, game):
+    def __init__(self, coords: list, items: dict, game):
         super().__init__()
         self.screen = pygame.display.get_surface()
         self.game = game
@@ -14,6 +14,7 @@ class Inventory(pygame.sprite.Group):
         self.ITEM_WIDTH = 60
         self.MARGIN = 30
         self.HALF_MARGIN = self.MARGIN / 2
+        self.PADDING = 5
 
         self.INVENTORY_RECT_WIDTH = TILE_SIZE * 4
         self.INVENTORY_SURFACE_WIDTH = self.INVENTORY_RECT_WIDTH - self.MARGIN * 2
@@ -23,10 +24,12 @@ class Inventory(pygame.sprite.Group):
         self.ROW_MARGIN = (self.INVENTORY_SURFACE_WIDTH - self.MAX_ROWS * self.ITEM_WIDTH) \
             / (self.MAX_ROWS - 1)
 
+        self.coords = pygame.math.Vector2(*coords)
+
         # buttons
         inventory_button_coords = (
-            self.screen.get_width() - HALF_TILE_SIZE * 3,
-            self.screen.get_height() - HALF_TILE_SIZE
+            self.game.width - HALF_TILE_SIZE * 3,
+            self.game.height - HALF_TILE_SIZE
         )
 
         self.inventory_button = Button(
@@ -44,8 +47,8 @@ class Inventory(pygame.sprite.Group):
 
         # inventory rect and surface
         self.inventory_rect = pygame.Rect(
-            5,
-            (self.screen.get_height() - self.INVENTORY_RECT_WIDTH) - 5,
+            self.coords.x,
+            self.coords.y,
             self.INVENTORY_RECT_WIDTH,
             self.INVENTORY_RECT_WIDTH
         )
@@ -172,10 +175,12 @@ class Inventory(pygame.sprite.Group):
             return
 
         # does not check scroll unless item count exceeds threshold
+        # removes the inventory button icon
+        num_items = len(self.sprites()) - 1
         item_threshold = self.MAX_ROWS * self.MAX_COLUMNS
-        if not len(self.sprites()) > item_threshold:
+        if not num_items > item_threshold:
             return
-        
+
         # scrolls when mouse is colliding with the inventory
         # enables scroll when items exceeds maximum amount dsiplayed
         if events:
@@ -203,9 +208,9 @@ class Inventory(pygame.sprite.Group):
         self.scroll += self.scroll_velocity
 
         # prevents scrolling beyond the inventory
-        num_items = len(self.sprites()) - 1
         max_scroll = (math.ceil(num_items / self.MAX_COLUMNS)) \
-            * (self.item_box.get_height() + 15)
+            * (self.ITEM_WIDTH + self.ROW_MARGIN) \
+            - self.ROW_MARGIN - self.INVENTORY_SURFACE_WIDTH
 
         if self.scroll < 0:
             self.scroll = 0
@@ -232,17 +237,20 @@ class Item(Sprite):
         # defaults width and height to 60
 
         self.screen = pygame.display.get_surface()
+        self.game = game
+
+        self.TOOLTIP_MARGIN = 10
+        self.TOOLTIP_LENGTH = 15
 
         self.name = name
         self.tooltip = tooltip
         self.count = count
 
         self.image = pygame.transform.scale(image, self.size)
-
         self.tooltip_rect = pygame.Rect(
             self.rect.x,
             self.rect.y,
-            100,
+            TILE_SIZE,
             5 + 15 * len(self.tooltip)
         )
 
@@ -256,15 +264,20 @@ class Item(Sprite):
 
     def show_tooltip(self):
         """Displays tooltip when hovered over"""
-        # hard coded fixed margins
-        mouse_coords = list(pygame.mouse.get_pos())
-        mouse_coords[0] -= 0
-        mouse_coords[1] -= self.screen.get_height() \
-            - self.game.player.inventory.inventory_rect.height \
-            + 0
+        player_inventory = self.game.player.inventory
+
+        mouse_pos = list(pygame.mouse.get_pos())
+        mouse_pos[0] += -player_inventory.MARGIN
+        mouse_pos[1] += -player_inventory.MARGIN - player_inventory.coords.y
+
+        # y distance of "hoverable" inventory
+        hover_height = player_inventory.INVENTORY_RECT_WIDTH \
+            - 2 * player_inventory.MARGIN
 
         # when mouse is hovered over item
-        if self.rect.collidepoint(mouse_coords):
+        if (mouse_pos[1] < hover_height
+                and self.rect.collidepoint(mouse_pos)):
+
             self.tooltip_rect.topleft = [
                 i + 10 for i in pygame.mouse.get_pos()
             ]

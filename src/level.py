@@ -23,10 +23,10 @@ class Level:
         self.transitioning = False
 
         self.level_transition_rect = pygame.Rect(
-            -self.screen.get_width(),
+            -self.game.width,
             0,
-            self.screen.get_width(),
-            self.screen.get_height()
+            self.game.width,
+            self.game.height
         )
 
         # layers
@@ -54,8 +54,8 @@ class Level:
                 self.game.player.velocity.y = 0
 
             # finishes updating
-            if self.level_transition_rect.x > self.screen.get_width():
-                self.level_transition_rect.x = -self.screen.get_width()
+            if self.level_transition_rect.x > self.game.width:
+                self.level_transition_rect.x = -self.game.width
 
                 self.transitioning = False
                 self.level_updated = False

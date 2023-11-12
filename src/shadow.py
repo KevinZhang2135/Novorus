@@ -26,8 +26,8 @@ class Shadow:
 
         if len(points) > 2:
             pygame.draw.polygon(
-                self.surface, 
-                color, 
+                self.surface,
+                color,
                 [(x - min_x, y - min_y) for x, y in points]
             )
 
