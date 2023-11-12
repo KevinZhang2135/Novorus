@@ -251,7 +251,7 @@ class Item(Sprite):
             self.rect.x,
             self.rect.y,
             TILE_SIZE,
-            5 + 15 * len(self.tooltip)
+            self.TOOLTIP_MARGIN + self.TOOLTIP_LENGTH * len(self.tooltip)
         )
 
         self.tooltip_text = []
@@ -278,9 +278,10 @@ class Item(Sprite):
         if (mouse_pos[1] < hover_height
                 and self.rect.collidepoint(mouse_pos)):
 
-            self.tooltip_rect.topleft = [
-                i + 10 for i in pygame.mouse.get_pos()
-            ]
+            self.tooltip_rect.topleft = list(map(
+                lambda x: x + self.TOOLTIP_MARGIN,
+                pygame.mouse.get_pos()
+            ))
 
             pygame.draw.rect(
                 self.screen,

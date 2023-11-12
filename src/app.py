@@ -16,12 +16,12 @@ class App:
 
         # sets the size of the screen; defaults to full screen
         displayInfo = pygame.display.Info()
-        self.width, self.height = 800, 600#displayInfo.current_w, displayInfo.current_h
+        self.width, self.height = displayInfo.current_w, displayInfo.current_h
         self.resolution = self.width, self.height
 
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF,# | pygame.FULLSCREEN
+            pygame.DOUBLEBUF | pygame.FULLSCREEN
         )
 
         # ticks and state
