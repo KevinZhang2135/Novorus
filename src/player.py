@@ -80,7 +80,13 @@ class Player(Entity):
         for i in range(35):
             name = f'Item{i}'
             self.inventory.items[name] = Item(
-                name, IMAGES['baguette'], (f'tooltip{i}',), 0, self.game)
+                name, 
+                IMAGES['baguette'], 
+                (f'tooltip{i}',), 
+                0, 
+                self.game
+            )
+            
             self.inventory.add(self.inventory.items[name])
 
         # spells

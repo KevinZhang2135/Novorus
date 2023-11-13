@@ -49,6 +49,7 @@ class Level:
                 # updates level map
                 self.clear_level()
                 self.read_csv_level()
+                self.game.camera_group.update()
 
                 self.game.player.velocity.x = 0
                 self.game.player.velocity.y = 0
@@ -59,6 +60,8 @@ class Level:
 
                 self.transitioning = False
                 self.level_updated = False
+
+                
 
     def read_csv_level(self):
         files = os.listdir(f'{LEVEL_PATH}/{self.floor_level}')
