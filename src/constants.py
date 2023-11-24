@@ -1,8 +1,8 @@
 from color import Color
 
 import pygame 
-import os
 import math
+import os
 import random
 
 pygame.init()
@@ -38,11 +38,17 @@ for (path, dirs, files) in os.walk(ITEM_PATH, topdown=True):
 
 # "Creative Commons Comicoro" by jeti is licensed under CC BY 4.0
 # creating multiple font sizes
-COMICORO = {}
-font_sizes = (20, 25, 35, 50)
-for size in font_sizes:
-    COMICORO[size] = pygame.font.Font('../comicoro.ttf', size)
+COMICORO = {
+    size: pygame.font.Font('../comicoro.ttf', size)
+    for size in (20, 25, 35, 50)
+}
 
+def signum(value: float):
+    '''Returns the sign of the value'''
+    if not value:
+        return 0
+
+    return math.copysign(1, value)
 
 def randomize(value: int, offset: float):
     '''Randomizes the value with a +- deviation of the offset'''

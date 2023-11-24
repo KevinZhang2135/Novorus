@@ -49,7 +49,7 @@ class Ghost(MeleeEntity):
         if not pygame.time.get_ticks() - self.smoke_time > self.smoke_cooldown:
             return
     
-        # draws smoke trail
+        # draws smoke trail and randomizes position
         self.smoke_time = pygame.time.get_ticks()
         smoke_pos = list(self.hitbox.midbottom)
         smoke_pos[0] += random.randint(
@@ -58,8 +58,9 @@ class Ghost(MeleeEntity):
         )
 
         if self.velocity.x:
+            # draws smoke in the opposite bottom corner to movement
             smoke_pos[0] += self.hitbox.width // 2 \
-                * -self.velocity.x / abs(self.velocity.x)
+                * -signum(self.velocity.x)
 
             smoke_pos[1] -= self.hitbox.height // 4
 

@@ -1,9 +1,8 @@
-from entity import pygame
+from constants import *
 from particles import *
 from entity import *
 
 import pygame
-import math
 
 
 class Projectile(Entity):

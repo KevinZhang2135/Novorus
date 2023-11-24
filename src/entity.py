@@ -217,12 +217,22 @@ class Entity(Sprite):
                 self.coords.x,
                 screen_bottom - self.collision_box.height / 2 - self.collision_box_offset.y - 1
             )
-
+                
     def detect_collision(self, sprite):
-        '''Determines side of sprite collision'''
+        '''Determines side of sprite collision using AABB collision'''
+        
+        # minimum collision distance
         collision_dist = pygame.math.Vector2(
             (self.collision_box.width + sprite.collision_box.width) / 2,
             (self.collision_box.height + sprite.collision_box.height) / 2
+        )
+
+        collision_dist += tuple(map(lambda x: abs(x), self.velocity))
+
+        # distance between the centers of two sprites
+        center_dist = pygame.math.Vector2(
+            self.collision_box.centerx - sprite.collision_box.centerx,
+            self.collision_box.centery - sprite.collision_box.centery
         )
 
         # distance between the centers of two sprites
@@ -231,38 +241,54 @@ class Entity(Sprite):
             self.collision_box.centery - sprite.collision_box.centery
         )
 
-        # when velocity is too high
-        # track from previous position before displacement
-        if self.velocity.magnitude() > 6:
-            collision_dist.x += abs(self.velocity.x)
-            collision_dist.y += abs(self.velocity.y)
+        center_dist -= self.velocity
 
-            center_dist -= self.velocity
+        if not self.collision_box.colliderect(sprite.collision_box):
+            return
 
-        # checks if the distance of the sprites are within collision distance
-        if (abs(center_dist.x) < collision_dist.x
-                and abs(center_dist.y) < collision_dist.y):
+        # the distance of the sprite intersection area
+        intersect_dist = pygame.math.Vector2(
+            *map(lambda x: abs(x), self.velocity)
+        )
 
-            # horizontal collision
-            if abs(center_dist.x) > abs(center_dist.y):
-                # left collision
-                if center_dist.x > 0:
-                    return 'left'
+        # intersection zones
+        # left side intersect
+        if center_dist.x > 0:
+            intersect_dist.x = sprite.collision_box.right - self.collision_box.left
 
-                # right collision
-                elif (center_dist.x < 0):
-                    return 'right'
+        # right side intersect
+        elif center_dist.x < 0:
+            intersect_dist.x = self.collision_box.right - sprite.collision_box.left
 
-            # vertical collision
-            if abs(center_dist.y) > abs(center_dist.x):
-                # top collision
-                if center_dist.y > 0:
-                    return 'top'
+        # top side intersect
+        if center_dist.y < 0:
+            intersect_dist.y = self.collision_box.bottom - sprite.collision_box.top
 
-                # bottom collision
-                elif center_dist.y < 0:
-                    return 'bottom'
+        # bottom side intersect
+        elif center_dist.y > 0:
+            intersect_dist.y = sprite.collision_box.bottom - self.collision_box.top
 
+        # horizontal collision
+        # the side intersecting the least is the side colliding
+        if intersect_dist.x < intersect_dist.y:
+            # left collision
+            if center_dist.x > 0:
+                return f'left'
+
+            # right collision
+            elif (center_dist.x < 0):
+                return f'right'
+
+        # vertical collision
+        if intersect_dist.y < intersect_dist.x:
+            # top collision
+            if center_dist.y > 0:
+                return f'top'
+
+            # bottom collision
+            elif center_dist.y < 0:
+                return f'bottom'
+                       
     def face_enemy(self, target: Sprite):
         if self.hitbox.centerx < target.hitbox.centerx:
             self.facing = 'right'
@@ -275,6 +301,7 @@ class Entity(Sprite):
 
     def check_state(self):
         if not self.attacking:
+            # if entity is moving
             if self.velocity.length_squared() > 0:
                 self.action = 'run'
 

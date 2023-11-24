@@ -10,8 +10,10 @@ import pygame
 class App:
     def __init__(self):
         pygame.init()
-        pygame.font.init()
+        pygame.display.init()
         pygame.display.set_caption('Novorus')
+
+        pygame.font.init()
         pygame.mouse.set_visible(False)
 
         # sets the size of the screen; defaults to full screen
@@ -21,7 +23,7 @@ class App:
 
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF | pygame.FULLSCREEN
+            pygame.DOUBLEBUF# | pygame.FULLSCREEN
         )
 
         # ticks and state
@@ -107,7 +109,7 @@ class App:
 
         self.camera_group.render(
             show_hitboxes=False,
-            show_collision_boxes=False,
+            show_collision_boxes=True,
             show_rects=False
         )
 
