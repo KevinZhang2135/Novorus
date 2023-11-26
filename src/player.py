@@ -67,7 +67,7 @@ class Player(Entity):
         # inventory
         inventory_rect_width = TILE_SIZE * 4
         inventory_coords = (
-            5, 
+            5,
             (self.game.height - inventory_rect_width) - 5
         )
 
@@ -80,13 +80,13 @@ class Player(Entity):
         for i in range(35):
             name = f'Item{i}'
             self.inventory.items[name] = Item(
-                name, 
-                IMAGES['baguette'], 
-                (f'tooltip{i}',), 
-                0, 
+                name,
+                IMAGES['baguette'],
+                (f'tooltip{i}',),
+                0,
                 self.game
             )
-            
+
             self.inventory.add(self.inventory.items[name])
 
         # spells

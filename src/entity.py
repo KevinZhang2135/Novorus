@@ -97,12 +97,13 @@ class Entity(Sprite):
         '''Determines whether the line of sight is not obstructed by walls'''
         distance = math.dist(self.hitbox.center, point)
 
-        # filters walls beyond point
-        walls = [
+        # filters walls beyond distance to point
+        walls = tuple(
             wall for wall in self.game.collision_group.sprites()
             if math.dist(self.hitbox.center, wall.hitbox.center) < distance
-        ]
+        )
 
+        # if any walls obstructing the point
         for wall in walls:
             if wall.hitbox.clipline(self.hitbox.center, point):
                 return False
@@ -217,32 +218,51 @@ class Entity(Sprite):
                 self.coords.x,
                 screen_bottom - self.collision_box.height / 2 - self.collision_box_offset.y - 1
             )
-                
+
     def detect_collision(self, sprite):
-        '''Determines side of sprite collision using AABB collision'''
-        
-        # minimum collision distance
-        collision_dist = pygame.math.Vector2(
-            (self.collision_box.width + sprite.collision_box.width) / 2,
-            (self.collision_box.height + sprite.collision_box.height) / 2
-        )
+        '''Determines side of sprite collision using a vector and AABB collision'''
 
-        collision_dist += tuple(map(lambda x: abs(x), self.velocity))
-
+        '''Vector collision'''
         # distance between the centers of two sprites
         center_dist = pygame.math.Vector2(
             self.collision_box.centerx - sprite.collision_box.centerx,
             self.collision_box.centery - sprite.collision_box.centery
         )
 
-        # distance between the centers of two sprites
-        center_dist = pygame.math.Vector2(
-            self.collision_box.centerx - sprite.collision_box.centerx,
-            self.collision_box.centery - sprite.collision_box.centery
+        center_dist -= self.velocity * 2
+
+        # creates a line from the player to the point cropped within 
+        # collision sprite as a pair of tuples
+        velocity_clipline = sprite.collision_box.clipline(
+            self.collision_box.center,
+            self.collision_box.center - self.velocity
         )
 
-        center_dist -= self.velocity
+        # track from previous position before displacement if player
+        # travels through collision sprite
+        if velocity_clipline:
+            # horizontal collision
+            if abs(center_dist.x) > abs(center_dist.y):
+                # left collision
+                if center_dist.x > 0:
+                    return f'left'
 
+                # right collision
+                elif center_dist.x < 0:
+                    return f'right'
+
+            elif abs(center_dist.y) > abs(center_dist.x):
+                # top collision
+                if center_dist.y > 0:
+                    return f'top'
+
+                # bottom collision
+                elif center_dist.y < 0:
+                    return f'bottom'
+
+        '''AABB collision'''
+        # does not calculate further or the boxes are not colliding
+        # or the distance between centers is greater than collision distance
         if not self.collision_box.colliderect(sprite.collision_box):
             return
 
@@ -276,11 +296,11 @@ class Entity(Sprite):
                 return f'left'
 
             # right collision
-            elif (center_dist.x < 0):
+            elif center_dist.x < 0:
                 return f'right'
 
         # vertical collision
-        if intersect_dist.y < intersect_dist.x:
+        elif intersect_dist.y < intersect_dist.x:
             # top collision
             if center_dist.y > 0:
                 return f'top'
@@ -288,7 +308,7 @@ class Entity(Sprite):
             # bottom collision
             elif center_dist.y < 0:
                 return f'bottom'
-                       
+
     def face_enemy(self, target: Sprite):
         if self.hitbox.centerx < target.hitbox.centerx:
             self.facing = 'right'
@@ -304,12 +324,7 @@ class Entity(Sprite):
             # if entity is moving
             if self.velocity.length_squared() > 0:
                 self.action = 'run'
-
-                if self.velocity.x < 0:
-                    self.facing = 'left'
-
-                elif self.velocity.x > 0:
-                    self.facing = 'right'
+                self.facing = 'left' if self.velocity.x < 0 else 'right'
 
             else:
                 self.action = 'idle'

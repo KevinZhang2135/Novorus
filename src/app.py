@@ -23,7 +23,7 @@ class App:
 
         self.screen = pygame.display.set_mode(
             self.resolution,
-            pygame.DOUBLEBUF# | pygame.FULLSCREEN
+            pygame.DOUBLEBUF | pygame.FULLSCREEN
         )
 
         # ticks and state
