@@ -21,7 +21,7 @@ class Player(Entity):
 
         # movement and range
         self.max_velocity = 5
-        self.dash_velocity = self.max_velocity * 5
+        self.dash_velocity = self.max_velocity * 4
 
         self.melee_range = max(self.hitbox.size) * 1.25
 
@@ -56,12 +56,12 @@ class Player(Entity):
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
         self.dash_cooldown = 1000
-        self.dash_duration = 600  # how long a dash lasts
+        self.dash_duration = 750  # how long a dash lasts
 
         # cast
         self.casting = True
-        self.casting_phase = -1
-        self.casting_phases = ('cast_anticip', 'cast_action', 'cast_recover')
+        self.cast_phase = -1
+        self.cast_phases = ('cast_anticip', 'cast_action', 'cast_recover')
         self.cast_time = pygame.time.get_ticks()
 
         # inventory
@@ -114,10 +114,10 @@ class Player(Entity):
         else:
             # movement decay when input is not received
             if self.dashing:
-                self.velocity *= 0.925
+                self.velocity *= 0.95
 
             else:
-                self.velocity *= 0.85
+                self.velocity *= 0.9
 
         # movement decay when the speed is low
         super().movement()
@@ -139,7 +139,7 @@ class Player(Entity):
 
                 else:
                     self.casting = False
-                    self.casting_phase = -1
+                    self.cast_phase = -1
 
         self.damage_enemies(target_group)
 
@@ -196,7 +196,7 @@ class Player(Entity):
     def cast(self, target_group):
         '''Casts a devastating spell to obliterate enemies'''
         spell = self.spells.sprites()[0]
-        casting_phase = self.casting_phases[self.casting_phase]
+        casting_action = self.cast_phases[self.cast_phase]
 
         # prevents player from moving
         self.in_combat = True
@@ -204,28 +204,31 @@ class Player(Entity):
             # triggers cast animation
             self.casting = True
 
-            match (self.casting_phase):
+            match (self.cast_phase):
+                # not casting
                 case -1:
                     self.frame = 0
-                    self.casting_phase += 1
+                    self.cast_phase += 1
 
+                # entering or exiting casting
                 case 0 | 2:
                     # triggers next casting phase
 
                     # casting phases 0 and 2 are dependent on frames
-                    if self.frame == len(self.animation_frames[self.facing][casting_phase]):
+                    if self.frame == len(self.animation_frames[self.facing][casting_action]):
                         self.frame = 0
-                        self.casting_phase += 1
+                        self.cast_phase += 1
                         self.cast_time = pygame.time.get_ticks()
 
-                        if self.casting_phase >= len(self.casting_phases):
-                            self.casting_phase = 0
+                        if self.cast_phase >= len(self.cast_phases):
+                            self.cast_phase = 0
 
+                # holding staff phase
                 case 1:
                     # casting phase 1 continuously loops until duration is met
                     if pygame.time.get_ticks() - self.cast_time > spell.cast_duration:
                         self.frame = 0
-                        self.casting_phase += 1
+                        self.cast_phase += 1
 
                         cursor_pos = self.game.cursor.offset_mouse_pos()
                         spell.cast(cursor_pos, self.stats, target_group)
@@ -247,12 +250,12 @@ class Player(Entity):
 
         else:
             # ends casting animation after weapon is destroyed
-            if (self.casting_phase == 2
-                    and self.frame == len(self.animation_frames[self.facing][casting_phase])):
+            if (self.cast_phase == 2
+                    and self.frame == len(self.animation_frames[self.facing][casting_action])):
                 self.frame = 0
 
                 self.casting = False
-                self.casting_phase = -1
+                self.cast_phase = -1
 
     def damage_enemies(self, target_group):
         """Deals damage to targets"""
@@ -399,7 +402,7 @@ class Player(Entity):
 
             elif self.casting:
                 # maps casting action to phase
-                self.action = self.casting_phases[self.casting_phase]
+                self.action = self.cast_phases[self.cast_phase]
 
             else:
                 self.action = 'idle'
