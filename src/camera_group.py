@@ -13,8 +13,8 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
         # dimensions
-        self.half_width = round(self.game.width / 2)
-        self.half_height = round(self.game.height / 2)
+        self.half_width = round(self.game.width // 2)
+        self.half_height = round(self.game.height // 2)
 
         # lighting
         self.light_colors = (Color.GOLD, Color.SKY_BLUE1, Color.BLACK)

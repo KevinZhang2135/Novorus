@@ -17,8 +17,8 @@ class App:
         pygame.mouse.set_visible(False)
 
         # sets the size of the screen; defaults to full screen
-        displayInfo = pygame.display.Info()
-        self.width, self.height = displayInfo.current_w, displayInfo.current_h
+        display_info = pygame.display.Info()
+        self.width, self.height = display_info.current_w, display_info.current_h
         self.resolution = self.width, self.height
 
         self.screen = pygame.display.set_mode(
