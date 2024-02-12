@@ -61,8 +61,6 @@ class Level:
                 self.transitioning = False
                 self.level_updated = False
 
-                
-
     def read_csv_level(self):
         files = os.listdir(f'{LEVEL_PATH}/{self.floor_level}')
 
@@ -85,17 +83,17 @@ class Level:
 
                     # initializes layers
                     self.grass_layer = pygame.Surface(
-                        self.size, 
+                        self.size,
                         pygame.SRCALPHA
                     )
-                    
+
                     self.terrain_layer = pygame.Surface(
-                        self.size, 
+                        self.size,
                         pygame.SRCALPHA
                     )
 
                     self.terrain_overlay_layer = pygame.Surface(
-                        self.size, 
+                        self.size,
                         pygame.SRCALPHA
                     )
 
@@ -203,7 +201,7 @@ class Level:
         )
 
         wall.sprite_layer = 3
-        wall.draw_shadow = True
+        
 
         match id:
             case 0:
@@ -219,6 +217,7 @@ class Level:
                 wall.set_collision_box(1, 1.2, offsety=-0.1)
 
             case 3:
+                wall.draw_shadow = True
                 wall.set_animation('brick_pile')
                 wall.set_hitbox(0.7, 0.4, offsety=0.05)
                 wall.set_collision_box(0.7, 0.4, offsety=0.05)

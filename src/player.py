@@ -33,7 +33,7 @@ class Player(Entity):
         self.animation_cooldowns = {
             'idle': 100,
             'run': 100,
-            'attack': 75,
+            'attack': 65,
             'dash': 75,
             'cast_action': 100,
             'cast_anticip': 100,
@@ -56,7 +56,7 @@ class Player(Entity):
         self.dashing = False
         self.dash_time = pygame.time.get_ticks()
         self.dash_cooldown = 1000
-        self.dash_duration = 750  # how long a dash lasts
+        self.dash_duration = 650  # how long a dash lasts
 
         # cast
         self.casting = True
