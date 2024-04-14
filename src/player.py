@@ -248,14 +248,15 @@ class Player(Entity):
                             spell.kill()
                             del spell
 
-        else:
-            # ends casting animation after weapon is destroyed
-            if (self.cast_phase == 2
-                    and self.frame == len(self.animation_frames[self.facing][casting_action])):
-                self.frame = 0
+            return
 
-                self.casting = False
-                self.cast_phase = -1
+        # ends casting animation after weapon is destroyed
+        if (self.cast_phase == 2
+                and self.frame == len(self.animation_frames[self.facing][casting_action])):
+            self.frame = 0
+
+            self.casting = False
+            self.cast_phase = -1
 
     def damage_enemies(self, target_group):
         """Deals damage to targets"""
